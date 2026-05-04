@@ -227,68 +227,85 @@
                 await ghFetch('database.js', 'PUT', { message: 'Tambah: ' + title, content: base64Db, sha: dbSha });
 
                 // 2. Buat Halaman HTML Universal
-                const htmlTemplate = '<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title} - Remaja 18</title>
-    <link rel="stylesheet" href="../../style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-left">
-                <a href="../../index" class="logo">REMAJA<span>18</span></a>
-            </div>
-        </nav>
-    </header>
-    <main class="main-container" style="max-width: 1000px; margin: 85px auto;">
-        <div style="background:var(--bg-card); padding:10px; border-radius:12px; margin-bottom:30px;">
-            <div class="thumbnail-wrap" id="video-container">
-                </div>
-            <div class="video-info" style="padding:20px;">
-                <span class="category-tag">${category}</span>
-                <h1 style="font-size:1.5rem; margin-top:10px;">${title}</h1>
-            </div>
-        </div>
-
-        <h2><i class="fas fa-fire" style="color:var(--accent-red);"></i> Rekomendasi Lainnya</h2>
-        <div id="related-grid" class="video-grid"></div>
-    </main>
-
-    <script src="../../database.js"><\/script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // 1. Decode dan Tampilkan Video
-            const embedB64 = "${embedBase64}";
-            const iframeSrc = atob(embedB64);
-            document.getElementById('video-container').innerHTML = \`<iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" src="\${iframeSrc}" allowfullscreen></iframe>\`;
-
-            // 2. Render 5 Rekomendasi
-            const allVids = window.videoDatabase || [];
-            // Ambil 5 video secara acak yang bukan video saat ini
-            const related = allVids.filter(v => v.slug !== "${slug}").sort(() => 0.5 - Math.random()).slice(0, 5);
-            
-            const grid = document.getElementById('related-grid');
-            related.forEach(v => {
-                grid.innerHTML += \`
-                    <a href="../\${v.slug}" class="video-card">
-                        <div class="thumbnail-wrap">
-                            <img src="\${v.thumbnail}" alt="\${v.title}">
-                        </div>
-                        <div class="video-info">
-                            <span class="category-tag">\${v.category}</span>
-                            <h3>\${v.title}</h3>
-                        </div>
-                    </a>
-                \`;
-            });
-        });
-    <\/script>
-</body>
-</html>`;
+                const htmlTemplate = '<!DOCTYPE html>\n' +
+'<html lang="id">\n' +
+'<head>\n' +
+'    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+'    <title>' + title + ' - Remaja 18</title>\n' +
+'    <link rel="stylesheet" href="../../style.css">\n' +
+'    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">\n' +
+'</head>\n' +
+'<body>\n' +
+'    <header>\n' +
+'        <nav class="navbar">\n' +
+'            <div class="nav-left">\n' +
+'                <button class="hamburger" id="menu-btn"><i class="fas fa-bars"></i></button>\n' +
+'                <a href="../../index" class="logo">REMAJA<span>18</span></a>\n' +
+'            </div>\n' +
+'            <div class="nav-center">\n' +
+'                <div class="search-box">\n' +
+'                    <input type="text" id="search-input" placeholder="Cari video...">\n' +
+'                    <button><i class="fas fa-search"></i></button>\n' +
+'                </div>\n' +
+'            </div>\n' +
+'        </nav>\n' +
+'    </header>\n' +
+'\n' +
+'    <aside class="sidebar" id="sidebar">\n' +
+'        <div class="sidebar-header"><h3>Menu</h3><button id="close-btn"><i class="fas fa-times"></i></button></div>\n' +
+'        <ul class="category-list"><li><a href="../../index">Semua Video</a></li></ul>\n' +
+'    </aside>\n' +
+'    <div class="overlay" id="overlay"></div>\n' +
+'\n' +
+'    <main class="main-container" style="max-width:1100px; margin: 90px auto; padding: 0 15px;">\n' +
+'        <div style="background:var(--bg-card); border-radius:12px; overflow:hidden; margin-bottom:40px; padding:10px;">\n' +
+'            <div id="video-container" class="thumbnail-wrap" style="position:relative; background:#000;"></div>\n' +
+'            <div style="padding:20px;">\n' +
+'                <span class="category-tag">' + category + '</span>\n' +
+'                <h1 style="font-size:1.6rem; margin-top:10px;">' + title + '</h1>\n' +
+'            </div>\n' +
+'        </div>\n' +
+'\n' +
+'        <h2 style="margin-bottom:20px;"><i class="fas fa-fire" style="color:var(--accent-red);"></i> Rekomendasi Lainnya</h2>\n' +
+'        <div id="related-grid" class="video-grid"></div>\n' +
+'    </main>\n' +
+'\n' +
+'    <footer><div class="footer-content"><p>&copy; 2026 <strong>Remaja 18</strong>. Semua Hak Cipta Dilindungi.</p></div></footer>\n' +
+'\n' +
+'    <script src="../../database.js"><\/script>\n' +
+'    <script>\n' +
+'        document.addEventListener("DOMContentLoaded", () => {\n' +
+'            // 1. Decode URL\n' +
+'            const rawUrl = decodeURIComponent(escape(atob("' + embedBase64 + '")));\n' +
+'            const container = document.getElementById("video-container");\n' +
+'\n' +
+'            // 2. Auto-Detect Player (Video vs Iframe)\n' +
+'            if (rawUrl.match(/\\.(mp4|webm|ogg|m4v)(\\?.*)?$/i)) {\n' +
+'                container.innerHTML = `<video controls style="position:absolute; top:0; left:0; width:100%; height:100%;"><source src="${rawUrl}" type="video/mp4"></video>`;\n' +
+'            } else {\n' +
+'                container.innerHTML = `<iframe src="${rawUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>`;\n' +
+'            }\n' +
+'\n' +
+'            // 3. Sidebar Logic\n' +
+'            const menuBtn = document.getElementById("menu-btn");\n' +
+'            const closeBtn = document.getElementById("close-btn");\n' +
+'            const sidebar = document.getElementById("sidebar");\n' +
+'            const overlay = document.getElementById("overlay");\n' +
+'            menuBtn.onclick = () => { sidebar.classList.add("active"); overlay.classList.add("active"); };\n' +
+'            const hideSide = () => { sidebar.classList.remove("active"); overlay.classList.remove("active"); };\n' +
+'            closeBtn.onclick = hideSide; overlay.onclick = hideSide;\n' +
+'\n' +
+'            // 4. Rekomendasi 5 Video Acak\n' +
+'            const allVids = window.videoDatabase || [];\n' +
+'            const related = allVids.filter(v => v.slug !== "' + slug + '").sort(() => 0.5 - Math.random()).slice(0, 5);\n' +
+'            const grid = document.getElementById("related-grid");\n' +
+'            related.forEach(v => {\n' +
+'                grid.innerHTML += `<a href="../${v.slug}" class="video-card"><div class="thumbnail-wrap"><img src="${v.thumbnail}"></div><div class="video-info"><span class="category-tag">${v.category}</span><h3>${v.title}</h3></div></a>`;\n' +
+'            });\n' +
+'        });\n' +
+'    <\/script>\n' +
+'</body>\n' +
+'</html>';
 
                 const base64Html = btoa(unescape(encodeURIComponent(htmlTemplate)));
                 logMsg("Membuat halaman video...");
