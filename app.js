@@ -79,7 +79,7 @@ function renderVideos() {
   const pageVids = list.slice(start, start + PER_PAGE);
   
   grid.innerHTML = pageVids.map(v => `
-    <a class="video-card" href="/content_video/${v.slug}/">
+    <a class="video-card" href="content_video/${v.slug}/">
       <div class="thumb">
         <img src="${v.thumbnail}" alt="${escapeHtml(v.title)}" 
              onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 320 180%22><rect fill=%22%23a020f0%22 width=%22320%22 height=%22180%22/><text x=%22160%22 y=%2295%22 fill=%22white%22 font-size=%2218%22 text-anchor=%22middle%22>No Thumbnail</text></svg>'">
