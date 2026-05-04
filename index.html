@@ -1,44 +1,71 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Remaja 18 - Streaming Video</title>
-<meta name="description" content="Situs streaming Remaja 18 - tonton video terbaru gratis">
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remaja 18 - Situs Streaming Video</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-<header class="header">
-  <button id="hamburgerBtn" class="hamburger" aria-label="Menu">☰</button>
-  <h1 class="logo">Remaja <span>18</span></h1>
-  <div class="search-wrapper">
-    <input type="text" id="searchInput" placeholder="Cari video...">
-    <button id="searchBtn">🔍</button>
-  </div>
-</header>
 
-<aside id="sidebar" class="sidebar">
-  <div class="sidebar-header">
-    <h3>Kategori</h3>
-    <button id="closeSidebar">✕</button>
-  </div>
-  <ul id="categoryList" class="category-list">
-    <li data-cat="all" class="active">Semua Video</li>
-  </ul>
-</aside>
-<div id="overlay" class="overlay"></div>
+    <header>
+        <nav class="navbar">
+            <div class="nav-left">
+                <button id="menu-toggle" class="hamburger" aria-label="Menu Kategori">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a href="index" class="logo">REMAJA<span>18</span></a>
+            </div>
 
-<main class="main">
-  <h2 id="pageTitle">Video Terbaru</h2>
-  <div id="videoGrid" class="video-grid"></div>
-  <div id="pagination" class="pagination"></div>
-</main>
+            <div class="nav-center">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Cari video favoritmu...">
+                    <button id="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
 
-<footer class="footer">
-  <p>© 2026 Remaja 18 - All Rights Reserved</p>
-</footer>
+            <div class="nav-right">
+                </div>
+        </nav>
+    </header>
 
-<script src="database.js"></script>
-<script src="app.js"></script>
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3>Kategori</h3>
+            <button id="close-menu"><i class="fas fa-times"></i></button>
+        </div>
+        <ul id="category-list">
+            </ul>
+    </aside>
+
+    <div id="overlay" class="overlay"></div>
+
+    <main class="main-container">
+        <section id="video-section">
+            <h2 id="section-title"><i class="fas fa-bolt" style="color: var(--accent-red);"></i> Video Terbaru</h2>
+            
+            <div id="video-grid" class="video-grid">
+                </div>
+
+            <div id="loading-trigger" class="loading-area">
+                <div class="spinner"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 <span class="red-text">Remaja 18</span>. All Rights Reserved.</p>
+            <div class="footer-links">
+                <a href="#">Tentang Kami</a>
+                <a href="#">DMCA</a>
+                <a href="#">Kontak</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="database.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
