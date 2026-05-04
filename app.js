@@ -5,6 +5,15 @@ let currentSearch = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
   await DB.load();
+  
+  // Cek query string ?q= dari halaman lain
+  const urlParams = new URLSearchParams(window.location.search);
+  const q = urlParams.get('q');
+  if (q) {
+    currentSearch = q;
+    document.getElementById('searchInput').value = q;
+  }
+  
   renderCategories();
   renderVideos();
   bindEvents();
