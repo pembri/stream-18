@@ -1,4 +1,3 @@
-// Database loader - fetch index.json yang berisi list semua video
 const DB = {
   videos: [],
   categories: new Set(['all']),
