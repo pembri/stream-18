@@ -87,34 +87,39 @@
         </div>
 
         <div id="dashboard-section" class="admin-container hidden">
-            <h2><i class="fas fa-upload" style="color: var(--accent-red);"></i> Publish Video Baru</h2>
-            
-            <div class="form-group">
-                <label>Judul Video</label>
-                <input type="text" id="video-title" placeholder="Contoh: Cara Membuat Website">
-            </div>
+    <h2><i class="fas fa-upload" style="color: var(--accent-red);"></i> Publish Video Universal</h2>
+    
+    <div class="form-group">
+        <label>Judul Video</label>
+        <input type="text" id="video-title" placeholder="Contoh: Video Keren Banget">
+    </div>
 
-            <div class="form-group">
-                <label>Kategori</label>
-                <select id="video-category">
-                    <option value="" disabled selected>Loading kategori...</option>
-                </select>
-            </div>
+    <div class="form-group">
+        <label>Kategori</label>
+        <select id="video-category">
+            <option value="" disabled selected>Loading kategori...</option>
+        </select>
+    </div>
 
-            <div class="form-group">
-                <label>Atau Kategori Baru (Opsional)</label>
-                <input type="text" id="new-category" placeholder="Ketik kategori baru jika tidak ada di atas">
-            </div>
+    <div class="form-group">
+        <label>Kategori Baru (Opsional)</label>
+        <input type="text" id="new-category" placeholder="Ketik kategori baru jika belum ada">
+    </div>
 
-            <div class="form-group">
-                <label>URL Embed (YouTube)</label>
-                <input type="text" id="embed-url" placeholder="https://www.youtube.com/embed/xxxxxxx">
-            </div>
+    <div class="form-group">
+        <label>URL Video / Embed (Bebas)</label>
+        <input type="text" id="embed-url" placeholder="Paste link .mp4, iframe, atau YouTube">
+    </div>
 
-            <button id="publish-btn" class="btn"><i class="fas fa-rocket"></i> Publish ke GitHub</button>
+    <div class="form-group">
+        <label>URL Thumbnail / Cover</label>
+        <input type="text" id="thumb-url" placeholder="Paste link gambar .jpg / .png">
+        <small style="color:var(--text-gray);">*Khusus YouTube bisa dikosongkan (otomatis).</small>
+    </div>
 
-            <div id="log-area"></div>
-        </div>
+    <button id="publish-btn" class="btn"><i class="fas fa-rocket"></i> Publish ke GitHub</button>
+    <div id="log-area"></div>
+</div>
 
     </main>
 
@@ -219,128 +224,99 @@
 
         // --- LOGIKA PUBLISH ---
         publishBtn.addEventListener('click', async () => {
-            const title = document.getElementById('video-title').value.trim();
-            const newCat = document.getElementById('new-category').value.trim();
-            const selectedCat = categorySelect.value;
-            const embedUrl = document.getElementById('embed-url').value.trim();
+    const title = document.getElementById('video-title').value.trim();
+    const newCat = document.getElementById('new-category').value.trim();
+    const selectedCat = categorySelect.value;
+    const embedUrl = document.getElementById('embed-url').value.trim();
+    const manualThumb = document.getElementById('thumb-url').value.trim();
 
-            const category = newCat !== '' ? newCat : selectedCat;
+    const category = newCat !== '' ? newCat : selectedCat;
 
-            if (!title || !embedUrl) {
-                alert("Judul dan URL Embed wajib diisi!");
-                return;
-            }
+    if (!title || !embedUrl) {
+        alert("Judul dan URL wajib diisi!");
+        return;
+    }
 
-            const ytId = getYoutubeId(embedUrl);
-            if (!ytId) {
-                alert("Format URL YouTube tidak valid!");
-                return;
-            }
+    publishBtn.disabled = true;
+    publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    logArea.innerHTML = '';
 
-            publishBtn.disabled = true;
-            publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-            logArea.innerHTML = '';
+    try {
+        // 1. Logika Thumbnail: Kalo YouTube otomatis, kalo lain manual
+        let thumbnail = manualThumb;
+        const ytId = getYoutubeId(embedUrl);
+        if (ytId && !manualThumb) {
+            thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+        } else if (!manualThumb) {
+            alert("Kalo bukan YouTube, link gambar Thumbnail wajib lu isi cok!");
+            publishBtn.disabled = false;
+            publishBtn.innerHTML = 'Publish ke GitHub';
+            return;
+        }
 
-            try {
-                // 1. Siapkan Data Baru
-                const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-                const thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-                const embedBase64 = btoa(embedUrl); // Sembunyikan URL
-                const id = Date.now().toString();
-                const today = new Date().toISOString().split('T')[0];
+        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        const embedBase64 = btoa(unescape(encodeURIComponent(embedUrl)));
+        const id = Date.now().toString();
+        const today = new Date().toISOString().split('T')[0];
 
-                const newVideoObj = { id, title, slug, category, thumbnail, embedBase64, date: today };
+        // 2. Update Database
+        const newVideoObj = { id, title, slug, category, thumbnail, embedBase64, date: today };
+        currentDatabase.push(newVideoObj);
+        const updatedDbText = 'window.videoDatabase = ' + JSON.stringify(currentDatabase, null, 4) + ';';
+        const base64Db = btoa(unescape(encodeURIComponent(updatedDbText)));
 
-                // 2. Update Array Database
-                currentDatabase.push(newVideoObj);
-                const updatedDbText = 'window.videoDatabase = ' + JSON.stringify(currentDatabase, null, 4) + ';';
-                const base64Db = btoa(unescape(encodeURIComponent(updatedDbText)));
+        logMsg("Update database.js...");
+        await ghFetch('database.js', 'PUT', { message: `Post: ${title}`, content: base64Db, sha: dbSha });
 
-                logMsg("Menyimpan database.js ke GitHub...");
-                // Push Database ke Github
-                await ghFetch('database.js', 'PUT', {
-                    message: `Auto-publish: Tambah video ${title}`,
-                    content: base64Db,
-                    sha: dbSha
-                });
-                logMsg("Database berhasil diupdate.");
-
-                // 3. Generate Template Halaman Video (index.html di dalam folder)
-                logMsg(`Membangun halaman video: /content_video/${slug}/index.html ...`);
-                const videoHtmlTemplate = `<!DOCTYPE html>
+        // 3. Generate Halaman Video yang bisa deteksi Video Player vs Iframe
+        const videoHtmlTemplate = `<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title} - Remaja 18</title>
+    <title>\${title} - Remaja 18</title>
     <link rel="stylesheet" href="../../style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-left">
-                <a href="../../index" class="logo">REMAJA<span>18</span></a>
-            </div>
-        </nav>
-    </header>
-    <main class="main-container" style="max-width: 1000px; margin: 85px auto;">
-        <div style="background:var(--bg-card); padding:10px; border-radius:12px; margin-bottom:30px;">
-            <div class="thumbnail-wrap" id="video-container">
-                </div>
-            <div class="video-info" style="padding:20px;">
-                <span class="category-tag">${category}</span>
-                <h1 style="font-size:1.5rem; margin-top:10px;">${title}</h1>
+    <header><nav class="navbar"><div class="nav-left"><a href="../../index" class="logo">REMAJA<span>18</span></a></div></nav></header>
+    <main class="main-container" style="max-width: 1000px; margin: 85px auto; padding: 0 15px;">
+        <div style="background:var(--bg-card); border-radius:12px; overflow:hidden;">
+            <div id="video-wrapper" style="position:relative; padding-top:56.25%; background:#000;"></div>
+            <div style="padding:20px;">
+                <span class="category-tag">\${category}</span>
+                <h1 style="font-size:1.5rem; margin-top:10px;">\${title}</h1>
             </div>
         </div>
-
-        <h2><i class="fas fa-fire" style="color:var(--accent-red);"></i> Rekomendasi Lainnya</h2>
-        <div id="related-grid" class="video-grid"></div>
     </main>
-
-    <script src="../../database.js"><\/script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // 1. Decode dan Tampilkan Video
-            const embedB64 = "${embedBase64}";
-            const iframeSrc = atob(embedB64);
-            document.getElementById('video-container').innerHTML = \`<iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" src="\${iframeSrc}" allowfullscreen></iframe>\`;
-
-            // 2. Render 5 Rekomendasi
-            const allVids = window.videoDatabase || [];
-            // Ambil 5 video secara acak yang bukan video saat ini
-            const related = allVids.filter(v => v.slug !== "${slug}").sort(() => 0.5 - Math.random()).slice(0, 5);
-            
-            const grid = document.getElementById('related-grid');
-            related.forEach(v => {
-                grid.innerHTML += \`
-                    <a href="../\${v.slug}" class="video-card">
-                        <div class="thumbnail-wrap">
-                            <img src="\${v.thumbnail}" alt="\${v.title}">
-                        </div>
-                        <div class="video-info">
-                            <span class="category-tag">\${v.category}</span>
-                            <h3>\${v.title}</h3>
-                        </div>
-                    </a>
-                \`;
-            });
-        });
+        const rawUrl = decodeURIComponent(escape(atob("\${embedBase64}")));
+        const wrapper = document.getElementById('video-wrapper');
+        
+        // Kalo link berakhiran .mp4, pake player video biasa
+        if (rawUrl.match(/\\.(mp4|webm|ogg|m4v)(\\?.*)?$/i)) {
+            wrapper.innerHTML = \`<video controls style="position:absolute; top:0; left:0; width:100%; height:100%;"><source src="\${rawUrl}" type="video/mp4"></video>\`;
+        } else {
+            // Kalo link embed/youtube, pake iframe
+            wrapper.innerHTML = \`<iframe src="\${rawUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>\`;
+        }
     <\/script>
 </body>
 </html>`;
 
-                const base64Html = btoa(unescape(encodeURIComponent(videoHtmlTemplate)));
+        const base64Html = btoa(unescape(encodeURIComponent(videoHtmlTemplate)));
+        await ghFetch(`content_video/\${slug}/index.html`, 'PUT', { message: `Halaman: \${slug}`, content: base64Html });
 
-                // Push File Halaman Video ke Github
-                await ghFetch(`content_video/${slug}/index.html`, 'PUT', {
-                    message: `Auto-publish: Generate halaman ${slug}`,
-                    content: base64Html
-                });
+        logMsg("Selesai! Konten udah tayang.");
+        fetchDatabase(); 
+    } catch (err) {
+        logMsg("Error pas upload: " + err.message, true);
+    } finally {
+        publishBtn.disabled = false;
+        publishBtn.innerHTML = '<i class="fas fa-rocket"></i> Publish ke GitHub';
+    }
+});
 
-                logMsg("Halaman video berhasil dibuat!");
-                logMsg(`<b>SUKSES!</b> Video "${title}" telah dipublish.`);
-                
+
                 // Reset form
                 document.getElementById('video-title').value = '';
                 document.getElementById('new-category').value = '';
