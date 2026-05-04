@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Remaja 18</title>
+    <style>
+        body { background: #121212; color: #fff; font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; background: #222; color: white; border: 1px solid #444; border-radius: 5px; }
+        button { background: #e50914; color: white; border: none; padding: 15px; width: 100%; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .status { margin-top: 20px; padding: 10px; border-radius: 5px; display: none;}
+    </style>
+</head>
+<body>
+
+    <h2>Posting Video Baru</h2>
+    <div id="statusBox" class="status"></div>
+
+    <input type="text" id="ghToken" placeholder="GitHub Personal Access Token" required>
+    <input type="text" id="ghRepo" placeholder="Format: username/namarepo" required>
+
+    <input type="text" id="vidTitle" placeholder="Judul Video" required>
+    
+    <label>Kategori (Pilih atau Ketik Baru):</label>
+    <input type="text" id="vidCategory" placeholder="Contoh: Action, Romance" required>
+
+    <label>Tipe Konten:</label>
+    <select id="vidType">
+        <option value="embed">Embed Code (Iframe)</option>
+        <option value="url">URL Video Langsung (.mp4 dll)</option>
+    </select>
+
+    <textarea id="vidContent" rows="4" placeholder="Masukkan kode embed atau URL video di sini..." required></textarea>
+
+    <button onclick="publishPost()">🚀 PUBLISH SEKARANG</button>
+
+    <script>
+        function createSlug(text) {
+            return text.toString().toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]+/g, '')
+                .replace(/\-\-+/g, '-')
+                .replace(/^-+/, '')
+                .replace(/-+$/, '');
+        }
+
+        async function publishPost() {
+            const token = document.getElementById("ghToken").value;
+            const repo = document.getElementById("ghRepo").value;
+            const title = document.getElementById("vidTitle").value;
+            const category = document.getElementById("vidCategory").value;
+            const type = document.getElementById("vidType").value;
+            const content = document.getElementById("vidContent").value;
+            const slug = createSlug(title);
+            const statusBox = document.getElementById("statusBox");
+
+            if(!token || !repo || !title || !content) {
+                alert("Lengkapi semua data!"); return;
+            }
+
+            statusBox.style.display = "block";
+            statusBox.style.background = "#555";
+            statusBox.innerText = "Memproses... Mengambil database.js...";
+
+            try {
+                // 1. Fetch database.js saat ini
+                let dbUrl = `https://api.github.com/repos/${repo}/contents/database.js`;
+                let dbRes = await fetch(dbUrl, { headers: { "Authorization": `token ${token}` }});
+                let dbData = await dbRes.json();
+                
+                let contentDecoded = decodeURIComponent(escape(atob(dbData.content)));
+                // Hapus deklarasi const dan parse JSON
+                let jsonString = contentDecoded.replace('const videoDB = ', '').replace(';', '').trim();
+                let videoDB = JSON.parse(jsonString || "[]");
+
+                // 2. Buat Objek Baru
+                const newVideo = { slug, title, category, type, content, date: new Date().toISOString() };
+                videoDB.push(newVideo); // Push ke array
+
+                // 3. Update database.js ke GitHub
+                let newDbContent = btoa(unescape(encodeURIComponent(`const videoDB = ${JSON.stringify(videoDB, null, 4)};`)));
+                await fetch(dbUrl, {
+                    method: 'PUT',
+                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: `Update DB: Tambah ${title}`,
+                        content: newDbContent,
+                        sha: dbData.sha
+                    })
+                });
+
+                statusBox.innerText = "Database terupdate! Membuat Halaman Video (Clean URL)...";
+
+                // 4. Bikin Template Halaman Video Khusus
+                const htmlTemplate = `
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title} - Remaja 18</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .player-container { width: 100%; max-width: 800px; margin: 20px auto; background: #000; aspect-ratio: 16/9; }
+        iframe, video { width: 100%; height: 100%; }
+        .details { max-width: 800px; margin: auto; padding: 20px; }
+        .details h1 { font-size: 24px; color: var(--primary); margin-bottom: 10px;}
+        .details span { background: #333; padding: 5px 10px; border-radius: 5px; font-size: 14px;}
+        .recommendation { max-width: 800px; margin: 40px auto; padding: 20px;}
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">REMAJA 18</a>
+    </header>
+    
+    <div class="player-container">
+        ${type === 'embed' ? content : `<video controls src="${content}"></video>`}
+    </div>
+
+    <div class="details">
+        <h1>${title}</h1>
+        <span>Kategori: ${category}</span>
+    </div>
+
+    <div class="recommendation">
+        <h3>Rekomendasi Lainnya</h3>
+        <div class="video-grid" id="rekomendasiGrid"></div>
+    </div>
+
+    <script src="/database.js"><\/script>
+    <script>
+        // Logika 5 Rekomendasi
+        let recs = videoDB.filter(v => v.slug !== "${slug}").sort(() => 0.5 - Math.random()).slice(0, 5);
+        let grid = document.getElementById("rekomendasiGrid");
+        recs.forEach(v => {
+            grid.innerHTML += \`<a href="/content_video/\${v.slug}" class="video-card">
+                <div class="thumbnail">▶</div>
+                <div class="info"><h4>\${v.title}</h4><span>\${v.category}</span></div>
+            </a>\`;
+        });
+    <\/script>
+</body>
+</html>`;
+
+                // 5. Upload File index.html ke dalam folder content_video/slug
+                let pageUrl = `https://api.github.com/repos/${repo}/contents/content_video/${slug}/index.html`;
+                let newPageContent = btoa(unescape(encodeURIComponent(htmlTemplate)));
+                
+                await fetch(pageUrl, {
+                    method: 'PUT',
+                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: `Create Page: ${title}`,
+                        content: newPageContent
+                    })
+                });
+
+                statusBox.style.background = "#28a745";
+                statusBox.innerText = "Sukses Publish! Clean URL berhasil dibuat.";
+                
+                // Reset form
+                document.getElementById("vidTitle").value = '';
+                document.getElementById("vidContent").value = '';
+
+            } catch (err) {
+                statusBox.style.background = "#dc3545";
+                statusBox.innerText = "Error: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
