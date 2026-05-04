@@ -1,35 +1,232 @@
 :root {
-  --bg-color: #121212;
-  --card-bg: #1e1e1e;
-  --primary: #e50914; /* Merah ala streaming */
-  --text: #ffffff;
-  --text-dim: #b3b3b3;
+  --bg-color: #121212; /* Latar belakang super gelap */
+  --card-bg: #1e1e1e;   /* Latar belakang kartu video */
+  --primary: #e50914;   /* Warna merah khas streaming untuk aksen */
+  --text: #ffffff;      /* Warna teks utama putih */
+  --text-dim: #b3b3b3;  /* Warna teks redup untuk detail */
+  --header-bg: #000000; /* Warna header hitam pekat */
 }
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-body { background-color: var(--bg-color); color: var(--text); }
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font modern yang bersih */
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text);
+  line-height: 1.6;
+}
 
 /* Header & Hamburger */
-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #000; position: sticky; top: 0; z-index: 100;}
-.logo { font-size: 24px; font-weight: bold; color: var(--primary); text-decoration: none; }
-.search-bar input { padding: 8px 15px; border-radius: 20px; border: none; outline: none; background: #333; color: white; width: 200px; }
-.hamburger { cursor: pointer; font-size: 24px; }
-.menu-overlay { position: fixed; top: 0; left: -250px; width: 250px; height: 100vh; background: #111; transition: 0.3s; z-index: 999; padding: 60px 20px; }
-.menu-overlay.active { left: 0; }
-.menu-overlay h3 { margin-bottom: 15px; color: var(--text-dim); }
-.category-list button { display: block; width: 100%; text-align: left; background: none; border: none; color: white; padding: 10px 0; cursor: pointer; font-size: 16px; border-bottom: 1px solid #333;}
-.close-menu { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: var(--header-bg);
+  position: sticky; /* Tetap di atas saat scroll */
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid #333;
+}
+
+.left-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.hamburger {
+  cursor: pointer;
+  font-size: 28px;
+  color: var(--text);
+  transition: 0.3s;
+}
+
+.hamburger:hover {
+  color: var(--primary);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--primary); /* Logo merah */
+  text-decoration: none;
+  letter-spacing: -1px;
+}
+
+.logo span {
+  color: var(--text); /* "18" dalam warna putih */
+}
+
+.search-bar input {
+  padding: 10px 18px;
+  border-radius: 25px;
+  border: 1px solid #333;
+  outline: none;
+  background: #222;
+  color: white;
+  width: 250px;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.search-bar input:focus {
+  border-color: var(--primary);
+  background: #333;
+}
+
+/* Menu Hamburger Overlay */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: -300px; /* Sembunyikan secara default */
+  width: 300px;
+  height: 100vh;
+  background: #111;
+  transition: 0.4s ease-in-out;
+  z-index: 999;
+  padding: 80px 30px;
+  border-right: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-overlay.active {
+  left: 0; /* Tampilkan menu */
+}
+
+.menu-overlay h3 {
+  font-size: 20px;
+  margin-bottom: 25px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.category-list button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 15px 0;
+  cursor: pointer;
+  font-size: 16px;
+  border-bottom: 1px solid #222;
+  transition: 0.3s;
+}
+
+.category-list button:hover {
+  color: var(--primary);
+  padding-left: 10px; /* Efek sedikit bergeser ke kanan */
+}
+
+.close-menu {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  cursor: pointer;
+  font-size: 32px;
+  color: var(--text-dim);
+  transition: 0.3s;
+}
+
+.close-menu:hover {
+  color: var(--primary);
+}
+
+/* Area Konten Utama */
+main {
+  padding: 30px 20px;
+  max-width: 1400px;
+  margin: auto;
+}
 
 /* Grid Video */
-main { padding: 20px; }
-.video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-.video-card { background: var(--card-bg); border-radius: 8px; overflow: hidden; text-decoration: none; color: white; transition: transform 0.2s; display: block; }
-.video-card:hover { transform: scale(1.02); }
-.thumbnail { width: 100%; height: 150px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #555; }
-.info { padding: 10px; }
-.info h4 { font-size: 16px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-.info span { font-size: 12px; color: var(--primary); border: 1px solid var(--primary); padding: 2px 5px; border-radius: 4px;}
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Kisi responsif */
+  gap: 25px;
+}
+
+/* Kartu Video Dasar (Placeholder untuk JS nanti) */
+.video-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: white;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: block;
+}
+
+.video-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.thumbnail-placeholder {
+  width: 100%;
+  height: 180px;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: #555;
+}
+
+.info {
+  padding: 15px;
+}
+
+.info h4 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.info .cat-tag {
+  font-size: 12px;
+  color: var(--primary);
+  background: rgba(229, 9, 20, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
 
 /* Pagination */
-.pagination { text-align: center; margin: 30px 0; }
-.pagination button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-.pagination button:disabled { background: #555; cursor: not-allowed; }
+.pagination {
+  text-align: center;
+  margin: 50px 0;
+}
+
+.pagination button {
+  padding: 12px 30px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: 0.3s;
+  box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+}
+
+.pagination button:hover {
+  background: #b20710;
+  box-shadow: 0 5px 15px rgba(229, 9, 20, 0.5);
+}
+
+.pagination button:disabled {
+  background: #555;
+  cursor: not-allowed;
+  box-shadow: none;
+}
