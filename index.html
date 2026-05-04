@@ -1,38 +1,43 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Remaja 18 - Streaming Video</title>
+    <title>Remaja 18 - Streaming Video Premium</title>
     <link rel="stylesheet" href="/style.css">
-</head>
+    </head>
 <body>
 
     <header>
-        <div class="hamburger" onclick="toggleMenu()">☰</div>
-        <a href="/" class="logo">REMAJA 18</a>
+        <div class="left-header">
+            <div class="hamburger" id="hamburgerMenu">☰</div>
+            <a href="/" class="logo">REMAJA <span>18</span></a>
+        </div>
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Cari video..." onkeyup="handleSearch()">
+            <input type="text" id="searchInput" placeholder="Cari video...">
         </div>
     </header>
 
     <div class="menu-overlay" id="menuOverlay">
-        <div class="close-menu" onclick="toggleMenu()">×</div>
+        <div class="close-menu" id="closeMenu">×</div>
         <h3>Kategori</h3>
         <div class="category-list" id="categoryList">
-            </div>
+            <button>Semua Kategori</button>
+            <button>Terbaru</button>
+            <button>Romansa</button>
+            <button>Aksi</button>
+            <button>Komedi</button>
+        </div>
     </div>
 
     <main>
         <div class="video-grid" id="videoGrid">
             </div>
+        
         <div class="pagination" id="paginationContainer">
-            <button id="loadMoreBtn" onclick="loadMore()">Muat Lebih Banyak</button>
+            <button id="loadMoreBtn">Muat Lebih Banyak</button>
         </div>
     </main>
 
-    <script src="/database.js"></script>
-    <script src="/app.js"></script>
-</body>
+    </body>
 </html>
