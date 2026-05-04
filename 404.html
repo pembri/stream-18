@@ -1,24 +1,78 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>404 - Remaja 18</title>
-<link rel="stylesheet" href="/style.css">
-<script>
-// Redirect handler untuk clean URL
-const path = location.pathname;
-// Kalau URL berakhir tanpa slash, coba tambah slash
-if (path.startsWith('/content_video/') && !path.endsWith('/') && !path.endsWith('.html')) {
-  location.replace(path + '/');
-}
-</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Tidak Ditemukan | Remaja 18</title>
+    <link rel="stylesheet" href="/remaja-18/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            padding: 20px;
+            background-color: var(--bg-main);
+        }
+        .error-container h1 {
+            font-size: 8rem;
+            color: var(--accent-red);
+            margin-bottom: 0;
+            line-height: 1;
+            text-shadow: 0 0 20px rgba(229, 9, 20, 0.4);
+        }
+        .error-container h2 {
+            font-size: 2rem;
+            color: var(--text-white);
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        .error-container p {
+            font-size: 1.1rem;
+            color: var(--text-gray);
+            margin-bottom: 40px;
+            max-width: 500px;
+        }
+        .btn-home {
+            background: var(--accent-red);
+            color: white;
+            text-decoration: none;
+            padding: 15px 35px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-home:hover {
+            background: var(--accent-red-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+        }
+    </style>
 </head>
 <body>
-<div style="text-align:center;padding:80px 20px">
-  <h1 style="font-size:80px;color:#a020f0;margin:0">404</h1>
-  <h2>Halaman tidak ditemukan</h2>
-  <p style="color:#888;margin:20px 0">Video yang kamu cari mungkin sudah dihapus atau URL salah.</p>
-  <a href="/" style="display:inline-block;background:linear-gradient(135deg,#a020f0,#e91e63);color:#fff;padding:12px 30px;border-radius:25px;text-decoration:none;margin-top:20px">← Kembali ke Beranda</a>
-</div>
+
+    <div class="error-container">
+        <h1>404</h1>
+        <h2>Waduh, Kesasar Bang?</h2>
+        <p>Video atau halaman yang lu cari nggak ada di sini, salah ketik URL, atau mungkin videonya udah dihapus.</p>
+        <a href="/remaja-18/index" class="btn-home">
+            <i class="fas fa-home"></i> Balik ke Beranda
+        </a>
+    </div>
+
+    <script>
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     setTimeout(() => {
+        //         window.location.href = '/remaja-18/index';
+        //     }, 5000);
+        // });
+    </script>
 </body>
 </html>
