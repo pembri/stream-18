@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Remaja 18 - Streaming Video Premium</title>
     <link rel="stylesheet" href="./style.css">
-    </head>
+</head>
 <body>
 
     <header>
@@ -14,19 +14,15 @@
             <a href="/" class="logo">REMAJA <span>18</span></a>
         </div>
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Cari video...">
+            <input type="text" id="searchInput" placeholder="Cari judul video...">
         </div>
     </header>
 
     <div class="menu-overlay" id="menuOverlay">
-        <div class="close-menu" id="closeMenu">×</div>
+        <div class="close-menu" id="closeMenu">&times;</div>
         <h3>Kategori</h3>
         <div class="category-list" id="categoryList">
-            <button>Semua Kategori</button>
-            <button>Terbaru</button>
-            <button>Romansa</button>
-            <button>Aksi</button>
-            <button>Komedi</button>
+            <button>Memuat kategori...</button>
         </div>
     </div>
 
@@ -35,10 +31,11 @@
             </div>
         
         <div class="pagination" id="paginationContainer">
-            <button id="loadMoreBtn">Muat Lebih Banyak</button>
+            <button id="loadMoreBtn" style="display: none;">Muat Lebih Banyak</button>
         </div>
     </main>
-        <script src="./database.js"></script>
-        <script src="./app.js"></script>
-    </body>
+
+    <script src="./database.js"></script>
+    <script src="./app.js"></script>
+</body>
 </html>
