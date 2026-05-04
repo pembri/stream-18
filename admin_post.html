@@ -1,123 +1,395 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Remaja 18</title>
-    <style>
-        body { background: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .admin-container { max-width: 600px; margin: auto; background: #1e1e1e; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: #e50914; margin-bottom: 20px; }
-        label { display: block; margin-top: 15px; color: #b3b3b3; font-size: 14px; }
-        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 5px; box-sizing: border-box; outline: none; }
-        input:focus, select:focus, textarea:focus { border-color: #e50914; }
-        button { background: #e50914; color: white; border: none; padding: 15px; width: 100%; margin-top: 25px; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 16px; transition: 0.3s; }
-        button:hover { background: #b20710; }
-        .status { margin-top: 20px; padding: 15px; border-radius: 5px; display: none; text-align: center; font-weight: bold; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Remaja 18</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
-<div class="admin-container">
-    <h2>Post Video Baru</h2>
-    <div id="statusBox" class="status"></div>
-
+<div class="admin-wrap" id="loginBox">
+  <h1>🔐 Login Admin</h1>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="adminPass" placeholder="Masukkan password admin">
+  </div>
+  <div class="form-group">
     <label>GitHub Token</label>
-    <input type="password" id="ghToken" placeholder="ghp_xxx" required>
-
-    <label>Repository (username/repo)</label>
-    <input type="text" id="ghRepo" placeholder="pembri/remaja-18" required>
-
-    <label>Judul Video</label>
-    <input type="text" id="vidTitle" placeholder="Masukkan judul..." required>
-    
-    <label>Kategori</label>
-    <input type="text" id="vidCategory" placeholder="Aksi, Pijat, dll" required>
-
-    <label>Tipe Konten</label>
-    <select id="vidType">
-        <option value="embed">Embed Iframe</option>
-        <option value="url">URL Video (.mp4)</option>
-    </select>
-
-    <label>Konten (Iframe atau Link)</label>
-    <textarea id="vidContent" rows="5" placeholder="Paste di sini..." required></textarea>
-
-    <button id="publishBtn" onclick="publishPost()">🚀 PUBLISH SEKARANG</button>
+    <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx">
+  </div>
+  <div class="form-group">
+    <label>Username GitHub</label>
+    <input type="text" id="ghUser" placeholder="username">
+  </div>
+  <div class="form-group">
+    <label>Nama Repository</label>
+    <input type="text" id="ghRepo" placeholder="remaja18">
+  </div>
+  <div class="form-group">
+    <label>Branch (default: main)</label>
+    <input type="text" id="ghBranch" value="main">
+  </div>
+  <button class="btn-primary" onclick="login()">Masuk</button>
 </div>
 
+<div class="admin-wrap" id="postBox" style="display:none">
+  <h1>📤 Posting Video</h1>
+  <div id="alertBox"></div>
+  
+  <div class="form-group">
+    <label>Judul Video *</label>
+    <input type="text" id="vTitle" placeholder="Contoh: Tutorial keren banget">
+  </div>
+  
+  <div class="form-group">
+    <label>Kategori *</label>
+    <input type="text" id="vCategory" list="catList" placeholder="Pilih atau ketik kategori baru">
+    <datalist id="catList"></datalist>
+  </div>
+  
+  <div class="form-group">
+    <label>URL Video / Embed Code *</label>
+    <textarea id="vEmbed" placeholder="Paste URL embed atau iframe code di sini..."></textarea>
+    <small style="color:#888">Contoh: https://www.youtube.com/embed/abc123 atau full iframe</small>
+  </div>
+  
+  <div class="form-group">
+    <label>Thumbnail (Auto-Detect / Manual URL)</label>
+    <input type="text" id="vThumb" placeholder="Otomatis terisi, atau paste URL gambar manual">
+    <img id="thumbPreview" class="thumb-preview" alt="Preview">
+  </div>
+  
+  <button class="btn-primary" id="publishBtn" onclick="publishVideo()">🚀 Publish Video</button>
+  <button class="btn-primary" style="margin-top:10px;background:#666" onclick="logout()">Logout</button>
+</div>
+
+<script src="/database.js"></script>
 <script>
-    function createSlug(text) {
-        return text.toString().toLowerCase().trim()
-            .replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')
-            .replace(/^-+/, '').replace(/-+$/, '');
+const ADMIN_PASS = 'remaja18admin'; // Ganti password ini!
+let GH = {};
+
+document.getElementById('vEmbed').addEventListener('input', autoDetectThumb);
+
+function login() {
+  const pass = document.getElementById('adminPass').value;
+  const token = document.getElementById('ghToken').value.trim();
+  const user = document.getElementById('ghUser').value.trim();
+  const repo = document.getElementById('ghRepo').value.trim();
+  const branch = document.getElementById('ghBranch').value.trim() || 'main';
+  
+  if (pass !== ADMIN_PASS) return alert('Password salah!');
+  if (!token || !user || !repo) return alert('Lengkapi data GitHub!');
+  
+  GH = { token, user, repo, branch };
+  sessionStorage.setItem('gh', JSON.stringify(GH));
+  
+  document.getElementById('loginBox').style.display = 'none';
+  document.getElementById('postBox').style.display = 'block';
+  loadCategories();
+}
+
+function logout() {
+  sessionStorage.clear();
+  location.reload();
+}
+
+async function loadCategories() {
+  await DB.load();
+  const dl = document.getElementById('catList');
+  dl.innerHTML = Array.from(DB.categories).filter(c=>c!=='all').map(c=>`<option value="${c}">`).join('');
+}
+
+function autoDetectThumb() {
+  const embed = document.getElementById('vEmbed').value;
+  const thumb = detectThumbnail(embed);
+  if (thumb) {
+    document.getElementById('vThumb').value = thumb;
+    showThumbPreview(thumb);
+  }
+}
+
+function detectThumbnail(embed) {
+  // YouTube
+  let m = embed.match(/(?:youtube\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (m) return `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`;
+  
+  // Vimeo (nanti perlu fetch async, sementara skip)
+  
+  // Doodstream / dood.* 
+  m = embed.match(/(?:dood\.[a-z]+|d000d\.com|doodstream\.com)\/[ed]\/([a-z0-9]+)/i);
+  if (m) return `https://img.doodcdn.com/snaps/${m[1]}.jpg`;
+  
+    // Streamtape
+  m = embed.match(/streamtape\.com\/[ev]\/([a-zA-Z0-9]+)/);
+  if (m) return `https://streamtape.com/thumb/${m[1]}.jpg`;
+  
+  // Filemoon
+  m = embed.match(/filemoon\.[a-z]+\/[ed]\/([a-z0-9]+)/i);
+  if (m) return `https://filemoon.sx/i/${m[1]}.jpg`;
+  
+  // Streamwish
+  m = embed.match(/streamwish\.[a-z]+\/[ed]\/([a-z0-9]+)/i);
+  if (m) return `https://streamwish.to/i/${m[1]}.jpg`;
+  
+  // Mixdrop
+  m = embed.match(/mixdrop\.[a-z]+\/[ef]\/([a-zA-Z0-9]+)/);
+  if (m) return `https://mixdrop.co/i/${m[1]}.jpg`;
+  
+  // Vimeo (perlu fetch async, di-handle terpisah)
+  m = embed.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (m) {
+    fetchVimeoThumb(m[1]);
+    return ''; 
+  }
+  
+  return '';
+}
+
+async function fetchVimeoThumb(id) {
+  try {
+    const res = await fetch(`https://vimeo.com/api/v2/video/${id}.json`);
+    const data = await res.json();
+    const url = data[0]?.thumbnail_large;
+    if (url) {
+      document.getElementById('vThumb').value = url;
+      showThumbPreview(url);
     }
+  } catch(e) { console.warn('Vimeo fetch error', e); }
+}
 
-    function utf8_to_b64(str) { return window.btoa(unescape(encodeURIComponent(str))); }
-    function b64_to_utf8(str) { return decodeURIComponent(escape(window.atob(str))); }
+function showThumbPreview(url) {
+  const img = document.getElementById('thumbPreview');
+  img.src = url;
+  img.classList.add('show');
+  img.onerror = () => img.classList.remove('show');
+}
 
-    async function publishPost() {
-        const token = document.getElementById("ghToken").value;
-        const repo = document.getElementById("ghRepo").value;
-        const title = document.getElementById("vidTitle").value;
-        const category = document.getElementById("vidCategory").value;
-        const type = document.getElementById("vidType").value;
-        const content = document.getElementById("vidContent").value;
-        const slug = createSlug(title);
-        const statusBox = document.getElementById("statusBox");
+document.getElementById('vThumb').addEventListener('input', e => {
+  if (e.target.value) showThumbPreview(e.target.value);
+});
 
-        statusBox.style.display = "block";
-        statusBox.style.background = "#333";
-        statusBox.innerText = "⏳ Menghubungkan ke GitHub...";
+// ====== SLUGIFY ======
+function slugify(text) {
+  return text.toString().toLowerCase().trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 80);
+}
 
-        try {
-            // 1. Ambil database.js
-            let dbUrl = `https://api.github.com/repos/${repo}/contents/database.js`;
-            let dbRes = await fetch(dbUrl, { headers: { "Authorization": `token ${token}` }});
-            if (!dbRes.ok) throw new Error("Gagal ambil database.js. Cek Repository & Token!");
-            
-            let dbData = await dbRes.json();
-            let contentRaw = b64_to_utf8(dbData.content);
-            
-            // BERSIHKAN STRING BIAR JADI JSON MURNI
-            let jsonClean = contentRaw.replace(/const\s+videoDB\s*=\s*/, "").replace(/;(?=[^;]*$)/, "").trim();
-            let videoDB = JSON.parse(jsonClean || "[]");
+// ====== EMBED NORMALIZER ======
+function buildEmbedHtml(input) {
+  const trimmed = input.trim();
+  // Kalau sudah iframe lengkap
+  if (/<iframe/i.test(trimmed)) return trimmed;
+  // Kalau cuma URL, bungkus jadi iframe
+  return `<iframe src="${trimmed}" allowfullscreen allow="autoplay; encrypted-media" frameborder="0"></iframe>`;
+}
 
-            // 2. Tambah Video Baru
-            videoDB.push({ slug, title, category, type, content, date: new Date().toISOString() });
+// ====== PUBLISH ======
+async function publishVideo() {
+  const title = document.getElementById('vTitle').value.trim();
+  const category = document.getElementById('vCategory').value.trim();
+  const embedRaw = document.getElementById('vEmbed').value.trim();
+  const thumbnail = document.getElementById('vThumb').value.trim();
+  
+  if (!title || !category || !embedRaw) {
+    return showAlert('Lengkapi semua field wajib!', 'error');
+  }
+  
+  const btn = document.getElementById('publishBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Publishing...';
+  
+  try {
+    const slug = slugify(title) + '-' + Date.now().toString(36);
+    const date = new Date().toISOString();
+    const embedHtml = buildEmbedHtml(embedRaw);
+    const finalThumb = thumbnail || `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 180'><rect fill='%23a020f0' width='320' height='180'/><text x='160' y='95' fill='white' font-size='18' text-anchor='middle'>Remaja 18</text></svg>`;
+    
+    const videoData = { slug, title, category, embed: embedHtml, thumbnail: finalThumb, date };
+    
+    showAlert('📥 Mengambil database...', 'success');
+    
+    // 1. Ambil index.json existing
+    let videos = [];
+    let indexSha = null;
+    try {
+      const idxRes = await ghGet('content_video/index.json');
+      if (idxRes) {
+        videos = JSON.parse(decodeURIComponent(escape(atob(idxRes.content.replace(/\s/g,'')))));
+        indexSha = idxRes.sha;
+      }
+    } catch(e) { console.log('index.json belum ada, akan dibuat baru'); }
+    
+    // 2. Tambahkan video baru di paling depan
+    videos.unshift(videoData);
+    
+    // 3. Generate halaman detail HTML
+    const detailHtml = generateDetailPage(videoData, videos);
+    
+    showAlert('📝 Membuat halaman video...', 'success');
+    
+    // 4. Commit halaman detail
+    await ghPut(
+      `content_video/${slug}/index.html`,
+      detailHtml,
+      `Add video: ${title}`
+    );
+    
+    showAlert('💾 Update database...', 'success');
+    
+    // 5. Commit/update index.json
+    await ghPut(
+      'content_video/index.json',
+      JSON.stringify(videos, null, 2),
+      `Update index for: ${title}`,
+      indexSha
+    );
+    
+    showAlert(`✅ Video berhasil dipublish! URL: /content_video/${slug}/`, 'success');
+    
+    // Reset form
+    document.getElementById('vTitle').value = '';
+    document.getElementById('vEmbed').value = '';
+    document.getElementById('vThumb').value = '';
+    document.getElementById('thumbPreview').classList.remove('show');
+    
+    await loadCategories();
+    
+  } catch (err) {
+    console.error(err);
+    showAlert('❌ Gagal publish: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Publish Video';
+  }
+}
 
-            // 3. Update database.js
-            statusBox.innerText = "⏳ Update Database...";
-            await fetch(dbUrl, {
-                method: 'PUT',
-                headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    message: `Add: ${title}`,
-                    content: utf8_to_b64(`const videoDB = ${JSON.stringify(videoDB, null, 4)};`),
-                    sha: dbData.sha
-                })
-            });
+// ====== GITHUB API ======
+async function ghGet(path) {
+  const url = `https://api.github.com/repos/${GH.user}/${GH.repo}/contents/${path}?ref=${GH.branch}`;
+  const res = await fetch(url, {
+    headers: { 'Authorization': `token ${GH.token}`, 'Accept': 'application/vnd.github.v3+json' }
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error('GitHub GET failed: ' + res.status);
+  return await res.json();
+}
 
-            // 4. Buat Halaman Video (Clean URL)
-            statusBox.innerText = "⏳ Membuat Halaman Video...";
-            const htmlContent = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title}</title><link rel="stylesheet" href="../../style.css"></head><body style="background:#121212;color:white;text-align:center;font-family:sans-serif;"><header style="padding:20px;border-bottom:1px solid #333;"><a href="/" style="color:#e50914;text-decoration:none;font-weight:bold;font-size:24px;">REMAJA 18</a></header><div style="max-width:800px;margin:20px auto;aspect-ratio:16/9;background:#000;">${type === 'embed' ? content : `<video controls src="${content}" style="width:100%;height:100%;"></video>`}</div><h1>${title}</h1><p>Kategori: ${category}</p><hr><a href="/" style="color:white;">Kembali ke Beranda</a><script src="../../database.js"><\/script></body></html>`;
+async function ghPut(path, content, message, sha = null) {
+  const url = `https://api.github.com/repos/${GH.user}/${GH.repo}/contents/${path}`;
+  const body = {
+    message,
+    content: btoa(unescape(encodeURIComponent(content))),
+    branch: GH.branch
+  };
+  if (sha) body.sha = sha;
+  
+  // Kalau sha belum dikasih, coba cek file existing
+  if (!sha) {
+    const existing = await ghGet(path);
+    if (existing && existing.sha) body.sha = existing.sha;
+  }
+  
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${GH.token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || 'GitHub PUT failed');
+  }
+  return await res.json();
+}
 
-            await fetch(`https://api.github.com/repos/${repo}/contents/content_video/${slug}/index.html`, {
-                method: 'PUT',
-                headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    message: `Page: ${title}`,
-                    content: utf8_to_b64(htmlContent)
-                })
-            });
+// ====== GENERATE HALAMAN DETAIL ======
+function generateDetailPage(video, allVideos) {
+  const recommendations = allVideos
+    .filter(v => v.slug !== video.slug)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 5);
+  
+  const recHtml = recommendations.map(v => `
+    <a class="video-card" href="/content_video/${v.slug}/">
+      <div class="thumb"><img src="${v.thumbnail}" alt="${escapeHtml(v.title)}"></div>
+      <div class="video-info">
+        <h3>${escapeHtml(v.title)}</h3>
+        <span class="cat">${escapeHtml(v.category)}</span>
+      </div>
+    </a>
+  `).join('');
+  
+  return `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(video.title)} - Remaja 18</title>
+<meta name="description" content="${escapeHtml(video.title)} - Kategori ${escapeHtml(video.category)}">
+<meta property="og:title" content="${escapeHtml(video.title)}">
+<meta property="og:image" content="${video.thumbnail}">
+<meta property="og:type" content="video.other">
+<link rel="canonical" href="/content_video/${video.slug}/">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="header">
+  <a href="/" style="text-decoration:none"><h1 class="logo">Remaja <span>18</span></h1></a>
+  <div class="search-wrapper">
+    <input type="text" id="searchInput" placeholder="Cari video..." onkeyup="if(event.key==='Enter')location.href='/?q='+encodeURIComponent(this.value)">
+    <button onclick="location.href='/?q='+encodeURIComponent(document.getElementById('searchInput').value)">🔍</button>
+  </div>
+</header>
 
-            statusBox.style.background = "#198754";
-            statusBox.innerText = "✅ BERHASIL PUBLISH!";
-        } catch (err) {
-            statusBox.style.background = "#dc3545";
-            statusBox.innerText = "❌ Error: " + err.message;
-        }
-    }
+<main class="video-detail">
+  <div class="video-player">${video.embed}</div>
+  <h1>${escapeHtml(video.title)}</h1>
+  <div class="video-meta">
+    <span>📁 ${escapeHtml(video.category)}</span>
+    <span>📅 ${new Date(video.date).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</span>
+  </div>
+  
+  <h2 class="recommend-title">🎬 Rekomendasi Video</h2>
+  <div class="video-grid">
+    ${recHtml || '<div class="empty">Belum ada rekomendasi</div>'}
+  </div>
+</main>
+
+<footer class="footer">
+  <p>© 2026 Remaja 18 - All Rights Reserved</p>
+</footer>
+</body>
+</html>`;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function showAlert(msg, type) {
+  const box = document.getElementById('alertBox');
+  box.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  if (type === 'success') setTimeout(() => box.innerHTML = '', 4000);
+}
+
+// ====== AUTO RESUME SESSION ======
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('gh');
+  if (saved) {
+    GH = JSON.parse(saved);
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('postBox').style.display = 'block';
+    loadCategories();
+  }
+});
 </script>
 </body>
 </html>
+
