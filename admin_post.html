@@ -1,327 +1,385 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Remaja 18 (Universal)</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* CSS Admin Panel */
-        .admin-container {
-            max-width: 800px;
-            margin: 100px auto;
-            background: var(--bg-card);
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid #333;
-        }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: var(--text-gray); }
-        .form-group input, .form-group select {
-            width: 100%; padding: 12px; background: #111; border: 1px solid #333;
-            color: white; border-radius: 6px; outline: none;
-        }
-        .form-group input:focus { border-color: var(--accent-red); }
-        .btn {
-            background: var(--accent-red); color: white; border: none;
-            padding: 12px 24px; border-radius: 6px; cursor: pointer;
-            font-weight: bold; width: 100%; transition: var(--transition);
-        }
-        .btn:hover { background: var(--accent-red-hover); }
-        #log-area {
-            margin-top: 20px; padding: 15px; background: #111;
-            border-radius: 6px; font-family: monospace; color: #0f0;
-            display: none; height: 150px; overflow-y: auto; font-size: 0.85rem;
-        }
-        .hidden { display: none; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Stream 18</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
-<body>
+<body class="admin-body">
 
-    <header>
-        <nav class="navbar">
-            <div class="nav-left">
-                <a href="#" class="logo">REMAJA<span>18</span> - ADMIN PANEL</a>
-            </div>
-            <div class="nav-right">
-                <button id="logout-btn" class="btn hidden" style="width:auto; padding: 8px 15px;">Logout</button>
-            </div>
-        </nav>
-    </header>
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay"></div>
 
-    <main class="main-container">
-        <div id="login-section" class="admin-container">
-            <h2><i class="fas fa-key" style="color: var(--accent-red);"></i> Autentikasi GitHub</h2>
-            <p style="color: var(--text-gray); margin-bottom: 20px;">Masukkan Personal Access Token GitHub kamu.</p>
-            <div class="form-group">
-                <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-            </div>
-            <button id="save-token-btn" class="btn">Simpan & Masuk</button>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo">Stream <span class="accent">18</span></span>
+      <button class="close-btn" id="closeBtn"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="sidebar-search">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="sidebarSearch" placeholder="Cari video..." />
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <p class="nav-label">Kategori</p>
+      <ul id="categoryList">
+        <li class="active" data-category="all">
+          <i class="fas fa-th-large"></i> Semua
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer-note">
+      <p>© 2025 Stream 18</p>
+    </div>
+  </aside>
+
+  <!-- NAVBAR -->
+  <header class="navbar" id="navbar">
+    <div class="navbar-left">
+      <button class="hamburger" id="hamburgerBtn">
+        <i class="fas fa-bars"></i>
+      </button>
+      <a href="/" class="logo-link">
+        <span class="logo">Stream <span class="accent">18</span></span>
+      </a>
+    </div>
+    <div class="navbar-center"></div>
+    <div class="navbar-right">
+      <span class="admin-badge">
+        <i class="fas fa-shield-alt"></i> Admin
+      </span>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="admin-main" id="adminMain">
+
+    <!-- TOKEN GATE -->
+    <div class="token-gate" id="tokenGate">
+      <div class="token-card">
+        <i class="fas fa-lock lock-icon"></i>
+        <h2>Admin Panel</h2>
+        <p>Masukkan GitHub Personal Access Token untuk mengakses panel admin Stream 18.</p>
+
+        <div class="token-input-wrap">
+          <input 
+            type="password" 
+            id="tokenInput" 
+            placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="token-toggle" id="tokenToggle">
+            <i class="fas fa-eye"></i>
+          </button>
         </div>
 
-        <div id="dashboard-section" class="admin-container hidden">
-            <h2><i class="fas fa-upload" style="color: var(--accent-red);"></i> Publish Video Universal</h2>
-            
-            <div class="form-group">
-                <label>Judul Video</label>
-                <input type="text" id="video-title" placeholder="Contoh: Video Streaming Baru">
-            </div>
-
-            <div class="form-group">
-                <label>Kategori</label>
-                <select id="video-category">
-                    <option value="" disabled selected>Loading kategori...</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Tambah Kategori Baru (Opsional)</label>
-                <input type="text" id="new-category" placeholder="Ketik jika ingin membuat kategori baru">
-            </div>
-
-            <div class="form-group">
-                <label>URL Video / Embed (MP4, YouTube, atau Iframe Link)</label>
-                <input type="text" id="embed-url" placeholder="Paste link video atau embed di sini">
-            </div>
-
-            <div class="form-group">
-                <label>URL Thumbnail (Gambar Cover)</label>
-                <input type="text" id="thumb-url" placeholder="Paste link gambar .jpg / .png">
-                <small style="color:var(--text-gray);">*Otomatis jika menggunakan link YouTube.</small>
-            </div>
-
-            <button id="publish-btn" class="btn"><i class="fas fa-rocket"></i> Publish ke GitHub</button>
-
-            <div id="log-area"></div>
+        <div class="token-hint">
+          <i class="fas fa-info-circle"></i>
+          <span>Token harus punya permission <strong>repo</strong> (read & write)</span>
         </div>
-    </main>
 
-    <script>
-        const REPO = 'pembri/remaja-18';
-        const loginSection = document.getElementById('login-section');
-        const dashboardSection = document.getElementById('dashboard-section');
-        const tokenInput = document.getElementById('github-token');
-        const saveTokenBtn = document.getElementById('save-token-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const publishBtn = document.getElementById('publish-btn');
-        const categorySelect = document.getElementById('video-category');
-        const logArea = document.getElementById('log-area');
+        <button class="btn-primary" id="tokenSubmit" style="margin-top:20px;">
+          <i class="fas fa-sign-in-alt"></i> Masuk
+        </button>
 
-        let currentDatabase = [];
-        let dbSha = '';
+        <div id="tokenError" class="token-error" style="display:none;">
+          <i class="fas fa-times-circle"></i>
+          <span>Token tidak valid atau tidak punya akses ke repository ini.</span>
+        </div>
+      </div>
+    </div>
 
-        // --- SISTEM LOGIN ---
-        const checkAuth = () => {
-            const token = localStorage.getItem('gh_token');
-            if (token) {
-                loginSection.classList.add('hidden');
-                dashboardSection.classList.remove('hidden');
-                logoutBtn.classList.remove('hidden');
-                fetchDatabase(); 
-            } else {
-                loginSection.classList.remove('hidden');
-                dashboardSection.classList.add('hidden');
-                logoutBtn.classList.add('hidden');
-            }
-        };
+    <!-- ADMIN PANEL -->
+    <div class="admin-panel" id="adminPanel">
 
-        saveTokenBtn.addEventListener('click', () => {
-            const tk = tokenInput.value.trim();
-            if(tk !== '') {
-                localStorage.setItem('gh_token', tk);
-                checkAuth();
-            }
-        });
+      <!-- ADMIN HEADER -->
+      <div class="admin-header">
+        <h2>Panel <span>Admin</span></h2>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span class="token-active-badge">
+            <i class="fas fa-circle"></i> Token Aktif
+          </span>
+          <button class="btn-secondary" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </div>
 
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('gh_token');
-            location.reload();
-        });
+      <!-- TABS -->
+      <div class="admin-tabs">
+        <button class="tab-btn active" data-tab="upload">
+          <i class="fas fa-upload"></i> Upload Video
+        </button>
+        <button class="tab-btn" data-tab="manage">
+          <i class="fas fa-list"></i> Kelola Video
+        </button>
+      </div>
 
-        // --- GITHUB HELPER ---
-        async function ghFetch(path, method = 'GET', body = null) {
-            const token = localStorage.getItem('gh_token');
-            const options = {
-                method,
-                headers: {
-                    'Authorization': 'token ' + token,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                }
-            };
-            if (body) options.body = JSON.stringify(body);
-            const res = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + path, options);
-            if (!res.ok) throw new Error('HTTP Error: ' + res.status);
-            return res.json();
-        }
+      <!-- TAB: UPLOAD -->
+      <div class="tab-content active" id="tab-upload">
+        <div class="form-section">
+          <h3 class="form-section-title">
+            <i class="fas fa-plus-circle"></i> Tambah Video Baru
+          </h3>
 
-        async function fetchDatabase() {
-            try {
-                logMsg("Membaca database...");
-                const data = await ghFetch('database.js');
-                dbSha = data.sha;
-                const decoded = decodeURIComponent(escape(atob(data.content)));
-                const jsonStr = decoded.replace('window.videoDatabase = ', '').replace(/;$/, '').trim();
-                currentDatabase = JSON.parse(jsonStr);
-                const categories = [...new Set(currentDatabase.map(v => v.category))];
-                categorySelect.innerHTML = categories.map(c => '<option value="' + c + '">' + c + '</option>').join('');
-                logMsg("Database OK.");
-            } catch (err) {
-                logMsg("Gagal baca database!", true);
-            }
-        }
+          <!-- VIDEO URL INPUT -->
+          <div class="form-group">
+            <label for="videoUrl">
+              <i class="fas fa-link"></i> URL Video / Embed Code
+            </label>
+            <div class="url-input-wrap">
+              <input 
+                type="text" 
+                id="videoUrl" 
+                placeholder="https://youtube.com/watch?v=... atau paste embed code"
+                autocomplete="off"
+              />
+              <button class="btn-scan" id="scanBtn">
+                <i class="fas fa-magic"></i> Scan
+              </button>
+            </div>
+            <p class="form-hint">
+              <i class="fas fa-info-circle"></i>
+              Support: YouTube, Vimeo, Dailymotion, Facebook, Streamable, Twitch, Google Drive, Direct MP4, dll
+            </p>
+          </div>
 
-        function getYoutubeId(url) {
-            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/);
-            return match ? match[1] : null;
-        }
+          <!-- VIDEO PREVIEW -->
+          <div class="video-preview-box" id="videoPreviewBox">
+            <div class="preview-placeholder" id="previewPlaceholder">
+              <i class="fas fa-play-circle"></i>
+              <p>Preview video akan muncul di sini</p>
+            </div>
+            <div class="preview-embed-wrap" id="previewEmbedWrap" style="display:none;">
+              <!-- Embed inject dari JS -->
+            </div>
+          </div>
 
-        function logMsg(msg, isError = false) {
-            logArea.style.display = 'block';
-            logArea.style.color = isError ? 'var(--accent-red)' : '#0f0';
-            logArea.innerHTML += '> ' + msg + '<br>';
-            logArea.scrollTop = logArea.scrollHeight;
-        }
+          <!-- DETECTED INFO -->
+          <div class="detected-info" id="detectedInfo" style="display:none;">
+            <div class="detected-badge">
+              <i class="fas fa-check-circle"></i>
+              <span id="detectedPlatform">Platform terdeteksi</span>
+            </div>
+          </div>
 
-        // --- PUBLISH LOGIC ---
-        publishBtn.addEventListener('click', async () => {
-            const title = document.getElementById('video-title').value.trim();
-            const newCat = document.getElementById('new-category').value.trim();
-            const embedUrl = document.getElementById('embed-url').value.trim();
-            const manualThumb = document.getElementById('thumb-url').value.trim();
-            const category = newCat !== '' ? newCat : categorySelect.value;
+          <!-- JUDUL -->
+          <div class="form-group">
+            <label for="videoTitle">
+              <i class="fas fa-heading"></i> Judul Video
+            </label>
+            <input 
+              type="text" 
+              id="videoTitle" 
+              placeholder="Masukkan judul video..."
+              maxlength="150"
+            />
+            <p class="form-hint">
+              <i class="fas fa-keyboard"></i>
+              <span id="titleCharCount">0</span>/150 karakter
+            </p>
+          </div>
 
-            if (!title || !embedUrl) {
-                alert("Isi judul dan link video!");
-                return;
-            }
+          <!-- KATEGORI -->
+          <div class="form-group">
+            <label for="videoCategory">
+              <i class="fas fa-tag"></i> Kategori
+            </label>
+            <div class="category-input-wrap">
+              <select id="videoCategorySelect">
+                <option value="">-- Pilih atau ketik kategori baru --</option>
+              </select>
+              <span class="or-divider">atau</span>
+              <input 
+                type="text" 
+                id="videoCategoryNew" 
+                placeholder="Ketik kategori baru..."
+                maxlength="50"
+              />
+            </div>
+            <p class="form-hint">
+              <i class="fas fa-lightbulb"></i>
+              Kategori baru akan otomatis dibuat dan muncul di situs
+            </p>
+          </div>
 
-            publishBtn.disabled = true;
-            publishBtn.innerHTML = 'Memproses...';
-            logArea.innerHTML = '';
+          <!-- DESKRIPSI -->
+          <div class="form-group">
+            <label for="videoDesc">
+              <i class="fas fa-align-left"></i> Deskripsi <span style="color:var(--text-muted);font-weight:400;">(opsional)</span>
+            </label>
+            <textarea 
+              id="videoDesc" 
+              placeholder="Masukkan deskripsi video..."
+              rows="3"
+              maxlength="500"
+            ></textarea>
+          </div>
 
-            try {
-                // Tentukan Thumbnail
-                let thumbnail = manualThumb;
-                const ytId = getYoutubeId(embedUrl);
-                if (ytId && !manualThumb) {
-                    thumbnail = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
-                } else if (!manualThumb) {
-                    alert("Untuk link selain YouTube, URL Thumbnail wajib diisi!");
-                    publishBtn.disabled = false;
-                    return;
-                }
+          <!-- THUMBNAIL -->
+          <div class="form-group">
+            <label>
+              <i class="fas fa-image"></i> Thumbnail
+            </label>
+            <div class="thumb-status" id="thumbStatus">
+              <div class="thumb-loading" id="thumbLoading" style="display:none;">
+                <div class="spinner"></div>
+                <span>Mengambil thumbnail otomatis...</span>
+              </div>
+              <div class="thumb-result" id="thumbResult" style="display:none;">
+                <div class="thumb-preview-wrap visible">
+                  <img id="thumbPreviewImg" src="" alt="Thumbnail Preview" />
+                </div>
+                <div class="thumb-actions">
+                  <span class="thumb-ok">
+                    <i class="fas fa-check-circle"></i> Thumbnail berhasil diambil
+                  </span>
+                  <button class="btn-sm-ghost" id="retryThumbBtn">
+                    <i class="fas fa-redo"></i> Retry
+                  </button>
+                </div>
+              </div>
+              <div class="thumb-fallback" id="thumbFallback" style="display:none;">
+                <p>
+                  <i class="fas fa-exclamation-triangle"></i>
+                  Thumbnail tidak bisa diambil otomatis.
+                </p>
+                <input 
+                  type="text" 
+                  id="thumbManualUrl" 
+                  placeholder="Paste URL thumbnail manual (opsional)..."
+                />
+              </div>
+            </div>
+          </div>
 
-                const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-                const embedBase64 = btoa(unescape(encodeURIComponent(embedUrl)));
-                const id = Date.now().toString();
-                const today = new Date().toISOString().split('T')[0];
+          <!-- PUBLISH BUTTON -->
+          <div class="publish-row">
+            <button class="btn-secondary" id="resetFormBtn">
+              <i class="fas fa-times"></i> Reset
+            </button>
+            <button class="btn-primary" id="publishBtn">
+              <i class="fas fa-upload"></i> Publish Video
+            </button>
+          </div>
 
-                // 1. Update Database
-                currentDatabase.push({ id, title, slug, category, thumbnail, embedBase64, date: today });
-                const dbText = 'window.videoDatabase = ' + JSON.stringify(currentDatabase, null, 4) + ';';
-                const base64Db = btoa(unescape(encodeURIComponent(dbText)));
-                
-                logMsg("Mengupdate database...");
-                await ghFetch('database.js', 'PUT', { message: 'Tambah: ' + title, content: base64Db, sha: dbSha });
+        </div>
+      </div>
 
-                // 2. Buat Halaman HTML Universal
-                const htmlTemplate = '<!DOCTYPE html>\n' +
-'<html lang="id">\n' +
-'<head>\n' +
-'    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
-'    <title>' + title + ' - Remaja 18</title>\n' +
-'    <link rel="stylesheet" href="../../style.css">\n' +
-'    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">\n' +
-'</head>\n' +
-'<body>\n' +
-'    <header>\n' +
-'        <nav class="navbar">\n' +
-'            <div class="nav-left">\n' +
-'                <button class="hamburger" id="menu-btn"><i class="fas fa-bars"></i></button>\n' +
-'                <a href="../../index" class="logo">REMAJA<span>18</span></a>\n' +
-'            </div>\n' +
-'            <div class="nav-center">\n' +
-'                <div class="search-box">\n' +
-'                    <input type="text" id="search-input" placeholder="Cari video...">\n' +
-'                    <button><i class="fas fa-search"></i></button>\n' +
-'                </div>\n' +
-'            </div>\n' +
-'        </nav>\n' +
-'    </header>\n' +
-'\n' +
-'    <aside class="sidebar" id="sidebar">\n' +
-'        <div class="sidebar-header"><h3>Menu</h3><button id="close-btn"><i class="fas fa-times"></i></button></div>\n' +
-'        <ul class="category-list"><li><a href="../../index">Semua Video</a></li></ul>\n' +
-'    </aside>\n' +
-'    <div class="overlay" id="overlay"></div>\n' +
-'\n' +
-'    <main class="main-container" style="max-width:1100px; margin: 90px auto; padding: 0 15px;">\n' +
-'        <div style="background:var(--bg-card); border-radius:12px; overflow:hidden; margin-bottom:40px; padding:10px;">\n' +
-'            <div id="video-container" class="thumbnail-wrap" style="position:relative; background:#000;"></div>\n' +
-'            <div style="padding:20px;">\n' +
-'                <span class="category-tag">' + category + '</span>\n' +
-'                <h1 style="font-size:1.6rem; margin-top:10px;">' + title + '</h1>\n' +
-'            </div>\n' +
-'        </div>\n' +
-'\n' +
-'        <h2 style="margin-bottom:20px;"><i class="fas fa-fire" style="color:var(--accent-red);"></i> Rekomendasi Lainnya</h2>\n' +
-'        <div id="related-grid" class="video-grid"></div>\n' +
-'    </main>\n' +
-'\n' +
-'    <footer><div class="footer-content"><p>&copy; 2026 <strong>Remaja 18</strong>. Semua Hak Cipta Dilindungi.</p></div></footer>\n' +
-'\n' +
-'    <script src="../../database.js"><\/script>\n' +
-'    <script>\n' +
-'        document.addEventListener("DOMContentLoaded", () => {\n' +
-'            // 1. Decode URL\n' +
-'            const rawUrl = decodeURIComponent(escape(atob("' + embedBase64 + '")));\n' +
-'            const container = document.getElementById("video-container");\n' +
-'\n' +
-'            // 2. Auto-Detect Player (Video vs Iframe)\n' +
-'            if (rawUrl.match(/\\.(mp4|webm|ogg|m4v)(\\?.*)?$/i)) {\n' +
-'                container.innerHTML = `<video controls style="position:absolute; top:0; left:0; width:100%; height:100%;"><source src="${rawUrl}" type="video/mp4"></video>`;\n' +
-'            } else {\n' +
-'                container.innerHTML = `<iframe src="${rawUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>`;\n' +
-'            }\n' +
-'\n' +
-'            // 3. Sidebar Logic\n' +
-'            const menuBtn = document.getElementById("menu-btn");\n' +
-'            const closeBtn = document.getElementById("close-btn");\n' +
-'            const sidebar = document.getElementById("sidebar");\n' +
-'            const overlay = document.getElementById("overlay");\n' +
-'            menuBtn.onclick = () => { sidebar.classList.add("active"); overlay.classList.add("active"); };\n' +
-'            const hideSide = () => { sidebar.classList.remove("active"); overlay.classList.remove("active"); };\n' +
-'            closeBtn.onclick = hideSide; overlay.onclick = hideSide;\n' +
-'\n' +
-'            // 4. Rekomendasi 5 Video Acak\n' +
-'            const allVids = window.videoDatabase || [];\n' +
-'            const related = allVids.filter(v => v.slug !== "' + slug + '").sort(() => 0.5 - Math.random()).slice(0, 5);\n' +
-'            const grid = document.getElementById("related-grid");\n' +
-'            related.forEach(v => {\n' +
-'                grid.innerHTML += `<a href="../${v.slug}" class="video-card"><div class="thumbnail-wrap"><img src="${v.thumbnail}"></div><div class="video-info"><span class="category-tag">${v.category}</span><h3>${v.title}</h3></div></a>`;\n' +
-'            });\n' +
-'        });\n' +
-'    <\/script>\n' +
-'</body>\n' +
-'</html>';
+      <!-- TAB: MANAGE -->
+      <div class="tab-content" id="tab-manage" style="display:none;">
+        <div class="video-list-section">
+          <div class="video-list-header">
+            <h3>
+              <i class="fas fa-film"></i> Daftar Video
+              <span class="video-list-count" id="videoListCount"></span>
+            </h3>
+            <div class="list-search-wrap">
+              <div class="search-box" style="max-width:240px;">
+                <i class="fas fa-search"></i>
+                <input type="text" id="manageSearch" placeholder="Cari video..." />
+              </div>
+              <button class="btn-secondary" id="refreshListBtn">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
+          </div>
 
-                const base64Html = btoa(unescape(encodeURIComponent(htmlTemplate)));
-                logMsg("Membuat halaman video...");
-                await ghFetch("content_video/" + slug + "/index.html", 'PUT', { message: 'Gen: ' + slug, content: base64Html });
+          <!-- LOADING STATE -->
+          <div class="list-loading" id="listLoading" style="display:none;">
+            <div class="spinner"></div>
+            <span>Memuat daftar video...</span>
+          </div>
 
-                logMsg("SUKSES! Video telah dipublish.");
-                fetchDatabase(); // Refresh local DB
-            } catch (err) {
-                logMsg("Error: " + err.message, true);
-            } finally {
-                publishBtn.disabled = false;
-                publishBtn.innerHTML = '<i class="fas fa-rocket"></i> Publish ke GitHub';
-            }
-        });
+          <!-- TABLE -->
+          <div class="table-wrap" id="tableWrap">
+            <table class="video-table" id="videoTable">
+              <thead>
+                <tr>
+                  <th style="width:80px;">Thumb</th>
+                  <th>Judul</th>
+                  <th>Kategori</th>
+                  <th>Tanggal</th>
+                  <th style="width:100px;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="videoTableBody">
+                <!-- Inject dari JS -->
+              </tbody>
+            </table>
+          </div>
 
-        checkAuth();
-    </script>
+          <!-- EMPTY -->
+          <div class="list-empty" id="listEmpty" style="display:none;">
+            <i class="fas fa-inbox"></i>
+            <p>Belum ada video</p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- DELETE CONFIRM MODAL -->
+  <div class="modal-overlay" id="deleteModal" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-icon">
+        <i class="fas fa-trash-alt"></i>
+      </div>
+      <h3>Hapus Video?</h3>
+      <p id="deleteModalDesc">Video ini akan dihapus permanen dan tidak bisa dikembalikan.</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="cancelDeleteBtn">
+          <i class="fas fa-times"></i> Batal
+        </button>
+        <button class="btn-danger" id="confirmDeleteBtn">
+          <i class="fas fa-trash-alt"></i> Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="logo">Stream <span class="accent">18</span></span>
+          <p>Platform streaming video terbaik.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Navigasi</h4>
+          <ul>
+            <li><a href="/">Beranda</a></li>
+            <li><a href="/admin">Admin</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Kategori</h4>
+          <ul id="footerCategories"></ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Stream 18. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="database.js"></script>
+  <script src="admin.js"></script>
 </body>
 </html>
