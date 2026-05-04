@@ -1,67 +1,24 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Halaman Tidak Ditemukan | Remaja 18</title>
-    <link rel="stylesheet" href="/style.css">
-    <style>
-        .error-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: calc(100vh - 70px); /* Dikurangi tinggi header */
-            text-align: center;
-            padding: 20px;
-        }
-        .error-container h1 {
-            font-size: 100px;
-            color: var(--primary);
-            margin-bottom: 10px;
-            line-height: 1;
-        }
-        .error-container h2 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: var(--text);
-        }
-        .error-container p {
-            color: var(--text-dim);
-            margin-bottom: 30px;
-            max-width: 400px;
-        }
-        .back-home {
-            padding: 12px 30px;
-            background: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            font-weight: bold;
-            transition: 0.3s;
-            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
-        }
-        .back-home:hover {
-            background: #b20710;
-            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.5);
-            transform: translateY(-2px);
-        }
-    </style>
+<meta charset="UTF-8">
+<title>404 - Remaja 18</title>
+<link rel="stylesheet" href="/style.css">
+<script>
+// Redirect handler untuk clean URL
+const path = location.pathname;
+// Kalau URL berakhir tanpa slash, coba tambah slash
+if (path.startsWith('/content_video/') && !path.endsWith('/') && !path.endsWith('.html')) {
+  location.replace(path + '/');
+}
+</script>
 </head>
 <body>
-
-    <header>
-        <div class="left-header">
-            <a href="/" class="logo" style="margin-left: 0;">REMAJA <span>18</span></a>
-        </div>
-    </header>
-
-    <div class="error-container">
-        <h1>404</h1>
-        <h2>Waduh, Kesasar Ya?</h2>
-        <p>Halaman atau video yang kamu cari sepertinya tidak ada, sudah dihapus, atau URL-nya salah.</p>
-        <a href="/" class="back-home">Kembali ke Beranda</a>
-    </div>
-
+<div style="text-align:center;padding:80px 20px">
+  <h1 style="font-size:80px;color:#a020f0;margin:0">404</h1>
+  <h2>Halaman tidak ditemukan</h2>
+  <p style="color:#888;margin:20px 0">Video yang kamu cari mungkin sudah dihapus atau URL salah.</p>
+  <a href="/" style="display:inline-block;background:linear-gradient(135deg,#a020f0,#e91e63);color:#fff;padding:12px 30px;border-radius:25px;text-decoration:none;margin-top:20px">← Kembali ke Beranda</a>
+</div>
 </body>
 </html>
