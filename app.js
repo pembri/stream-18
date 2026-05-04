@@ -1,133 +1,151 @@
-const PER_PAGE = 10;
-let currentPage = 1;
-let currentCategory = 'all';
-let currentSearch = '';
+// app.js
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. AMBIL DATA DARI DATABASE
+    // Asumsi data video dari database.js disimpan di variabel global 'videoDatabase'
+    // Data diurutkan dengan cara reverse agar video terbaru (paling bawah di database) tampil paling atas
+    const allVideos = window.videoDatabase ? [...window.videoDatabase].reverse() : [];
+    
+    let filteredVideos = [...allVideos];
+    let currentIndex = 0;
+    const videosPerPage = 10; // Menampilkan 10 video per auto-load
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await DB.load();
-  
-  // Cek query string ?q= dari halaman lain
-  const urlParams = new URLSearchParams(window.location.search);
-  const q = urlParams.get('q');
-  if (q) {
-    currentSearch = q;
-    document.getElementById('searchInput').value = q;
-  }
-  
-  renderCategories();
-  renderVideos();
-  bindEvents();
-});
+    // 2. TANGKAP ELEMEN DOM
+    const videoGrid = document.getElementById('video-grid');
+    const loadingTrigger = document.getElementById('loading-trigger');
+    const categoryList = document.getElementById('category-list');
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const sectionTitle = document.getElementById('section-title');
 
-function bindEvents() {
-  document.getElementById('hamburgerBtn').onclick = () => toggleSidebar(true);
-  document.getElementById('closeSidebar').onclick = () => toggleSidebar(false);
-  document.getElementById('overlay').onclick = () => toggleSidebar(false);
-  
-  const searchInput = document.getElementById('searchInput');
-  document.getElementById('searchBtn').onclick = doSearch;
-  searchInput.onkeyup = (e) => { if (e.key === 'Enter') doSearch(); };
-}
+    // Sidebar DOM
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menu-toggle');
+    const closeMenu = document.getElementById('close-menu');
+    const overlay = document.getElementById('overlay');
 
-function toggleSidebar(open) {
-  document.getElementById('sidebar').classList.toggle('open', open);
-  document.getElementById('overlay').classList.toggle('active', open);
-}
+    // 3. FUNGSI NAVIGASI & SIDEBAR (HAMBURGER)
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.add('active');
+        overlay.classList.add('active');
+    });
 
-function doSearch() {
-  currentSearch = document.getElementById('searchInput').value;
-  currentPage = 1;
-  renderVideos();
-}
-
-function renderCategories() {
-  const list = document.getElementById('categoryList');
-  list.innerHTML = '';
-  const cats = Array.from(DB.categories);
-  cats.forEach(cat => {
-    const li = document.createElement('li');
-    li.dataset.cat = cat;
-    li.textContent = cat === 'all' ? 'Semua Video' : cat;
-    if (cat === currentCategory) li.classList.add('active');
-    li.onclick = () => {
-      currentCategory = cat;
-      currentPage = 1;
-      currentSearch = '';
-      document.getElementById('searchInput').value = '';
-      renderCategories();
-      renderVideos();
-      toggleSidebar(false);
+    const closeSidebar = () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
     };
-    list.appendChild(li);
-  });
-}
 
-function getFilteredVideos() {
-  let list = DB.videos;
-  if (currentSearch) list = DB.search(currentSearch);
-  if (currentCategory !== 'all') list = list.filter(v => v.category === currentCategory);
-  return list;
-}
+    closeMenu.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar);
 
-function renderVideos() {
-  const grid = document.getElementById('videoGrid');
-  const title = document.getElementById('pageTitle');
-  const list = getFilteredVideos();
-  
-  if (currentSearch) title.textContent = `Hasil pencarian: "${currentSearch}"`;
-  else if (currentCategory !== 'all') title.textContent = `Kategori: ${currentCategory}`;
-  else title.textContent = 'Video Terbaru';
-  
-  if (list.length === 0) {
-    grid.innerHTML = '<div class="empty">😢 Belum ada video</div>';
-    document.getElementById('pagination').innerHTML = '';
-    return;
-  }
-  
-  const start = (currentPage - 1) * PER_PAGE;
-  const pageVids = list.slice(start, start + PER_PAGE);
-  
-  grid.innerHTML = pageVids.map(v => `
-    <a class="video-card" href="content_video/${v.slug}/">
-      <div class="thumb">
-        <img src="${v.thumbnail}" alt="${escapeHtml(v.title)}" 
-             onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 320 180%22><rect fill=%22%23a020f0%22 width=%22320%22 height=%22180%22/><text x=%22160%22 y=%2295%22 fill=%22white%22 font-size=%2218%22 text-anchor=%22middle%22>No Thumbnail</text></svg>'">
-      </div>
-      <div class="video-info">
-        <h3>${escapeHtml(v.title)}</h3>
-        <span class="cat">${escapeHtml(v.category)}</span>
-        <div class="date">${formatDate(v.date)}</div>
-      </div>
-    </a>
-  `).join('');
-  
-  renderPagination(list.length);
-}
+    // 4. FUNGSI RENDER KATEGORI (Otomatis deteksi kategori dari database)
+    const renderCategories = () => {
+        // Ambil kategori unik, hindari duplikat
+        const categories = ['Semua', ...new Set(allVideos.map(v => v.category))];
+        
+        categoryList.innerHTML = ''; 
+        
+        categories.forEach(cat => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = cat;
+            
+            // Event ketika kategori di-klik
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                filterByCategory(cat);
+                closeSidebar();
+            });
+            
+            li.appendChild(a);
+            categoryList.appendChild(li);
+        });
+    };
 
-function renderPagination(total) {
-  const totalPages = Math.ceil(total / PER_PAGE);
-  const pag = document.getElementById('pagination');
-  if (totalPages <= 1) { pag.innerHTML = ''; return; }
-  
-  let html = '';
-  if (currentPage > 1) html += `<button onclick="goPage(${currentPage-1})">← Prev</button>`;
-  for (let i = 1; i <= totalPages; i++) {
-    html += `<button class="${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
-  }
-  if (currentPage < totalPages) html += `<button onclick="goPage(${currentPage+1})">Next →</button>`;
-  pag.innerHTML = html;
-}
+    // 5. FUNGSI RENDER VIDEO (Infinite Scroll Logic)
+    const renderVideos = (reset = false) => {
+        if (reset) {
+            videoGrid.innerHTML = '';
+            currentIndex = 0;
+        }
 
-function goPage(p) {
-  currentPage = p;
-  renderVideos();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
+        // Ambil 10 video berdasarkan index saat ini
+        const nextVideos = filteredVideos.slice(currentIndex, currentIndex + videosPerPage);
+        
+        nextVideos.forEach(video => {
+            const card = document.createElement('a');
+            
+            // Menerapkan aturan Clean URL (tanpa .html)
+            card.href = `content_video/${video.slug}`;
+            card.className = 'video-card';
+            
+            card.innerHTML = `
+                <div class="thumbnail-wrap">
+                    <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
+                </div>
+                <div class="video-info">
+                    <span class="category-tag">${video.category}</span>
+                    <h3>${video.title}</h3>
+                </div>
+            `;
+            videoGrid.appendChild(card);
+        });
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+        // Tambah index untuk scroll berikutnya
+        currentIndex += nextVideos.length;
 
-function formatDate(d) {
-  return new Date(d).toLocaleDateString('id-ID', {day:'numeric',month:'short',year:'numeric'});
-}
+        // Atur tampilan ikon loading (hilang jika video sudah habis)
+        if (currentIndex >= filteredVideos.length) {
+            loadingTrigger.style.display = 'none';
+        } else {
+            loadingTrigger.style.display = 'flex';
+        }
+    };
+
+    // 6. FUNGSI FILTER KATEGORI
+    const filterByCategory = (category) => {
+        if (category === 'Semua') {
+            filteredVideos = [...allVideos];
+            sectionTitle.innerHTML = `<i class="fas fa-bolt" style="color: var(--accent-red);"></i> Video Terbaru`;
+        } else {
+            filteredVideos = allVideos.filter(v => v.category === category);
+            sectionTitle.innerHTML = `<i class="fas fa-folder" style="color: var(--accent-red);"></i> Kategori: ${category}`;
+        }
+        renderVideos(true); // Reset grid dan mulai dari awal
+    };
+
+    // 7. FUNGSI PENCARIAN
+    const handleSearch = () => {
+        const query = searchInput.value.toLowerCase().trim();
+        if (query === '') {
+            filteredVideos = [...allVideos];
+            sectionTitle.innerHTML = `<i class="fas fa-bolt" style="color: var(--accent-red);"></i> Video Terbaru`;
+        } else {
+            filteredVideos = allVideos.filter(v => 
+                v.title.toLowerCase().includes(query) || 
+                v.category.toLowerCase().includes(query)
+            );
+            sectionTitle.innerHTML = `<i class="fas fa-search" style="color: var(--accent-red);"></i> Hasil untuk: "${query}"`;
+        }
+        renderVideos(true);
+    };
+
+    searchBtn.addEventListener('click', handleSearch);
+    searchInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') handleSearch();
+    });
+
+    // 8. AUTO-LOAD SELANJUTNYA (DETEKSI SCROLL BAWAH)
+    window.addEventListener('scroll', () => {
+        const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+        
+        // Jika sisa scroll ke bawah kurang dari 100px dan masih ada sisa video
+        if (scrollTop + clientHeight >= scrollHeight - 100 && currentIndex < filteredVideos.length) {
+            renderVideos();
+        }
+    });
+
+    // INIT: Jalankan saat pertama kali halaman dibuka
+    renderCategories();
+    renderVideos(true);
+});
