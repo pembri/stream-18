@@ -5,7 +5,7 @@ const DB = {
   
   async load() {
     try {
-      const res = await fetch('/content_video/index.json?t=' + Date.now());
+      const res = await fetch('content_video/index.json?t=' + Date.now());
       if (!res.ok) throw new Error('Database belum ada');
       const data = await res.json();
       this.videos = data.sort((a, b) => new Date(b.date) - new Date(a.date));
