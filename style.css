@@ -284,8 +284,27 @@ footer {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .nav-center { display: none; } /* Search di mobile bisa dipindah ke icon */
+    .navbar {
+        flex-wrap: wrap;
+    }
+    .nav-left {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .nav-center { 
+        display: block;
+        width: 100%;
+        margin-top: 12px;
+        order: 3;
+    }
+    .search-box {
+        max-width: 100%;
+    }
+    .main-container {
+        margin-top: 130px; /* Biar video nggak ketutup header yang memanjang ke bawah */
+    }
     .video-grid {
         grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
     }
 }
+
