@@ -1,1 +1,38 @@
 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remaja 18 - Streaming Video</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <header>
+        <div class="hamburger" onclick="toggleMenu()">☰</div>
+        <a href="/" class="logo">REMAJA 18</a>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Cari video..." onkeyup="handleSearch()">
+        </div>
+    </header>
+
+    <div class="menu-overlay" id="menuOverlay">
+        <div class="close-menu" onclick="toggleMenu()">×</div>
+        <h3>Kategori</h3>
+        <div class="category-list" id="categoryList">
+            </div>
+    </div>
+
+    <main>
+        <div class="video-grid" id="videoGrid">
+            </div>
+        <div class="pagination" id="paginationContainer">
+            <button id="loadMoreBtn" onclick="loadMore()">Muat Lebih Banyak</button>
+        </div>
+    </main>
+
+    <script src="/database.js"></script>
+    <script src="/app.js"></script>
+</body>
+</html>
