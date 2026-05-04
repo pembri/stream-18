@@ -317,7 +317,7 @@ function generateDetailPage(video, allVideos) {
     .slice(0, 5);
   
   const recHtml = recommendations.map(v => `
-    <a class="video-card" href="/content_video/${v.slug}/">
+    <a class="video-card" href="../${v.slug}/">
       <div class="thumb"><img src="${v.thumbnail}" alt="${escapeHtml(v.title)}"></div>
       <div class="video-info">
         <h3>${escapeHtml(v.title)}</h3>
@@ -336,15 +336,14 @@ function generateDetailPage(video, allVideos) {
 <meta property="og:title" content="${escapeHtml(video.title)}">
 <meta property="og:image" content="${video.thumbnail}">
 <meta property="og:type" content="video.other">
-<link rel="canonical" href="/content_video/${video.slug}/">
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="../../style.css">
 </head>
 <body>
 <header class="header">
-  <a href="/" style="text-decoration:none"><h1 class="logo">Remaja <span>18</span></h1></a>
+  <a href="../../" style="text-decoration:none"><h1 class="logo">Remaja <span>18</span></h1></a>
   <div class="search-wrapper">
-    <input type="text" id="searchInput" placeholder="Cari video..." onkeyup="if(event.key==='Enter')location.href='/?q='+encodeURIComponent(this.value)">
-    <button onclick="location.href='/?q='+encodeURIComponent(document.getElementById('searchInput').value)">🔍</button>
+    <input type="text" id="searchInput" placeholder="Cari video..." onkeyup="if(event.key==='Enter')location.href='../../?q='+encodeURIComponent(this.value)">
+    <button onclick="location.href='../../?q='+encodeURIComponent(document.getElementById('searchInput').value)">🔍</button>
   </div>
 </header>
 
