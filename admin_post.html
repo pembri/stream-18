@@ -7,27 +7,13 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <div class="admin-wrap" id="loginBox">
   <h1>🔐 Login Admin</h1>
   <div class="form-group">
-    <label>Password</label>
-    <input type="password" id="adminPass" placeholder="Masukkan password admin">
-  </div>
-  <div class="form-group">
     <label>GitHub Token</label>
     <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx">
-  </div>
-  <div class="form-group">
-    <label>Username GitHub</label>
-    <input type="text" id="ghUser" placeholder="username">
-  </div>
-  <div class="form-group">
-    <label>Nama Repository</label>
-    <input type="text" id="ghRepo" placeholder="remaja18">
-  </div>
-  <div class="form-group">
-    <label>Branch (default: main)</label>
-    <input type="text" id="ghBranch" value="main">
+    <small style="color:#888;display:block;margin-top:5px">Token disimpan di browser, nggak perlu input ulang</small>
   </div>
   <button class="btn-primary" onclick="login()">Masuk</button>
 </div>
@@ -65,32 +51,37 @@
 
 <script src="database.js"></script>
 <script>
-const ADMIN_PASS = 'remaja18admin'; // Ganti password ini!
-let GH = {};
+const GH = {
+  user: 'pembri',
+  repo: 'remaja-18',
+  branch: 'main',
+  token: ''
+};
+
+const BASE_PATH = '/remaja-18'; // path subfolder GitHub Pages
 
 document.getElementById('vEmbed').addEventListener('input', autoDetectThumb);
+document.getElementById('vThumb').addEventListener('input', e => {
+  if (e.target.value) showThumbPreview(e.target.value);
+});
 
 function login() {
-  const pass = document.getElementById('adminPass').value;
   const token = document.getElementById('ghToken').value.trim();
-  const user = document.getElementById('ghUser').value.trim();
-  const repo = document.getElementById('ghRepo').value.trim();
-  const branch = document.getElementById('ghBranch').value.trim() || 'main';
-  
-  if (pass !== ADMIN_PASS) return alert('Password salah!');
-  if (!token || !user || !repo) return alert('Lengkapi data GitHub!');
-  
-  GH = { token, user, repo, branch };
-  sessionStorage.setItem('gh', JSON.stringify(GH));
-  
-  document.getElementById('loginBox').style.display = 'none';
-  document.getElementById('postBox').style.display = 'block';
-  loadCategories();
+  if (!token) return alert('Masukkan token!');
+  GH.token = token;
+  localStorage.setItem('gh_token', token);
+  showPostBox();
 }
 
 function logout() {
-  sessionStorage.clear();
+  localStorage.removeItem('gh_token');
   location.reload();
+}
+
+function showPostBox() {
+  document.getElementById('loginBox').style.display = 'none';
+  document.getElementById('postBox').style.display = 'block';
+  loadCategories();
 }
 
 async function loadCategories() {
@@ -109,38 +100,26 @@ function autoDetectThumb() {
 }
 
 function detectThumbnail(embed) {
-  // YouTube
   let m = embed.match(/(?:youtube\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   if (m) return `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`;
   
-  // Vimeo (nanti perlu fetch async, sementara skip)
-  
-  // Doodstream / dood.* 
   m = embed.match(/(?:dood\.[a-z]+|d000d\.com|doodstream\.com)\/[ed]\/([a-z0-9]+)/i);
   if (m) return `https://img.doodcdn.com/snaps/${m[1]}.jpg`;
   
-    // Streamtape
   m = embed.match(/streamtape\.com\/[ev]\/([a-zA-Z0-9]+)/);
   if (m) return `https://streamtape.com/thumb/${m[1]}.jpg`;
   
-  // Filemoon
   m = embed.match(/filemoon\.[a-z]+\/[ed]\/([a-z0-9]+)/i);
   if (m) return `https://filemoon.sx/i/${m[1]}.jpg`;
   
-  // Streamwish
   m = embed.match(/streamwish\.[a-z]+\/[ed]\/([a-z0-9]+)/i);
   if (m) return `https://streamwish.to/i/${m[1]}.jpg`;
   
-  // Mixdrop
   m = embed.match(/mixdrop\.[a-z]+\/[ef]\/([a-zA-Z0-9]+)/);
   if (m) return `https://mixdrop.co/i/${m[1]}.jpg`;
   
-  // Vimeo (perlu fetch async, di-handle terpisah)
   m = embed.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (m) {
-    fetchVimeoThumb(m[1]);
-    return ''; 
-  }
+  if (m) { fetchVimeoThumb(m[1]); return ''; }
   
   return '';
 }
@@ -154,7 +133,7 @@ async function fetchVimeoThumb(id) {
       document.getElementById('vThumb').value = url;
       showThumbPreview(url);
     }
-  } catch(e) { console.warn('Vimeo fetch error', e); }
+  } catch(e) {}
 }
 
 function showThumbPreview(url) {
@@ -164,11 +143,6 @@ function showThumbPreview(url) {
   img.onerror = () => img.classList.remove('show');
 }
 
-document.getElementById('vThumb').addEventListener('input', e => {
-  if (e.target.value) showThumbPreview(e.target.value);
-});
-
-// ====== SLUGIFY ======
 function slugify(text) {
   return text.toString().toLowerCase().trim()
     .replace(/[^\w\s-]/g, '')
@@ -177,16 +151,12 @@ function slugify(text) {
     .substring(0, 80);
 }
 
-// ====== EMBED NORMALIZER ======
 function buildEmbedHtml(input) {
   const trimmed = input.trim();
-  // Kalau sudah iframe lengkap
   if (/<iframe/i.test(trimmed)) return trimmed;
-  // Kalau cuma URL, bungkus jadi iframe
   return `<iframe src="${trimmed}" allowfullscreen allow="autoplay; encrypted-media" frameborder="0"></iframe>`;
 }
 
-// ====== PUBLISH ======
 async function publishVideo() {
   const title = document.getElementById('vTitle').value.trim();
   const category = document.getElementById('vCategory').value.trim();
@@ -211,7 +181,6 @@ async function publishVideo() {
     
     showAlert('📥 Mengambil database...', 'success');
     
-    // 1. Ambil index.json existing
     let videos = [];
     let indexSha = null;
     try {
@@ -220,36 +189,20 @@ async function publishVideo() {
         videos = JSON.parse(decodeURIComponent(escape(atob(idxRes.content.replace(/\s/g,'')))));
         indexSha = idxRes.sha;
       }
-    } catch(e) { console.log('index.json belum ada, akan dibuat baru'); }
+    } catch(e) {}
     
-    // 2. Tambahkan video baru di paling depan
     videos.unshift(videoData);
     
-    // 3. Generate halaman detail HTML
     const detailHtml = generateDetailPage(videoData, videos);
     
     showAlert('📝 Membuat halaman video...', 'success');
-    
-    // 4. Commit halaman detail
-    await ghPut(
-      `content_video/${slug}/index.html`,
-      detailHtml,
-      `Add video: ${title}`
-    );
+    await ghPut(`content_video/${slug}/index.html`, detailHtml, `Add video: ${title}`);
     
     showAlert('💾 Update database...', 'success');
+    await ghPut('content_video/index.json', JSON.stringify(videos, null, 2), `Update index: ${title}`, indexSha);
     
-    // 5. Commit/update index.json
-    await ghPut(
-      'content_video/index.json',
-      JSON.stringify(videos, null, 2),
-      `Update index for: ${title}`,
-      indexSha
-    );
+    showAlert(`✅ Berhasil! URL: ${BASE_PATH}/content_video/${slug}/`, 'success');
     
-    showAlert(`✅ Video berhasil dipublish! URL: /content_video/${slug}/`, 'success');
-    
-    // Reset form
     document.getElementById('vTitle').value = '';
     document.getElementById('vEmbed').value = '';
     document.getElementById('vThumb').value = '';
@@ -259,14 +212,13 @@ async function publishVideo() {
     
   } catch (err) {
     console.error(err);
-    showAlert('❌ Gagal publish: ' + err.message, 'error');
+    showAlert('❌ Gagal: ' + err.message, 'error');
   } finally {
     btn.disabled = false;
     btn.textContent = '🚀 Publish Video';
   }
 }
 
-// ====== GITHUB API ======
 async function ghGet(path) {
   const url = `https://api.github.com/repos/${GH.user}/${GH.repo}/contents/${path}?ref=${GH.branch}`;
   const res = await fetch(url, {
@@ -286,7 +238,6 @@ async function ghPut(path, content, message, sha = null) {
   };
   if (sha) body.sha = sha;
   
-  // Kalau sha belum dikasih, coba cek file existing
   if (!sha) {
     const existing = await ghGet(path);
     if (existing && existing.sha) body.sha = existing.sha;
@@ -304,12 +255,11 @@ async function ghPut(path, content, message, sha = null) {
   
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.message || 'GitHub PUT failed');
+    throw new Error(err.message || 'PUT failed');
   }
   return await res.json();
 }
 
-// ====== GENERATE HALAMAN DETAIL ======
 function generateDetailPage(video, allVideos) {
   const recommendations = allVideos
     .filter(v => v.slug !== video.slug)
@@ -335,7 +285,6 @@ function generateDetailPage(video, allVideos) {
 <meta name="description" content="${escapeHtml(video.title)} - Kategori ${escapeHtml(video.category)}">
 <meta property="og:title" content="${escapeHtml(video.title)}">
 <meta property="og:image" content="${video.thumbnail}">
-<meta property="og:type" content="video.other">
 <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
@@ -346,7 +295,6 @@ function generateDetailPage(video, allVideos) {
     <button onclick="location.href='../../?q='+encodeURIComponent(document.getElementById('searchInput').value)">🔍</button>
   </div>
 </header>
-
 <main class="video-detail">
   <div class="video-player">${video.embed}</div>
   <h1>${escapeHtml(video.title)}</h1>
@@ -354,16 +302,10 @@ function generateDetailPage(video, allVideos) {
     <span>📁 ${escapeHtml(video.category)}</span>
     <span>📅 ${new Date(video.date).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</span>
   </div>
-  
-  <h2 class="recommend-title">🎬 Rekomendasi Video</h2>
-  <div class="video-grid">
-    ${recHtml || '<div class="empty">Belum ada rekomendasi</div>'}
-  </div>
+    <h2 class="recommend-title">🎬 Rekomendasi Video</h2>
+  <div class="video-grid">${recHtml || '<div class="empty">Belum ada rekomendasi</div>'}</div>
 </main>
-
-<footer class="footer">
-  <p>© 2026 Remaja 18 - All Rights Reserved</p>
-</footer>
+<footer class="footer"><p>© 2026 Remaja 18 - All Rights Reserved</p></footer>
 </body>
 </html>`;
 }
@@ -378,17 +320,14 @@ function showAlert(msg, type) {
   if (type === 'success') setTimeout(() => box.innerHTML = '', 4000);
 }
 
-// ====== AUTO RESUME SESSION ======
+// Auto-login kalau token sudah disimpan
 window.addEventListener('DOMContentLoaded', () => {
-  const saved = sessionStorage.getItem('gh');
+  const saved = localStorage.getItem('gh_token');
   if (saved) {
-    GH = JSON.parse(saved);
-    document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('postBox').style.display = 'block';
-    loadCategories();
+    GH.token = saved;
+    showPostBox();
   }
 });
 </script>
 </body>
 </html>
-
