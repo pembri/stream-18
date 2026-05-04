@@ -1,41 +1,44 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Remaja 18 - Streaming Video Premium</title>
-    <link rel="stylesheet" href="./style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remaja 18 - Streaming Video</title>
+<meta name="description" content="Situs streaming Remaja 18 - tonton video terbaru gratis">
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
+<header class="header">
+  <button id="hamburgerBtn" class="hamburger" aria-label="Menu">☰</button>
+  <h1 class="logo">Remaja <span>18</span></h1>
+  <div class="search-wrapper">
+    <input type="text" id="searchInput" placeholder="Cari video...">
+    <button id="searchBtn">🔍</button>
+  </div>
+</header>
 
-    <header>
-        <div class="left-header">
-            <div class="hamburger" id="hamburgerMenu">☰</div>
-            <a href="/" class="logo">REMAJA <span>18</span></a>
-        </div>
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Cari judul video...">
-        </div>
-    </header>
+<aside id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <h3>Kategori</h3>
+    <button id="closeSidebar">✕</button>
+  </div>
+  <ul id="categoryList" class="category-list">
+    <li data-cat="all" class="active">Semua Video</li>
+  </ul>
+</aside>
+<div id="overlay" class="overlay"></div>
 
-    <div class="menu-overlay" id="menuOverlay">
-        <div class="close-menu" id="closeMenu">&times;</div>
-        <h3>Kategori</h3>
-        <div class="category-list" id="categoryList">
-            <button>Memuat kategori...</button>
-        </div>
-    </div>
+<main class="main">
+  <h2 id="pageTitle">Video Terbaru</h2>
+  <div id="videoGrid" class="video-grid"></div>
+  <div id="pagination" class="pagination"></div>
+</main>
 
-    <main>
-        <div class="video-grid" id="videoGrid">
-            </div>
-        
-        <div class="pagination" id="paginationContainer">
-            <button id="loadMoreBtn" style="display: none;">Muat Lebih Banyak</button>
-        </div>
-    </main>
+<footer class="footer">
+  <p>© 2026 Remaja 18 - All Rights Reserved</p>
+</footer>
 
-    <script src="./database.js"></script>
-    <script src="./app.js"></script>
+<script src="/database.js"></script>
+<script src="/app.js"></script>
 </body>
 </html>
