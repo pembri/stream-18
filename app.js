@@ -1,133 +1,124 @@
-// Konfigurasi Dasar
-const itemsPerPage = 10;
+const PER_PAGE = 10;
 let currentPage = 1;
-let filteredData = [];
+let currentCategory = 'all';
+let currentSearch = '';
 
-// Ambil Elemen DOM
-const videoGrid = document.getElementById('videoGrid');
-const loadMoreBtn = document.getElementById('loadMoreBtn');
-const hamburgerMenu = document.getElementById('hamburgerMenu');
-const closeMenu = document.getElementById('closeMenu');
-const menuOverlay = document.getElementById('menuOverlay');
-const categoryList = document.getElementById('categoryList');
-const searchInput = document.getElementById('searchInput');
-
-// Jalankan saat halaman siap
-document.addEventListener('DOMContentLoaded', () => {
-    initApp();
+document.addEventListener('DOMContentLoaded', async () => {
+  await DB.load();
+  renderCategories();
+  renderVideos();
+  bindEvents();
 });
 
-function initApp() {
-    // 1. Cek apakah videoDB ada dan isinya ada
-    if (typeof videoDB !== 'undefined' && Array.isArray(videoDB)) {
-        if (videoDB.length === 0) {
-            videoGrid.innerHTML = '<p style="text-align:center; color:#555; padding:50px; width:100%;">Belum ada video. Silakan posting lewat admin.</p>';
-            return;
-        }
-
-        // 2. Balik data (Terbaru di Atas)
-        filteredData = [...videoDB].reverse();
-        
-        // 3. Jalankan Fungsi Render
-        renderCategories();
-        renderVideos();
-    } else {
-        videoGrid.innerHTML = '<p style="text-align:center; color:red; padding:50px; width:100%;">Gagal memuat database.js!</p>';
-    }
+function bindEvents() {
+  document.getElementById('hamburgerBtn').onclick = () => toggleSidebar(true);
+  document.getElementById('closeSidebar').onclick = () => toggleSidebar(false);
+  document.getElementById('overlay').onclick = () => toggleSidebar(false);
+  
+  const searchInput = document.getElementById('searchInput');
+  document.getElementById('searchBtn').onclick = doSearch;
+  searchInput.onkeyup = (e) => { if (e.key === 'Enter') doSearch(); };
 }
 
-// --- LOGIKA MENU HAMBURGER ---
-if(hamburgerMenu) {
-    hamburgerMenu.onclick = () => menuOverlay.classList.add('active');
-}
-if(closeMenu) {
-    closeMenu.onclick = () => menuOverlay.classList.remove('active');
+function toggleSidebar(open) {
+  document.getElementById('sidebar').classList.toggle('open', open);
+  document.getElementById('overlay').classList.toggle('active', open);
 }
 
-// --- RENDER KATEGORI KE HAMBURGER ---
+function doSearch() {
+  currentSearch = document.getElementById('searchInput').value;
+  currentPage = 1;
+  renderVideos();
+}
+
 function renderCategories() {
-    if(!categoryList) return;
-    
-    // Ambil kategori unik
-    const categories = [...new Set(videoDB.map(v => v.category))];
-    
-    let html = `<button onclick="filterCategory('All')">Semua Kategori</button>`;
-    categories.forEach(cat => {
-        if(cat) {
-            html += `<button onclick="filterCategory('${cat}')">${cat}</button>`;
-        }
-    });
-    categoryList.innerHTML = html;
-}
-
-// --- FILTER KATEGORI ---
-window.filterCategory = (cat) => {
-    menuOverlay.classList.remove('active');
-    
-    if (cat === 'All') {
-        filteredData = [...videoDB].reverse();
-    } else {
-        filteredData = [...videoDB].reverse().filter(v => v.category === cat);
-    }
-    
-    currentPage = 1;
-    videoGrid.innerHTML = '';
-    renderVideos();
-};
-
-// --- PENCARIAN ---
-if(searchInput) {
-    searchInput.onkeyup = (e) => {
-        const query = e.target.value.toLowerCase();
-        filteredData = [...videoDB].reverse().filter(v => v.title.toLowerCase().includes(query));
-        currentPage = 1;
-        videoGrid.innerHTML = '';
-        renderVideos();
+  const list = document.getElementById('categoryList');
+  list.innerHTML = '';
+  const cats = Array.from(DB.categories);
+  cats.forEach(cat => {
+    const li = document.createElement('li');
+    li.dataset.cat = cat;
+    li.textContent = cat === 'all' ? 'Semua Video' : cat;
+    if (cat === currentCategory) li.classList.add('active');
+    li.onclick = () => {
+      currentCategory = cat;
+      currentPage = 1;
+      currentSearch = '';
+      document.getElementById('searchInput').value = '';
+      renderCategories();
+      renderVideos();
+      toggleSidebar(false);
     };
+    list.appendChild(li);
+  });
 }
 
-// --- RENDER VIDEO KE GRID ---
+function getFilteredVideos() {
+  let list = DB.videos;
+  if (currentSearch) list = DB.search(currentSearch);
+  if (currentCategory !== 'all') list = list.filter(v => v.category === currentCategory);
+  return list;
+}
+
 function renderVideos() {
-    if(!videoGrid) return;
-
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const slice = filteredData.slice(startIndex, endIndex);
-
-    if (slice.length === 0 && currentPage === 1) {
-        videoGrid.innerHTML = '<p style="text-align:center; color:#555; width:100%;">Video tidak ditemukan.</p>';
-        loadMoreBtn.style.display = 'none';
-        return;
-    }
-
-    slice.forEach(vid => {
-        const card = document.createElement('a');
-        card.className = 'video-card';
-        // URL Clean mengarah ke folder
-        card.href = `./content_video/${vid.slug}/`; 
-
-        card.innerHTML = `
-            <div class="thumbnail-placeholder">▶</div>
-            <div class="info">
-                <h4>${vid.title}</h4>
-                <span class="cat-tag">${vid.category}</span>
-            </div>
-        `;
-        videoGrid.appendChild(card);
-    });
-
-    // Cek tombol load more
-    if (endIndex >= filteredData.length) {
-        loadMoreBtn.style.display = 'none';
-    } else {
-        loadMoreBtn.style.display = 'inline-block';
-    }
+  const grid = document.getElementById('videoGrid');
+  const title = document.getElementById('pageTitle');
+  const list = getFilteredVideos();
+  
+  if (currentSearch) title.textContent = `Hasil pencarian: "${currentSearch}"`;
+  else if (currentCategory !== 'all') title.textContent = `Kategori: ${currentCategory}`;
+  else title.textContent = 'Video Terbaru';
+  
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="empty">😢 Belum ada video</div>';
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+  
+  const start = (currentPage - 1) * PER_PAGE;
+  const pageVids = list.slice(start, start + PER_PAGE);
+  
+  grid.innerHTML = pageVids.map(v => `
+    <a class="video-card" href="/content_video/${v.slug}/">
+      <div class="thumb">
+        <img src="${v.thumbnail}" alt="${escapeHtml(v.title)}" 
+             onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 320 180%22><rect fill=%22%23a020f0%22 width=%22320%22 height=%22180%22/><text x=%22160%22 y=%2295%22 fill=%22white%22 font-size=%2218%22 text-anchor=%22middle%22>No Thumbnail</text></svg>'">
+      </div>
+      <div class="video-info">
+        <h3>${escapeHtml(v.title)}</h3>
+        <span class="cat">${escapeHtml(v.category)}</span>
+        <div class="date">${formatDate(v.date)}</div>
+      </div>
+    </a>
+  `).join('');
+  
+  renderPagination(list.length);
 }
 
-// --- LOAD MORE ---
-if(loadMoreBtn) {
-    loadMoreBtn.onclick = () => {
-        currentPage++;
-        renderVideos();
-    };
+function renderPagination(total) {
+  const totalPages = Math.ceil(total / PER_PAGE);
+  const pag = document.getElementById('pagination');
+  if (totalPages <= 1) { pag.innerHTML = ''; return; }
+  
+  let html = '';
+  if (currentPage > 1) html += `<button onclick="goPage(${currentPage-1})">← Prev</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  if (currentPage < totalPages) html += `<button onclick="goPage(${currentPage+1})">Next →</button>`;
+  pag.innerHTML = html;
+}
+
+function goPage(p) {
+  currentPage = p;
+  renderVideos();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('id-ID', {day:'numeric',month:'short',year:'numeric'});
 }
