@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Remaja 18</title>
+    <title>Admin - Remaja 18 (Universal)</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* CSS Tambahan Khusus Admin */
+        /* CSS Admin Panel */
         .admin-container {
             max-width: 800px;
             margin: 100px auto;
@@ -16,48 +16,23 @@
             border-radius: 12px;
             border: 1px solid #333;
         }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-gray);
-        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-gray); }
         .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px;
-            background: #111;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 6px;
-            outline: none;
+            width: 100%; padding: 12px; background: #111; border: 1px solid #333;
+            color: white; border-radius: 6px; outline: none;
         }
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--accent-red);
-        }
+        .form-group input:focus { border-color: var(--accent-red); }
         .btn {
-            background: var(--accent-red);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            transition: var(--transition);
+            background: var(--accent-red); color: white; border: none;
+            padding: 12px 24px; border-radius: 6px; cursor: pointer;
+            font-weight: bold; width: 100%; transition: var(--transition);
         }
-        .btn:hover {
-            background: var(--accent-red-hover);
-        }
+        .btn:hover { background: var(--accent-red-hover); }
         #log-area {
-            margin-top: 20px;
-            padding: 15px;
-            background: #111;
-            border-radius: 6px;
-            font-family: monospace;
-            color: #0f0;
-            display: none;
+            margin-top: 20px; padding: 15px; background: #111;
+            border-radius: 6px; font-family: monospace; color: #0f0;
+            display: none; height: 150px; overflow-y: auto; font-size: 0.85rem;
         }
         .hidden { display: none; }
     </style>
@@ -76,7 +51,6 @@
     </header>
 
     <main class="main-container">
-        
         <div id="login-section" class="admin-container">
             <h2><i class="fas fa-key" style="color: var(--accent-red);"></i> Autentikasi GitHub</h2>
             <p style="color: var(--text-gray); margin-bottom: 20px;">Masukkan Personal Access Token GitHub kamu.</p>
@@ -87,46 +61,44 @@
         </div>
 
         <div id="dashboard-section" class="admin-container hidden">
-    <h2><i class="fas fa-upload" style="color: var(--accent-red);"></i> Publish Video Universal</h2>
-    
-    <div class="form-group">
-        <label>Judul Video</label>
-        <input type="text" id="video-title" placeholder="Contoh: Video Keren Banget">
-    </div>
+            <h2><i class="fas fa-upload" style="color: var(--accent-red);"></i> Publish Video Universal</h2>
+            
+            <div class="form-group">
+                <label>Judul Video</label>
+                <input type="text" id="video-title" placeholder="Contoh: Video Streaming Baru">
+            </div>
 
-    <div class="form-group">
-        <label>Kategori</label>
-        <select id="video-category">
-            <option value="" disabled selected>Loading kategori...</option>
-        </select>
-    </div>
+            <div class="form-group">
+                <label>Kategori</label>
+                <select id="video-category">
+                    <option value="" disabled selected>Loading kategori...</option>
+                </select>
+            </div>
 
-    <div class="form-group">
-        <label>Kategori Baru (Opsional)</label>
-        <input type="text" id="new-category" placeholder="Ketik kategori baru jika belum ada">
-    </div>
+            <div class="form-group">
+                <label>Tambah Kategori Baru (Opsional)</label>
+                <input type="text" id="new-category" placeholder="Ketik jika ingin membuat kategori baru">
+            </div>
 
-    <div class="form-group">
-        <label>URL Video / Embed (Bebas)</label>
-        <input type="text" id="embed-url" placeholder="Paste link .mp4, iframe, atau YouTube">
-    </div>
+            <div class="form-group">
+                <label>URL Video / Embed (MP4, YouTube, atau Iframe Link)</label>
+                <input type="text" id="embed-url" placeholder="Paste link video atau embed di sini">
+            </div>
 
-    <div class="form-group">
-        <label>URL Thumbnail / Cover</label>
-        <input type="text" id="thumb-url" placeholder="Paste link gambar .jpg / .png">
-        <small style="color:var(--text-gray);">*Khusus YouTube bisa dikosongkan (otomatis).</small>
-    </div>
+            <div class="form-group">
+                <label>URL Thumbnail (Gambar Cover)</label>
+                <input type="text" id="thumb-url" placeholder="Paste link gambar .jpg / .png">
+                <small style="color:var(--text-gray);">*Otomatis jika menggunakan link YouTube.</small>
+            </div>
 
-    <button id="publish-btn" class="btn"><i class="fas fa-rocket"></i> Publish ke GitHub</button>
-    <div id="log-area"></div>
-</div>
+            <button id="publish-btn" class="btn"><i class="fas fa-rocket"></i> Publish ke GitHub</button>
 
+            <div id="log-area"></div>
+        </div>
     </main>
 
     <script>
         const REPO = 'pembri/remaja-18';
-        
-        // DOM Elements
         const loginSection = document.getElementById('login-section');
         const dashboardSection = document.getElementById('dashboard-section');
         const tokenInput = document.getElementById('github-token');
@@ -139,14 +111,14 @@
         let currentDatabase = [];
         let dbSha = '';
 
-        // --- SISTEM AUTENTIKASI ---
+        // --- SISTEM LOGIN ---
         const checkAuth = () => {
             const token = localStorage.getItem('gh_token');
             if (token) {
                 loginSection.classList.add('hidden');
                 dashboardSection.classList.remove('hidden');
                 logoutBtn.classList.remove('hidden');
-                fetchDatabase(); // Ambil data db saat ini
+                fetchDatabase(); 
             } else {
                 loginSection.classList.remove('hidden');
                 dashboardSection.classList.add('hidden');
@@ -155,186 +127,151 @@
         };
 
         saveTokenBtn.addEventListener('click', () => {
-            if(tokenInput.value.trim() !== '') {
-                localStorage.setItem('gh_token', tokenInput.value.trim());
+            const tk = tokenInput.value.trim();
+            if(tk !== '') {
+                localStorage.setItem('gh_token', tk);
                 checkAuth();
             }
         });
 
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('gh_token');
-            checkAuth();
+            location.reload();
         });
 
-        // --- GITHUB API HELPER ---
+        // --- GITHUB HELPER ---
         async function ghFetch(path, method = 'GET', body = null) {
             const token = localStorage.getItem('gh_token');
             const options = {
                 method,
                 headers: {
-                    'Authorization': `token ${token}`,
+                    'Authorization': 'token ' + token,
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json'
                 }
             };
             if (body) options.body = JSON.stringify(body);
-
-            const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, options);
-            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+            const res = await fetch('https://api.github.com/repos/' + REPO + '/contents/' + path, options);
+            if (!res.ok) throw new Error('HTTP Error: ' + res.status);
             return res.json();
         }
 
-        // --- LOGIKA DATABASE ---
         async function fetchDatabase() {
             try {
-                logMsg("Membaca database.js dari GitHub...");
+                logMsg("Membaca database...");
                 const data = await ghFetch('database.js');
-                dbSha = data.sha; // Simpan SHA untuk keperluan update
-                
-                // Decode base64 dari GitHub
-                const decodedContent = decodeURIComponent(escape(atob(data.content)));
-                
-                // Parsing format 'window.videoDatabase = [...]' menjadi JSON Object
-                const jsonString = decodedContent.replace('window.videoDatabase = ', '').replace(/;$/, '').trim();
-                currentDatabase = JSON.parse(jsonString);
-                
-                // Load kategori ke dropdown
+                dbSha = data.sha;
+                const decoded = decodeURIComponent(escape(atob(data.content)));
+                const jsonStr = decoded.replace('window.videoDatabase = ', '').replace(/;$/, '').trim();
+                currentDatabase = JSON.parse(jsonStr);
                 const categories = [...new Set(currentDatabase.map(v => v.category))];
-                categorySelect.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join('');
-                logMsg("Database siap!");
+                categorySelect.innerHTML = categories.map(c => '<option value="' + c + '">' + c + '</option>').join('');
+                logMsg("Database OK.");
             } catch (err) {
-                logMsg("Gagal membaca database. Pastikan token benar dan repositori ada.", true);
-                console.error(err);
+                logMsg("Gagal baca database!", true);
             }
         }
 
-        // Ekstrak ID Youtube
         function getYoutubeId(url) {
             const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/);
             return match ? match[1] : null;
         }
 
-        // Logger Function
         function logMsg(msg, isError = false) {
             logArea.style.display = 'block';
             logArea.style.color = isError ? 'var(--accent-red)' : '#0f0';
-            logArea.innerHTML += `> ${msg}<br>`;
+            logArea.innerHTML += '> ' + msg + '<br>';
             logArea.scrollTop = logArea.scrollHeight;
         }
 
-        // --- LOGIKA PUBLISH ---
+        // --- PUBLISH LOGIC ---
         publishBtn.addEventListener('click', async () => {
-    const title = document.getElementById('video-title').value.trim();
-    const newCat = document.getElementById('new-category').value.trim();
-    const selectedCat = categorySelect.value;
-    const embedUrl = document.getElementById('embed-url').value.trim();
-    const manualThumb = document.getElementById('thumb-url').value.trim();
+            const title = document.getElementById('video-title').value.trim();
+            const newCat = document.getElementById('new-category').value.trim();
+            const embedUrl = document.getElementById('embed-url').value.trim();
+            const manualThumb = document.getElementById('thumb-url').value.trim();
+            const category = newCat !== '' ? newCat : categorySelect.value;
 
-    const category = newCat !== '' ? newCat : selectedCat;
+            if (!title || !embedUrl) {
+                alert("Isi judul dan link video!");
+                return;
+            }
 
-    if (!title || !embedUrl) {
-        alert("Judul dan URL wajib diisi!");
-        return;
-    }
+            publishBtn.disabled = true;
+            publishBtn.innerHTML = 'Memproses...';
+            logArea.innerHTML = '';
 
-    publishBtn.disabled = true;
-    publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-    logArea.innerHTML = '';
+            try {
+                // Tentukan Thumbnail
+                let thumbnail = manualThumb;
+                const ytId = getYoutubeId(embedUrl);
+                if (ytId && !manualThumb) {
+                    thumbnail = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
+                } else if (!manualThumb) {
+                    alert("Untuk link selain YouTube, URL Thumbnail wajib diisi!");
+                    publishBtn.disabled = false;
+                    return;
+                }
 
-    try {
-        // 1. Logika Thumbnail: Kalo YouTube otomatis, kalo lain manual
-        let thumbnail = manualThumb;
-        const ytId = getYoutubeId(embedUrl);
-        if (ytId && !manualThumb) {
-            thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-        } else if (!manualThumb) {
-            alert("Kalo bukan YouTube, link gambar Thumbnail wajib lu isi cok!");
-            publishBtn.disabled = false;
-            publishBtn.innerHTML = 'Publish ke GitHub';
-            return;
-        }
+                const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+                const embedBase64 = btoa(unescape(encodeURIComponent(embedUrl)));
+                const id = Date.now().toString();
+                const today = new Date().toISOString().split('T')[0];
 
-        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        const embedBase64 = btoa(unescape(encodeURIComponent(embedUrl)));
-        const id = Date.now().toString();
-        const today = new Date().toISOString().split('T')[0];
-
-        // 2. Update Database
-        const newVideoObj = { id, title, slug, category, thumbnail, embedBase64, date: today };
-        currentDatabase.push(newVideoObj);
-        const updatedDbText = 'window.videoDatabase = ' + JSON.stringify(currentDatabase, null, 4) + ';';
-        const base64Db = btoa(unescape(encodeURIComponent(updatedDbText)));
-
-        logMsg("Update database.js...");
-        await ghFetch('database.js', 'PUT', { message: `Post: ${title}`, content: base64Db, sha: dbSha });
-
-        // 3. Generate Halaman Video yang bisa deteksi Video Player vs Iframe
-        const videoHtmlTemplate = `<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>\${title} - Remaja 18</title>
-    <link rel="stylesheet" href="../../style.css">
-</head>
-<body>
-    <header><nav class="navbar"><div class="nav-left"><a href="../../index" class="logo">REMAJA<span>18</span></a></div></nav></header>
-    <main class="main-container" style="max-width: 1000px; margin: 85px auto; padding: 0 15px;">
-        <div style="background:var(--bg-card); border-radius:12px; overflow:hidden;">
-            <div id="video-wrapper" style="position:relative; padding-top:56.25%; background:#000;"></div>
-            <div style="padding:20px;">
-                <span class="category-tag">\${category}</span>
-                <h1 style="font-size:1.5rem; margin-top:10px;">\${title}</h1>
-            </div>
-        </div>
-    </main>
-    <script>
-        const rawUrl = decodeURIComponent(escape(atob("\${embedBase64}")));
-        const wrapper = document.getElementById('video-wrapper');
-        
-        // Kalo link berakhiran .mp4, pake player video biasa
-        if (rawUrl.match(/\\.(mp4|webm|ogg|m4v)(\\?.*)?$/i)) {
-            wrapper.innerHTML = \`<video controls style="position:absolute; top:0; left:0; width:100%; height:100%;"><source src="\${rawUrl}" type="video/mp4"></video>\`;
-        } else {
-            // Kalo link embed/youtube, pake iframe
-            wrapper.innerHTML = \`<iframe src="\${rawUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>\`;
-        }
-    <\/script>
-</body>
-</html>`;
-
-        const base64Html = btoa(unescape(encodeURIComponent(videoHtmlTemplate)));
-        await ghFetch(`content_video/\${slug}/index.html`, 'PUT', { message: `Halaman: \${slug}`, content: base64Html });
-
-        logMsg("Selesai! Konten udah tayang.");
-        fetchDatabase(); 
-    } catch (err) {
-        logMsg("Error pas upload: " + err.message, true);
-    } finally {
-        publishBtn.disabled = false;
-        publishBtn.innerHTML = '<i class="fas fa-rocket"></i> Publish ke GitHub';
-    }
-});
-
-
-                // Reset form
-                document.getElementById('video-title').value = '';
-                document.getElementById('new-category').value = '';
-                document.getElementById('embed-url').value = '';
+                // 1. Update Database
+                currentDatabase.push({ id, title, slug, category, thumbnail, embedBase64, date: today });
+                const dbText = 'window.videoDatabase = ' + JSON.stringify(currentDatabase, null, 4) + ';';
+                const base64Db = btoa(unescape(encodeURIComponent(dbText)));
                 
-                // Refresh Db reference
-                await fetchDatabase();
+                logMsg("Mengupdate database...");
+                await ghFetch('database.js', 'PUT', { message: 'Tambah: ' + title, content: base64Db, sha: dbSha });
 
+                // 2. Buat Halaman HTML Universal
+                const htmlTemplate = '<!DOCTYPE html>\n' +
+'<html lang="id">\n' +
+'<head>\n' +
+'    <meta charset="UTF-8">\n' +
+'    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+'    <title>' + title + ' - Remaja 18</title>\n' +
+'    <link rel="stylesheet" href="../../style.css">\n' +
+'</head>\n' +
+'<body>\n' +
+'    <header><nav class="navbar"><div class="nav-left"><a href="../../index" class="logo">REMAJA<span>18</span></a></div></nav></header>\n' +
+'    <main class="main-container" style="max-width: 1000px; margin: 85px auto; padding: 0 15px;">\n' +
+'        <div style="background:var(--bg-card); border-radius:12px; overflow:hidden;">\n' +
+'            <div id="player-container" style="position:relative; padding-top:56.25%; background:#000;"></div>\n' +
+'            <div style="padding:20px;">\n' +
+'                <span class="category-tag">' + category + '</span>\n' +
+'                <h1 style="font-size:1.5rem; margin-top:10px;">' + title + '</h1>\n' +
+'            </div>\n' +
+'        </div>\n' +
+'    </main>\n' +
+'    <script>\n' +
+'        const rawUrl = decodeURIComponent(escape(atob("' + embedBase64 + '")));\n' +
+'        const container = document.getElementById("player-container");\n' +
+'        if (rawUrl.match(/\\.(mp4|webm|ogg|m4v)(\\?.*)?$/i)) {\n' +
+'            container.innerHTML = `<video controls style="position:absolute; top:0; left:0; width:100%; height:100%;"><source src="${rawUrl}" type="video/mp4"></video>`;\n' +
+'        } else {\n' +
+'            container.innerHTML = `<iframe src="${rawUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>`;\n' +
+'        }\n' +
+'    <\/script>\n' +
+'</body>\n' +
+'</html>';
+
+                const base64Html = btoa(unescape(encodeURIComponent(htmlTemplate)));
+                logMsg("Membuat halaman video...");
+                await ghFetch("content_video/" + slug + "/index.html", 'PUT', { message: 'Gen: ' + slug, content: base64Html });
+
+                logMsg("SUKSES! Video telah dipublish.");
+                fetchDatabase(); // Refresh local DB
             } catch (err) {
-                logMsg("Terjadi kesalahan saat upload. Cek Console browser.", true);
-                console.error(err);
+                logMsg("Error: " + err.message, true);
             } finally {
                 publishBtn.disabled = false;
                 publishBtn.innerHTML = '<i class="fas fa-rocket"></i> Publish ke GitHub';
             }
         });
 
-        // Jalankan saat load
         checkAuth();
     </script>
 </body>
