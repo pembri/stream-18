@@ -1,17 +1,17 @@
 :root {
-  --bg-color: #121212; /* Latar belakang super gelap */
-  --card-bg: #1e1e1e;   /* Latar belakang kartu video */
-  --primary: #e50914;   /* Warna merah khas streaming untuk aksen */
-  --text: #ffffff;      /* Warna teks utama putih */
-  --text-dim: #b3b3b3;  /* Warna teks redup untuk detail */
-  --header-bg: #000000; /* Warna header hitam pekat */
+  --bg-color: #121212;
+  --card-bg: #1e1e1e;
+  --primary: #e50914;
+  --text: #ffffff;
+  --text-dim: #b3b3b3;
+  --header-bg: #000000;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font modern yang bersih */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
@@ -20,17 +20,18 @@ body {
   line-height: 1.6;
 }
 
-/* Header & Hamburger */
+/* ================= HEADER & NAVIGASI ================= */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
   background: var(--header-bg);
-  position: sticky; /* Tetap di atas saat scroll */
+  position: sticky;
   top: 0;
   z-index: 100;
   border-bottom: 1px solid #333;
+  gap: 20px;
 }
 
 .left-header {
@@ -41,35 +42,41 @@ header {
 
 .hamburger {
   cursor: pointer;
-  font-size: 28px;
+  font-size: 24px;
   color: var(--text);
   transition: 0.3s;
+  display: flex;
+  align-items: center;
 }
 
-.hamburger:hover {
-  color: var(--primary);
-}
+.hamburger:hover { color: var(--primary); }
 
 .logo {
   font-size: 24px;
-  font-weight: bold;
-  color: var(--primary); /* Logo merah */
+  font-weight: 900;
+  color: var(--primary);
   text-decoration: none;
-  letter-spacing: -1px;
+  letter-spacing: 1px;
+  white-space: nowrap; /* Mencegah teks turun ke baris baru */
 }
 
-.logo span {
-  color: var(--text); /* "18" dalam warna putih */
+.logo span { color: var(--text); }
+
+.search-bar {
+  flex-grow: 1;
+  max-width: 400px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .search-bar input {
-  padding: 10px 18px;
+  width: 100%;
+  padding: 10px 20px;
   border-radius: 25px;
   border: 1px solid #333;
   outline: none;
   background: #222;
   color: white;
-  width: 250px;
   font-size: 14px;
   transition: 0.3s;
 }
@@ -79,32 +86,32 @@ header {
   background: #333;
 }
 
-/* Menu Hamburger Overlay */
+/* ================= MENU OVERLAY (HAMBURGER) ================= */
 .menu-overlay {
   position: fixed;
   top: 0;
-  left: -300px; /* Sembunyikan secara default */
-  width: 300px;
+  left: -300px;
+  width: 280px;
   height: 100vh;
-  background: #111;
+  background: rgba(17, 17, 17, 0.98);
+  backdrop-filter: blur(5px);
   transition: 0.4s ease-in-out;
   z-index: 999;
-  padding: 80px 30px;
+  padding: 60px 20px;
   border-right: 1px solid #333;
-  display: flex;
-  flex-direction: column;
+  overflow-y: auto;
 }
 
-.menu-overlay.active {
-  left: 0; /* Tampilkan menu */
-}
+.menu-overlay.active { left: 0; }
 
 .menu-overlay h3 {
-  font-size: 20px;
-  margin-bottom: 25px;
+  font-size: 18px;
+  margin-bottom: 20px;
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 1px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333;
 }
 
 .category-list button {
@@ -114,47 +121,47 @@ header {
   background: none;
   border: none;
   color: var(--text);
-  padding: 15px 0;
+  padding: 15px 10px;
   cursor: pointer;
   font-size: 16px;
   border-bottom: 1px solid #222;
   transition: 0.3s;
+  border-radius: 5px;
 }
 
 .category-list button:hover {
-  color: var(--primary);
-  padding-left: 10px; /* Efek sedikit bergeser ke kanan */
+  color: white;
+  background: var(--primary);
+  padding-left: 15px;
 }
 
 .close-menu {
   position: absolute;
-  top: 25px;
-  right: 25px;
+  top: 15px;
+  right: 20px;
   cursor: pointer;
-  font-size: 32px;
+  font-size: 35px;
   color: var(--text-dim);
   transition: 0.3s;
+  line-height: 1;
 }
 
-.close-menu:hover {
-  color: var(--primary);
-}
+.close-menu:hover { color: var(--primary); }
 
-/* Area Konten Utama */
+/* ================= KONTEN & GRID VIDEO ================= */
 main {
   padding: 30px 20px;
   max-width: 1400px;
   margin: auto;
+  min-height: 70vh; /* Memastikan footer/bawah tidak terpotong */
 }
 
-/* Grid Video */
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Kisi responsif */
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
 }
 
-/* Kartu Video Dasar (Placeholder untuk JS nanti) */
 .video-card {
   background: var(--card-bg);
   border-radius: 8px;
@@ -162,18 +169,19 @@ main {
   text-decoration: none;
   color: white;
   transition: transform 0.2s, box-shadow 0.2s;
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 .video-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.5);
 }
 
 .thumbnail-placeholder {
   width: 100%;
-  height: 180px;
-  background: #333;
+  aspect-ratio: 16/9; /* Menggunakan rasio video standar */
+  background: #2a2a2a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -181,16 +189,16 @@ main {
   color: #555;
 }
 
-.info {
-  padding: 15px;
-}
+.info { padding: 12px; }
 
 .info h4 {
-  font-size: 16px;
+  font-size: 15px;
   margin-bottom: 8px;
-  white-space: nowrap;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Maksimal 2 baris untuk judul */
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .info .cat-tag {
@@ -199,34 +207,52 @@ main {
   background: rgba(229, 9, 20, 0.1);
   padding: 4px 8px;
   border-radius: 4px;
+  display: inline-block;
 }
 
-/* Pagination */
+/* ================= PAGINATION ================= */
 .pagination {
   text-align: center;
-  margin: 50px 0;
+  margin: 40px 0;
 }
 
 .pagination button {
-  padding: 12px 30px;
+  padding: 12px 35px;
   background: var(--primary);
   color: white;
   border: none;
   border-radius: 25px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
   transition: 0.3s;
-  box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
 }
 
-.pagination button:hover {
-  background: #b20710;
-  box-shadow: 0 5px 15px rgba(229, 9, 20, 0.5);
-}
+.pagination button:hover { background: #b20710; }
+.pagination button:disabled { display: none; } /* Sembunyikan kalau habis */
 
-.pagination button:disabled {
-  background: #555;
-  cursor: not-allowed;
-  box-shadow: none;
+/* ================= RESPONSIVE MOBILE (PENTING) ================= */
+@media (max-width: 600px) {
+  header {
+    flex-wrap: wrap; /* Izinkan elemen turun ke bawah jika sempit */
+    padding: 15px;
+  }
+  
+  .search-bar {
+    max-width: 100%;
+    width: 100%;
+    order: 3; /* Pindah ke bawah logo di mobile */
+    margin-top: 10px;
+  }
+
+  .logo { font-size: 22px; }
+  
+  main { padding: 20px 15px; }
+  
+  .video-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Di HP jadi 2 kolom kecil */
+    gap: 15px;
+  }
+  
+  .info h4 { font-size: 13px; }
 }
