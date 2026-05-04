@@ -1,9 +1,9 @@
-// Konfigurasi Pagination
+// Konfigurasi Dasar
 const itemsPerPage = 10;
 let currentPage = 1;
 let filteredData = [];
 
-// Menangkap Elemen DOM
+// Ambil Elemen DOM
 const videoGrid = document.getElementById('videoGrid');
 const loadMoreBtn = document.getElementById('loadMoreBtn');
 const hamburgerMenu = document.getElementById('hamburgerMenu');
@@ -12,76 +12,99 @@ const menuOverlay = document.getElementById('menuOverlay');
 const categoryList = document.getElementById('categoryList');
 const searchInput = document.getElementById('searchInput');
 
-// Inisialisasi saat halaman dimuat
+// Jalankan saat halaman siap
 document.addEventListener('DOMContentLoaded', () => {
-    // Pastikan database.js sudah termuat dan array videoDB ada
-    if (typeof videoDB !== 'undefined') {
-        // Balik urutan agar video terbaru (yang terakhir diposting) tampil paling atas
-        filteredData = [...videoDB].reverse(); 
+    initApp();
+});
+
+function initApp() {
+    // 1. Cek apakah videoDB ada dan isinya ada
+    if (typeof videoDB !== 'undefined' && Array.isArray(videoDB)) {
+        if (videoDB.length === 0) {
+            videoGrid.innerHTML = '<p style="text-align:center; color:#555; padding:50px; width:100%;">Belum ada video. Silakan posting lewat admin.</p>';
+            return;
+        }
+
+        // 2. Balik data (Terbaru di Atas)
+        filteredData = [...videoDB].reverse();
+        
+        // 3. Jalankan Fungsi Render
         renderCategories();
         renderVideos();
     } else {
-        videoGrid.innerHTML = '<p style="color: red; text-align: center; width: 100%;">Database belum tersedia.</p>';
+        videoGrid.innerHTML = '<p style="text-align:center; color:red; padding:50px; width:100%;">Gagal memuat database.js!</p>';
     }
-});
-
-// Logika Hamburger Menu
-hamburgerMenu.addEventListener('click', () => {
-    menuOverlay.classList.add('active');
-});
-
-closeMenu.addEventListener('click', () => {
-    menuOverlay.classList.remove('active');
-});
-
-// Render Daftar Kategori di Hamburger
-function renderCategories() {
-    // Ambil kategori unik dari database
-    const categories = [...new Set(videoDB.map(v => v.category))];
-    
-    categoryList.innerHTML = `<button onclick="filterCategory('All')">Semua Kategori</button>`;
-    categories.forEach(cat => {
-        categoryList.innerHTML += `<button onclick="filterCategory('${cat}')">${cat}</button>`;
-    });
 }
 
-// Logika Filter Kategori
+// --- LOGIKA MENU HAMBURGER ---
+if(hamburgerMenu) {
+    hamburgerMenu.onclick = () => menuOverlay.classList.add('active');
+}
+if(closeMenu) {
+    closeMenu.onclick = () => menuOverlay.classList.remove('active');
+}
+
+// --- RENDER KATEGORI KE HAMBURGER ---
+function renderCategories() {
+    if(!categoryList) return;
+    
+    // Ambil kategori unik
+    const categories = [...new Set(videoDB.map(v => v.category))];
+    
+    let html = `<button onclick="filterCategory('All')">Semua Kategori</button>`;
+    categories.forEach(cat => {
+        if(cat) {
+            html += `<button onclick="filterCategory('${cat}')">${cat}</button>`;
+        }
+    });
+    categoryList.innerHTML = html;
+}
+
+// --- FILTER KATEGORI ---
 window.filterCategory = (cat) => {
-    menuOverlay.classList.remove('active'); // Tutup menu setelah memilih
+    menuOverlay.classList.remove('active');
+    
     if (cat === 'All') {
         filteredData = [...videoDB].reverse();
     } else {
         filteredData = [...videoDB].reverse().filter(v => v.category === cat);
     }
     
-    // Reset halaman ke awal
     currentPage = 1;
     videoGrid.innerHTML = '';
     renderVideos();
 };
 
-// Logika Pencarian Langsung (Real-time)
-searchInput.addEventListener('keyup', (e) => {
-    const query = e.target.value.toLowerCase();
-    filteredData = [...videoDB].reverse().filter(v => v.title.toLowerCase().includes(query));
-    
-    // Reset halaman ke awal
-    currentPage = 1;
-    videoGrid.innerHTML = '';
-    renderVideos();
-});
+// --- PENCARIAN ---
+if(searchInput) {
+    searchInput.onkeyup = (e) => {
+        const query = e.target.value.toLowerCase();
+        filteredData = [...videoDB].reverse().filter(v => v.title.toLowerCase().includes(query));
+        currentPage = 1;
+        videoGrid.innerHTML = '';
+        renderVideos();
+    };
+}
 
-// Render Video ke Grid
+// --- RENDER VIDEO KE GRID ---
 function renderVideos() {
+    if(!videoGrid) return;
+
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const videosToShow = filteredData.slice(startIndex, endIndex);
+    const slice = filteredData.slice(startIndex, endIndex);
 
-    videosToShow.forEach(vid => {
+    if (slice.length === 0 && currentPage === 1) {
+        videoGrid.innerHTML = '<p style="text-align:center; color:#555; width:100%;">Video tidak ditemukan.</p>';
+        loadMoreBtn.style.display = 'none';
+        return;
+    }
+
+    slice.forEach(vid => {
         const card = document.createElement('a');
         card.className = 'video-card';
-        // URL bersih mengarah ke folder video tersebut
-        card.href = `/content_video/${vid.slug}`; 
+        // URL Clean mengarah ke folder
+        card.href = `./content_video/${vid.slug}/`; 
 
         card.innerHTML = `
             <div class="thumbnail-placeholder">▶</div>
@@ -93,7 +116,7 @@ function renderVideos() {
         videoGrid.appendChild(card);
     });
 
-    // Sembunyikan tombol "Muat Lebih Banyak" jika data sudah habis
+    // Cek tombol load more
     if (endIndex >= filteredData.length) {
         loadMoreBtn.style.display = 'none';
     } else {
@@ -101,8 +124,10 @@ function renderVideos() {
     }
 }
 
-// Logika Pagination (Load More)
-loadMoreBtn.addEventListener('click', () => {
-    currentPage++;
-    renderVideos();
-});
+// --- LOAD MORE ---
+if(loadMoreBtn) {
+    loadMoreBtn.onclick = () => {
+        currentPage++;
+        renderVideos();
+    };
+}
