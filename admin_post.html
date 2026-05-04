@@ -20,53 +20,41 @@
 
 <div class="admin-container">
     <h2>Post Video Baru</h2>
-    
     <div id="statusBox" class="status"></div>
 
-    <label>GitHub Token (Harus punya izin 'repo')</label>
-    <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxx" required>
+    <label>GitHub Token</label>
+    <input type="password" id="ghToken" placeholder="ghp_xxx" required>
 
-    <label>Repository (Format: username/repo)</label>
-    <input type="text" id="ghRepo" placeholder="contoh: akunmu/remaja18" required>
+    <label>Repository (username/repo)</label>
+    <input type="text" id="ghRepo" placeholder="pembri/remaja-18" required>
 
     <label>Judul Video</label>
     <input type="text" id="vidTitle" placeholder="Masukkan judul..." required>
     
-    <label>Kategori (Ketik baru atau yang sudah ada)</label>
-    <input type="text" id="vidCategory" placeholder="Contoh: Aksi, Romansa, Komedi" required>
+    <label>Kategori</label>
+    <input type="text" id="vidCategory" placeholder="Aksi, Pijat, dll" required>
 
     <label>Tipe Konten</label>
     <select id="vidType">
-        <option value="embed">Embed Iframe (YouTube, Dailymotion, dll)</option>
-        <option value="url">URL Video Langsung (.mp4)</option>
+        <option value="embed">Embed Iframe</option>
+        <option value="url">URL Video (.mp4)</option>
     </select>
 
-    <label>Konten (Kode Embed atau URL)</label>
-    <textarea id="vidContent" rows="5" placeholder="Paste kode embed atau link di sini..." required></textarea>
+    <label>Konten (Iframe atau Link)</label>
+    <textarea id="vidContent" rows="5" placeholder="Paste di sini..." required></textarea>
 
     <button id="publishBtn" onclick="publishPost()">🚀 PUBLISH SEKARANG</button>
 </div>
 
 <script>
-    // Fungsi untuk membuat URL bersih dari judul
     function createSlug(text) {
-        return text.toString().toLowerCase()
-            .replace(/\s+/g, '-')       // Ganti spasi dengan -
-            .replace(/[^\w\-]+/g, '')   // Hapus karakter non-word
-            .replace(/\-\-+/g, '-')     // Ganti multiple - dengan single -
-            .replace(/^-+/, '')         // Trim - di awal
-            .replace(/-+$/, '');        // Trim - di akhir
+        return text.toString().toLowerCase().trim()
+            .replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')
+            .replace(/^-+/, '').replace(/-+$/, '');
     }
 
-    // Encoder Base64 aman untuk Unicode (UTF-8)
-    function utf8_to_b64(str) {
-        return window.btoa(unescape(encodeURIComponent(str)));
-    }
-    
-    // Decoder Base64 aman untuk Unicode (UTF-8)
-    function b64_to_utf8(str) {
-        return decodeURIComponent(escape(window.atob(str)));
-    }
+    function utf8_to_b64(str) { return window.btoa(unescape(encodeURIComponent(str))); }
+    function b64_to_utf8(str) { return decodeURIComponent(escape(window.atob(str))); }
 
     async function publishPost() {
         const token = document.getElementById("ghToken").value;
@@ -76,167 +64,58 @@
         const type = document.getElementById("vidType").value;
         const content = document.getElementById("vidContent").value;
         const slug = createSlug(title);
-        
         const statusBox = document.getElementById("statusBox");
-        const publishBtn = document.getElementById("publishBtn");
 
-        if(!token || !repo || !title || !category || !content) {
-            alert("Harap lengkapi semua form!"); 
-            return;
-        }
-
-        publishBtn.disabled = true;
-        publishBtn.style.background = "#555";
-        
         statusBox.style.display = "block";
         statusBox.style.background = "#333";
-        statusBox.style.color = "#fff";
-        statusBox.innerText = "⏳ Membaca database.js di GitHub...";
+        statusBox.innerText = "⏳ Menghubungkan ke GitHub...";
 
         try {
-            // ==========================================
-            // 1. FETCH & UPDATE DATABASE.JS
-            // ==========================================
+            // 1. Ambil database.js
             let dbUrl = `https://api.github.com/repos/${repo}/contents/database.js`;
             let dbRes = await fetch(dbUrl, { headers: { "Authorization": `token ${token}` }});
+            if (!dbRes.ok) throw new Error("Gagal ambil database.js. Cek Repository & Token!");
             
-            let videoDB = [];
-            let dbSha = null;
-
-            if (dbRes.ok) {
-                let dbData = await dbRes.json();
-                dbSha = dbData.sha;
-                let contentDecoded = b64_to_utf8(dbData.content);
-                // Ekstrak Array dari string 'const videoDB = [...]'
-                let jsonString = contentDecoded.replace('const videoDB = ', '').replace(/;$/, '').trim();
-                videoDB = JSON.parse(jsonString || "[]");
-            }
-
-            // Tambahkan video baru
-            const newVideo = { 
-                slug: slug, 
-                title: title, 
-                category: category, 
-                type: type, 
-                content: content, 
-                date: new Date().toISOString() 
-            };
+            let dbData = await dbRes.json();
+            let contentRaw = b64_to_utf8(dbData.content);
             
-            videoDB.push(newVideo);
+            // BERSIHKAN STRING BIAR JADI JSON MURNI
+            let jsonClean = contentRaw.replace(/const\s+videoDB\s*=\s*/, "").replace(/;(?=[^;]*$)/, "").trim();
+            let videoDB = JSON.parse(jsonClean || "[]");
 
-            // Commit database.js yang baru
-            statusBox.innerText = "⏳ Menyimpan data ke database.js...";
-            let newDbContent = utf8_to_b64(`const videoDB = ${JSON.stringify(videoDB, null, 4)};`);
-            
-            let dbCommitBody = {
-                message: `Add video: ${title}`,
-                content: newDbContent
-            };
-            if (dbSha) dbCommitBody.sha = dbSha;
+            // 2. Tambah Video Baru
+            videoDB.push({ slug, title, category, type, content, date: new Date().toISOString() });
 
-            let updateDbRes = await fetch(dbUrl, {
-                method: 'PUT',
-                headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify(dbCommitBody)
-            });
-
-            if(!updateDbRes.ok) throw new Error("Gagal mengupdate database.js");
-
-
-            // ==========================================
-            // 2. CREATE FOLDER & INDEX.HTML UNTUK CLEAN URL
-            // ==========================================
-            statusBox.innerText = "⏳ Membuat halaman khusus video (Clean URL)...";
-
-            const htmlTemplate = `<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title} - Remaja 18</title>
-    <link rel="stylesheet" href="/style.css">
-    <style>
-        .player-container { width: 100%; max-width: 900px; margin: 30px auto; background: #000; aspect-ratio: 16/9; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .player-container iframe, .player-container video { width: 100%; height: 100%; border: none; }
-        .video-details { max-width: 900px; margin: 0 auto 50px auto; padding: 0 20px; }
-        .video-details h1 { font-size: 28px; margin-bottom: 15px; color: var(--text); }
-        .video-details .cat-tag { font-size: 14px; background: var(--primary); padding: 5px 12px; border-radius: 15px; color: white; display: inline-block; }
-        .recommendation-section { max-width: 1400px; margin: 0 auto; padding: 20px; border-top: 1px solid #333; }
-        .recommendation-section h3 { margin-bottom: 20px; color: var(--text-dim); }
-    </style>
-</head>
-<body>
-    <header>
-        <div class="left-header">
-            <a href="/" class="logo" style="margin-left: 0;">REMAJA <span>18</span></a>
-        </div>
-    </header>
-    
-    <div class="player-container">
-        ${type === 'embed' ? content : `<video controls src="${content}"></video>`}
-    </div>
-
-    <div class="video-details">
-        <h1>${title}</h1>
-        <span class="cat-tag">${category}</span>
-    </div>
-
-    <div class="recommendation-section">
-        <h3>Rekomendasi Lainnya</h3>
-        <div class="video-grid" id="rekomendasiGrid"></div>
-    </div>
-
-    <script src="/database.js"><\/script>
-    <script>
-        // Ambil 5 rekomendasi acak (kecuali video ini)
-        if(typeof videoDB !== 'undefined') {
-            let recs = videoDB.filter(v => v.slug !== "${slug}").sort(() => 0.5 - Math.random()).slice(0, 5);
-            let grid = document.getElementById("rekomendasiGrid");
-            recs.forEach(v => {
-                grid.innerHTML += \`
-                <a href="/content_video/\${v.slug}" class="video-card">
-                    <div class="thumbnail-placeholder" style="height:120px; font-size:30px;">▶</div>
-                    <div class="info">
-                        <h4 style="font-size:14px;">\${v.title}</h4>
-                        <span class="cat-tag" style="font-size:10px;">\${v.category}</span>
-                    </div>
-                </a>\`;
-            });
-        }
-    <\/script>
-</body>
-</html>`;
-
-            let pageUrl = `https://api.github.com/repos/${repo}/contents/content_video/${slug}/index.html`;
-            let newPageContent = utf8_to_b64(htmlTemplate);
-            
-            let pageRes = await fetch(pageUrl, {
+            // 3. Update database.js
+            statusBox.innerText = "⏳ Update Database...";
+            await fetch(dbUrl, {
                 method: 'PUT',
                 headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    message: `Publish page: ${title}`,
-                    content: newPageContent
+                    message: `Add: ${title}`,
+                    content: utf8_to_b64(`const videoDB = ${JSON.stringify(videoDB, null, 4)};`),
+                    sha: dbData.sha
                 })
             });
 
-            if(!pageRes.ok) throw new Error("Gagal membuat halaman video");
+            // 4. Buat Halaman Video (Clean URL)
+            statusBox.innerText = "⏳ Membuat Halaman Video...";
+            const htmlContent = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${title}</title><link rel="stylesheet" href="../../style.css"></head><body style="background:#121212;color:white;text-align:center;font-family:sans-serif;"><header style="padding:20px;border-bottom:1px solid #333;"><a href="/" style="color:#e50914;text-decoration:none;font-weight:bold;font-size:24px;">REMAJA 18</a></header><div style="max-width:800px;margin:20px auto;aspect-ratio:16/9;background:#000;">${type === 'embed' ? content : `<video controls src="${content}" style="width:100%;height:100%;"></video>`}</div><h1>${title}</h1><p>Kategori: ${category}</p><hr><a href="/" style="color:white;">Kembali ke Beranda</a><script src="../../database.js"><\/script></body></html>`;
 
-            // SUKSES!
-            statusBox.style.background = "#198754"; // Hijau sukses
-            statusBox.innerText = "✅ Sukses! Video berhasil dipublish.";
-            
-            // Bersihkan form
-            document.getElementById("vidTitle").value = '';
-            document.getElementById("vidContent").value = '';
+            await fetch(`https://api.github.com/repos/${repo}/contents/content_video/${slug}/index.html`, {
+                method: 'PUT',
+                headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: `Page: ${title}`,
+                    content: utf8_to_b64(htmlContent)
+                })
+            });
 
+            statusBox.style.background = "#198754";
+            statusBox.innerText = "✅ BERHASIL PUBLISH!";
         } catch (err) {
-            statusBox.style.background = "#dc3545"; // Merah error
+            statusBox.style.background = "#dc3545";
             statusBox.innerText = "❌ Error: " + err.message;
-            console.error(err);
-        } finally {
-            // Kembalikan tombol
-            publishBtn.disabled = false;
-            publishBtn.style.background = "#e50914";
         }
     }
 </script>
