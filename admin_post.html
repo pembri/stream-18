@@ -1,333 +1,365 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel - Remaja 18</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Remaja 18</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* CSS Tambahan Khusus Admin */
+        .admin-container {
+            max-width: 800px;
+            margin: 100px auto;
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-gray);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: #111;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 6px;
+            outline: none;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--accent-red);
+        }
+        .btn {
+            background: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: var(--transition);
+        }
+        .btn:hover {
+            background: var(--accent-red-hover);
+        }
+        #log-area {
+            margin-top: 20px;
+            padding: 15px;
+            background: #111;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #0f0;
+            display: none;
+        }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
 
-<div class="admin-wrap" id="loginBox">
-  <h1>🔐 Login Admin</h1>
-  <div class="form-group">
-    <label>GitHub Token</label>
-    <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx">
-    <small style="color:#888;display:block;margin-top:5px">Token disimpan di browser, nggak perlu input ulang</small>
-  </div>
-  <button class="btn-primary" onclick="login()">Masuk</button>
-</div>
+    <header>
+        <nav class="navbar">
+            <div class="nav-left">
+                <a href="#" class="logo">REMAJA<span>18</span> - ADMIN PANEL</a>
+            </div>
+            <div class="nav-right">
+                <button id="logout-btn" class="btn hidden" style="width:auto; padding: 8px 15px;">Logout</button>
+            </div>
+        </nav>
+    </header>
 
-<div class="admin-wrap" id="postBox" style="display:none">
-  <h1>📤 Posting Video</h1>
-  <div id="alertBox"></div>
-  
-  <div class="form-group">
-    <label>Judul Video *</label>
-    <input type="text" id="vTitle" placeholder="Contoh: Tutorial keren banget">
-  </div>
-  
-  <div class="form-group">
-    <label>Kategori *</label>
-    <input type="text" id="vCategory" list="catList" placeholder="Pilih atau ketik kategori baru">
-    <datalist id="catList"></datalist>
-  </div>
-  
-  <div class="form-group">
-    <label>URL Video / Embed Code *</label>
-    <textarea id="vEmbed" placeholder="Paste URL embed atau iframe code di sini..."></textarea>
-    <small style="color:#888">Contoh: https://www.youtube.com/embed/abc123 atau full iframe</small>
-  </div>
-  
-  <div class="form-group">
-    <label>Thumbnail (Auto-Detect / Manual URL)</label>
-    <input type="text" id="vThumb" placeholder="Otomatis terisi, atau paste URL gambar manual">
-    <img id="thumbPreview" class="thumb-preview" alt="Preview">
-  </div>
-  
-  <button class="btn-primary" id="publishBtn" onclick="publishVideo()">🚀 Publish Video</button>
-  <button class="btn-primary" style="margin-top:10px;background:#666" onclick="logout()">Logout</button>
-</div>
+    <main class="main-container">
+        
+        <div id="login-section" class="admin-container">
+            <h2><i class="fas fa-key" style="color: var(--accent-red);"></i> Autentikasi GitHub</h2>
+            <p style="color: var(--text-gray); margin-bottom: 20px;">Masukkan Personal Access Token GitHub kamu.</p>
+            <div class="form-group">
+                <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            </div>
+            <button id="save-token-btn" class="btn">Simpan & Masuk</button>
+        </div>
 
-<script src="database.js"></script>
-<script>
-const GH = {
-  user: 'pembri',
-  repo: 'remaja-18',
-  branch: 'main',
-  token: ''
-};
+        <div id="dashboard-section" class="admin-container hidden">
+            <h2><i class="fas fa-upload" style="color: var(--accent-red);"></i> Publish Video Baru</h2>
+            
+            <div class="form-group">
+                <label>Judul Video</label>
+                <input type="text" id="video-title" placeholder="Contoh: Cara Membuat Website">
+            </div>
 
-const BASE_PATH = '/remaja-18'; // path subfolder GitHub Pages
+            <div class="form-group">
+                <label>Kategori</label>
+                <select id="video-category">
+                    <option value="" disabled selected>Loading kategori...</option>
+                </select>
+            </div>
 
-document.getElementById('vEmbed').addEventListener('input', autoDetectThumb);
-document.getElementById('vThumb').addEventListener('input', e => {
-  if (e.target.value) showThumbPreview(e.target.value);
-});
+            <div class="form-group">
+                <label>Atau Kategori Baru (Opsional)</label>
+                <input type="text" id="new-category" placeholder="Ketik kategori baru jika tidak ada di atas">
+            </div>
 
-function login() {
-  const token = document.getElementById('ghToken').value.trim();
-  if (!token) return alert('Masukkan token!');
-  GH.token = token;
-  localStorage.setItem('gh_token', token);
-  showPostBox();
-}
+            <div class="form-group">
+                <label>URL Embed (YouTube)</label>
+                <input type="text" id="embed-url" placeholder="https://www.youtube.com/embed/xxxxxxx">
+            </div>
 
-function logout() {
-  localStorage.removeItem('gh_token');
-  location.reload();
-}
+            <button id="publish-btn" class="btn"><i class="fas fa-rocket"></i> Publish ke GitHub</button>
 
-function showPostBox() {
-  document.getElementById('loginBox').style.display = 'none';
-  document.getElementById('postBox').style.display = 'block';
-  loadCategories();
-}
+            <div id="log-area"></div>
+        </div>
 
-async function loadCategories() {
-  await DB.load();
-  const dl = document.getElementById('catList');
-  dl.innerHTML = Array.from(DB.categories).filter(c=>c!=='all').map(c=>`<option value="${c}">`).join('');
-}
+    </main>
 
-function autoDetectThumb() {
-  const embed = document.getElementById('vEmbed').value;
-  const thumb = detectThumbnail(embed);
-  if (thumb) {
-    document.getElementById('vThumb').value = thumb;
-    showThumbPreview(thumb);
-  }
-}
+    <script>
+        const REPO = 'pembri/remaja-18';
+        
+        // DOM Elements
+        const loginSection = document.getElementById('login-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const tokenInput = document.getElementById('github-token');
+        const saveTokenBtn = document.getElementById('save-token-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const publishBtn = document.getElementById('publish-btn');
+        const categorySelect = document.getElementById('video-category');
+        const logArea = document.getElementById('log-area');
 
-function detectThumbnail(embed) {
-  let m = embed.match(/(?:youtube\.com\/(?:embed\/|watch\?v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  if (m) return `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`;
-  
-  m = embed.match(/(?:dood\.[a-z]+|d000d\.com|doodstream\.com)\/[ed]\/([a-z0-9]+)/i);
-  if (m) return `https://img.doodcdn.com/snaps/${m[1]}.jpg`;
-  
-  m = embed.match(/streamtape\.com\/[ev]\/([a-zA-Z0-9]+)/);
-  if (m) return `https://streamtape.com/thumb/${m[1]}.jpg`;
-  
-  m = embed.match(/filemoon\.[a-z]+\/[ed]\/([a-z0-9]+)/i);
-  if (m) return `https://filemoon.sx/i/${m[1]}.jpg`;
-  
-  m = embed.match(/streamwish\.[a-z]+\/[ed]\/([a-z0-9]+)/i);
-  if (m) return `https://streamwish.to/i/${m[1]}.jpg`;
-  
-  m = embed.match(/mixdrop\.[a-z]+\/[ef]\/([a-zA-Z0-9]+)/);
-  if (m) return `https://mixdrop.co/i/${m[1]}.jpg`;
-  
-  m = embed.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (m) { fetchVimeoThumb(m[1]); return ''; }
-  
-  return '';
-}
+        let currentDatabase = [];
+        let dbSha = '';
 
-async function fetchVimeoThumb(id) {
-  try {
-    const res = await fetch(`https://vimeo.com/api/v2/video/${id}.json`);
-    const data = await res.json();
-    const url = data[0]?.thumbnail_large;
-    if (url) {
-      document.getElementById('vThumb').value = url;
-      showThumbPreview(url);
-    }
-  } catch(e) {}
-}
+        // --- SISTEM AUTENTIKASI ---
+        const checkAuth = () => {
+            const token = localStorage.getItem('gh_token');
+            if (token) {
+                loginSection.classList.add('hidden');
+                dashboardSection.classList.remove('hidden');
+                logoutBtn.classList.remove('hidden');
+                fetchDatabase(); // Ambil data db saat ini
+            } else {
+                loginSection.classList.remove('hidden');
+                dashboardSection.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+            }
+        };
 
-function showThumbPreview(url) {
-  const img = document.getElementById('thumbPreview');
-  img.src = url;
-  img.classList.add('show');
-  img.onerror = () => img.classList.remove('show');
-}
+        saveTokenBtn.addEventListener('click', () => {
+            if(tokenInput.value.trim() !== '') {
+                localStorage.setItem('gh_token', tokenInput.value.trim());
+                checkAuth();
+            }
+        });
 
-function slugify(text) {
-  return text.toString().toLowerCase().trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .substring(0, 80);
-}
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('gh_token');
+            checkAuth();
+        });
 
-function buildEmbedHtml(input) {
-  const trimmed = input.trim();
-  if (/<iframe/i.test(trimmed)) return trimmed;
-  return `<iframe src="${trimmed}" allowfullscreen allow="autoplay; encrypted-media" frameborder="0"></iframe>`;
-}
+        // --- GITHUB API HELPER ---
+        async function ghFetch(path, method = 'GET', body = null) {
+            const token = localStorage.getItem('gh_token');
+            const options = {
+                method,
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                }
+            };
+            if (body) options.body = JSON.stringify(body);
 
-async function publishVideo() {
-  const title = document.getElementById('vTitle').value.trim();
-  const category = document.getElementById('vCategory').value.trim();
-  const embedRaw = document.getElementById('vEmbed').value.trim();
-  const thumbnail = document.getElementById('vThumb').value.trim();
-  
-  if (!title || !category || !embedRaw) {
-    return showAlert('Lengkapi semua field wajib!', 'error');
-  }
-  
-  const btn = document.getElementById('publishBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Publishing...';
-  
-  try {
-    const slug = slugify(title) + '-' + Date.now().toString(36);
-    const date = new Date().toISOString();
-    const embedHtml = buildEmbedHtml(embedRaw);
-    const finalThumb = thumbnail || `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 180'><rect fill='%23a020f0' width='320' height='180'/><text x='160' y='95' fill='white' font-size='18' text-anchor='middle'>Remaja 18</text></svg>`;
-    
-    const videoData = { slug, title, category, embed: embedHtml, thumbnail: finalThumb, date };
-    
-    showAlert('📥 Mengambil database...', 'success');
-    
-    let videos = [];
-    let indexSha = null;
-    try {
-      const idxRes = await ghGet('content_video/index.json');
-      if (idxRes) {
-        videos = JSON.parse(decodeURIComponent(escape(atob(idxRes.content.replace(/\s/g,'')))));
-        indexSha = idxRes.sha;
-      }
-    } catch(e) {}
-    
-    videos.unshift(videoData);
-    
-    const detailHtml = generateDetailPage(videoData, videos);
-    
-    showAlert('📝 Membuat halaman video...', 'success');
-    await ghPut(`content_video/${slug}/index.html`, detailHtml, `Add video: ${title}`);
-    
-    showAlert('💾 Update database...', 'success');
-    await ghPut('content_video/index.json', JSON.stringify(videos, null, 2), `Update index: ${title}`, indexSha);
-    
-    showAlert(`✅ Berhasil! URL: ${BASE_PATH}/content_video/${slug}/`, 'success');
-    
-    document.getElementById('vTitle').value = '';
-    document.getElementById('vEmbed').value = '';
-    document.getElementById('vThumb').value = '';
-    document.getElementById('thumbPreview').classList.remove('show');
-    
-    await loadCategories();
-    
-  } catch (err) {
-    console.error(err);
-    showAlert('❌ Gagal: ' + err.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🚀 Publish Video';
-  }
-}
+            const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, options);
+            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+            return res.json();
+        }
 
-async function ghGet(path) {
-  const url = `https://api.github.com/repos/${GH.user}/${GH.repo}/contents/${path}?ref=${GH.branch}`;
-  const res = await fetch(url, {
-    headers: { 'Authorization': `token ${GH.token}`, 'Accept': 'application/vnd.github.v3+json' }
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error('GitHub GET failed: ' + res.status);
-  return await res.json();
-}
+        // --- LOGIKA DATABASE ---
+        async function fetchDatabase() {
+            try {
+                logMsg("Membaca database.js dari GitHub...");
+                const data = await ghFetch('database.js');
+                dbSha = data.sha; // Simpan SHA untuk keperluan update
+                
+                // Decode base64 dari GitHub
+                const decodedContent = decodeURIComponent(escape(atob(data.content)));
+                
+                // Parsing format 'window.videoDatabase = [...]' menjadi JSON Object
+                const jsonString = decodedContent.replace('window.videoDatabase = ', '').replace(/;$/, '').trim();
+                currentDatabase = JSON.parse(jsonString);
+                
+                // Load kategori ke dropdown
+                const categories = [...new Set(currentDatabase.map(v => v.category))];
+                categorySelect.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join('');
+                logMsg("Database siap!");
+            } catch (err) {
+                logMsg("Gagal membaca database. Pastikan token benar dan repositori ada.", true);
+                console.error(err);
+            }
+        }
 
-async function ghPut(path, content, message, sha = null) {
-  const url = `https://api.github.com/repos/${GH.user}/${GH.repo}/contents/${path}`;
-  const body = {
-    message,
-    content: btoa(unescape(encodeURIComponent(content))),
-    branch: GH.branch
-  };
-  if (sha) body.sha = sha;
-  
-  if (!sha) {
-    const existing = await ghGet(path);
-    if (existing && existing.sha) body.sha = existing.sha;
-  }
-  
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `token ${GH.token}`,
-      'Accept': 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
-  
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || 'PUT failed');
-  }
-  return await res.json();
-}
+        // Ekstrak ID Youtube
+        function getYoutubeId(url) {
+            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/);
+            return match ? match[1] : null;
+        }
 
-function generateDetailPage(video, allVideos) {
-  const recommendations = allVideos
-    .filter(v => v.slug !== video.slug)
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 5);
-  
-  const recHtml = recommendations.map(v => `
-    <a class="video-card" href="../${v.slug}/">
-      <div class="thumb"><img src="${v.thumbnail}" alt="${escapeHtml(v.title)}"></div>
-      <div class="video-info">
-        <h3>${escapeHtml(v.title)}</h3>
-        <span class="cat">${escapeHtml(v.category)}</span>
-      </div>
-    </a>
-  `).join('');
-  
-  return `<!DOCTYPE html>
+        // Logger Function
+        function logMsg(msg, isError = false) {
+            logArea.style.display = 'block';
+            logArea.style.color = isError ? 'var(--accent-red)' : '#0f0';
+            logArea.innerHTML += `> ${msg}<br>`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        // --- LOGIKA PUBLISH ---
+        publishBtn.addEventListener('click', async () => {
+            const title = document.getElementById('video-title').value.trim();
+            const newCat = document.getElementById('new-category').value.trim();
+            const selectedCat = categorySelect.value;
+            const embedUrl = document.getElementById('embed-url').value.trim();
+
+            const category = newCat !== '' ? newCat : selectedCat;
+
+            if (!title || !embedUrl) {
+                alert("Judul dan URL Embed wajib diisi!");
+                return;
+            }
+
+            const ytId = getYoutubeId(embedUrl);
+            if (!ytId) {
+                alert("Format URL YouTube tidak valid!");
+                return;
+            }
+
+            publishBtn.disabled = true;
+            publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            logArea.innerHTML = '';
+
+            try {
+                // 1. Siapkan Data Baru
+                const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+                const thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                const embedBase64 = btoa(embedUrl); // Sembunyikan URL
+                const id = Date.now().toString();
+                const today = new Date().toISOString().split('T')[0];
+
+                const newVideoObj = { id, title, slug, category, thumbnail, embedBase64, date: today };
+
+                // 2. Update Array Database
+                currentDatabase.push(newVideoObj);
+                const updatedDbText = 'window.videoDatabase = ' + JSON.stringify(currentDatabase, null, 4) + ';';
+                const base64Db = btoa(unescape(encodeURIComponent(updatedDbText)));
+
+                logMsg("Menyimpan database.js ke GitHub...");
+                // Push Database ke Github
+                await ghFetch('database.js', 'PUT', {
+                    message: `Auto-publish: Tambah video ${title}`,
+                    content: base64Db,
+                    sha: dbSha
+                });
+                logMsg("Database berhasil diupdate.");
+
+                // 3. Generate Template Halaman Video (index.html di dalam folder)
+                logMsg(`Membangun halaman video: /content_video/${slug}/index.html ...`);
+                const videoHtmlTemplate = `<!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${escapeHtml(video.title)} - Remaja 18</title>
-<meta name="description" content="${escapeHtml(video.title)} - Kategori ${escapeHtml(video.category)}">
-<meta property="og:title" content="${escapeHtml(video.title)}">
-<meta property="og:image" content="${video.thumbnail}">
-<link rel="stylesheet" href="../../style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title} - Remaja 18</title>
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-<header class="header">
-  <a href="../../" style="text-decoration:none"><h1 class="logo">Remaja <span>18</span></h1></a>
-  <div class="search-wrapper">
-    <input type="text" id="searchInput" placeholder="Cari video..." onkeyup="if(event.key==='Enter')location.href='../../?q='+encodeURIComponent(this.value)">
-    <button onclick="location.href='../../?q='+encodeURIComponent(document.getElementById('searchInput').value)">🔍</button>
-  </div>
-</header>
-<main class="video-detail">
-  <div class="video-player">${video.embed}</div>
-  <h1>${escapeHtml(video.title)}</h1>
-  <div class="video-meta">
-    <span>📁 ${escapeHtml(video.category)}</span>
-    <span>📅 ${new Date(video.date).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</span>
-  </div>
-    <h2 class="recommend-title">🎬 Rekomendasi Video</h2>
-  <div class="video-grid">${recHtml || '<div class="empty">Belum ada rekomendasi</div>'}</div>
-</main>
-<footer class="footer"><p>© 2026 Remaja 18 - All Rights Reserved</p></footer>
+    <header>
+        <nav class="navbar">
+            <div class="nav-left">
+                <a href="../../index" class="logo">REMAJA<span>18</span></a>
+            </div>
+        </nav>
+    </header>
+    <main class="main-container" style="max-width: 1000px; margin: 85px auto;">
+        <div style="background:var(--bg-card); padding:10px; border-radius:12px; margin-bottom:30px;">
+            <div class="thumbnail-wrap" id="video-container">
+                </div>
+            <div class="video-info" style="padding:20px;">
+                <span class="category-tag">${category}</span>
+                <h1 style="font-size:1.5rem; margin-top:10px;">${title}</h1>
+            </div>
+        </div>
+
+        <h2><i class="fas fa-fire" style="color:var(--accent-red);"></i> Rekomendasi Lainnya</h2>
+        <div id="related-grid" class="video-grid"></div>
+    </main>
+
+    <script src="../../database.js"><\/script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Decode dan Tampilkan Video
+            const embedB64 = "${embedBase64}";
+            const iframeSrc = atob(embedB64);
+            document.getElementById('video-container').innerHTML = \`<iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" src="\${iframeSrc}" allowfullscreen></iframe>\`;
+
+            // 2. Render 5 Rekomendasi
+            const allVids = window.videoDatabase || [];
+            // Ambil 5 video secara acak yang bukan video saat ini
+            const related = allVids.filter(v => v.slug !== "${slug}").sort(() => 0.5 - Math.random()).slice(0, 5);
+            
+            const grid = document.getElementById('related-grid');
+            related.forEach(v => {
+                grid.innerHTML += \`
+                    <a href="../\${v.slug}" class="video-card">
+                        <div class="thumbnail-wrap">
+                            <img src="\${v.thumbnail}" alt="\${v.title}">
+                        </div>
+                        <div class="video-info">
+                            <span class="category-tag">\${v.category}</span>
+                            <h3>\${v.title}</h3>
+                        </div>
+                    </a>
+                \`;
+            });
+        });
+    <\/script>
 </body>
 </html>`;
-}
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+                const base64Html = btoa(unescape(encodeURIComponent(videoHtmlTemplate)));
 
-function showAlert(msg, type) {
-  const box = document.getElementById('alertBox');
-  box.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
-  if (type === 'success') setTimeout(() => box.innerHTML = '', 4000);
-}
+                // Push File Halaman Video ke Github
+                await ghFetch(`content_video/${slug}/index.html`, 'PUT', {
+                    message: `Auto-publish: Generate halaman ${slug}`,
+                    content: base64Html
+                });
 
-// Auto-login kalau token sudah disimpan
-window.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem('gh_token');
-  if (saved) {
-    GH.token = saved;
-    showPostBox();
-  }
-});
-</script>
+                logMsg("Halaman video berhasil dibuat!");
+                logMsg(`<b>SUKSES!</b> Video "${title}" telah dipublish.`);
+                
+                // Reset form
+                document.getElementById('video-title').value = '';
+                document.getElementById('new-category').value = '';
+                document.getElementById('embed-url').value = '';
+                
+                // Refresh Db reference
+                await fetchDatabase();
+
+            } catch (err) {
+                logMsg("Terjadi kesalahan saat upload. Cek Console browser.", true);
+                console.error(err);
+            } finally {
+                publishBtn.disabled = false;
+                publishBtn.innerHTML = '<i class="fas fa-rocket"></i> Publish ke GitHub';
+            }
+        });
+
+        // Jalankan saat load
+        checkAuth();
+    </script>
 </body>
 </html>
