@@ -3,22 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Tidak Ditemukan | Remaja 18</title>
+    <title>404 - Halaman Tidak Ditemukan | Remaja 18</title>
     <link rel="stylesheet" href="/style.css">
     <style>
-        .error-page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; text-align: center;}
-        .error-page h1 { font-size: 80px; color: var(--primary); }
-        .error-page a { margin-top: 20px; color: white; text-decoration: underline; }
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 70px); /* Dikurangi tinggi header */
+            text-align: center;
+            padding: 20px;
+        }
+        .error-container h1 {
+            font-size: 100px;
+            color: var(--primary);
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+        .error-container h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+        .error-container p {
+            color: var(--text-dim);
+            margin-bottom: 30px;
+            max-width: 400px;
+        }
+        .back-home {
+            padding: 12px 30px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+        }
+        .back-home:hover {
+            background: #b20710;
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.5);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
+
     <header>
-        <a href="/" class="logo">REMAJA 18</a>
+        <div class="left-header">
+            <a href="/" class="logo" style="margin-left: 0;">REMAJA <span>18</span></a>
+        </div>
     </header>
-    <div class="error-page">
+
+    <div class="error-container">
         <h1>404</h1>
-        <p>Waduh, halaman atau video yang kamu cari tidak ada.</p>
-        <a href="/">Kembali ke Beranda</a>
+        <h2>Waduh, Kesasar Ya?</h2>
+        <p>Halaman atau video yang kamu cari sepertinya tidak ada, sudah dihapus, atau URL-nya salah.</p>
+        <a href="/" class="back-home">Kembali ke Beranda</a>
     </div>
+
 </body>
 </html>
