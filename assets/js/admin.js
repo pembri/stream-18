@@ -1,5 +1,4 @@
 /** * STREAM 18 - ADMIN ENGINE
- * Handles GitHub API Integration
  */
 
 const GITHUB_CONFIG = {
@@ -7,7 +6,6 @@ const GITHUB_CONFIG = {
     branch: 'main'
 };
 
-// 1. AUTH CHECK
 function checkAuth() {
     const token = localStorage.getItem('gh_token');
     if (!token) {
@@ -21,14 +19,10 @@ function checkAuth() {
     }
 }
 
-// 2. SLUG GENERATOR
 function createSlug(text) {
-    return text.toLowerCase()
-        .replace(/[^\w ]+/g, '')
-        .replace(/ +/g, '-');
+    return text.toLowerCase().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
 }
 
-// 3. PUBLISH VIDEO
 async function publishVideo() {
     const title = document.getElementById('vTitle').value;
     const category = document.getElementById('vCategory').value;
@@ -36,15 +30,13 @@ async function publishVideo() {
     const thumbnail = document.getElementById('vThumb').value;
     const token = localStorage.getItem('gh_token');
 
-    if (!title || !embedUrl || !token) return alert("Data tidak lengkap!");
+    if (!title || !category || !embedUrl || !token) return alert("Data tidak lengkap!");
 
     const slug = createSlug(title);
     const fileName = `content_video/${category}/${slug}.html`;
     const videoId = Date.now();
 
-    // Template Content HTML (Wajib identik strukturnya)
-    const contentHTML = `
-<!DOCTYPE html>
+    const contentHTML = `<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -57,52 +49,39 @@ async function publishVideo() {
         <div class="player-container">
             <iframe src="${embedUrl}" allowfullscreen allow="autoplay; encrypted-media"></iframe>
         </div>
-        <div style="margin-top:20px;">
-            <h1 class="section-title">${title}</h1>
-            <p>Category: ${category}</p>
+        <div style="margin-top:20px; max-width:1000px; margin:20px auto;">
+            <span class="video-tag">${category}</span>
+            <h1 class="section-title" style="margin-top:15px;">${title}</h1>
         </div>
     </main>
+    <script src="/database.js"></script>
     <script src="/assets/js/app.js"></script>
 </body>
 </html>`;
 
     try {
-        // A. Create Content File
         await uploadToGithub(fileName, contentHTML, `Upload video: ${title}`);
-
-        // B. Update database.js
-        await updateDatabase(videoId, title, category, slug, thumbnail);
-
         alert("Video Berhasil Dipublish!");
         location.reload();
     } catch (err) {
-        console.error(err);
         alert("Gagal Publish: " + err.message);
     }
 }
 
-// 4. GLOBAL DOMAIN UPDATE
 async function updateGlobalDomain() {
     const newDomain = document.getElementById('targetDomain').value;
-    const token = localStorage.getItem('gh_token');
-    
     if (!newDomain) return;
-    
-    // Logic: Update CNAME & Update referensi di database jika perlu
     try {
         await uploadToGithub('CNAME', newDomain, `Update domain to ${newDomain}`);
-        alert("Domain berhasil diperbarui. Perubahan mungkin butuh beberapa menit.");
+        alert("Domain diperbarui.");
     } catch (err) {
         alert("Gagal update domain.");
     }
 }
 
-// HELPER: GITHUB API UPLOAD
 async function uploadToGithub(path, content, message) {
     const token = localStorage.getItem('gh_token');
     const url = `https://api.github.com/repos/${GITHUB_CONFIG.repo}/contents/${path}`;
-    
-    // Get SHA if file exists
     let sha = "";
     try {
         const res = await fetch(url, { headers: { 'Authorization': `token ${token}` } });
@@ -112,24 +91,19 @@ async function uploadToGithub(path, content, message) {
 
     return fetch(url, {
         method: 'PUT',
-        headers: {
-            'Authorization': `token ${token}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            message: message,
-            content: btoa(unescape(encodeURIComponent(content))),
-            sha: sha,
-            branch: GITHUB_CONFIG.branch
-        })
+        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, content: btoa(unescape(encodeURIComponent(content))), sha, branch: GITHUB_CONFIG.branch })
     });
 }
 
-async function updateDatabase(id, title, category, slug, thumbnail) {
-    // Logic menarik database.js, menambah array, lalu push balik
-    // (Akan diimplementasikan saat file database.js dibuat)
+function populateCategoryList() {
+    const datalist = document.getElementById('existingCategories');
+    if (datalist && typeof videoData !== 'undefined') {
+        const uniqueCats = [...new Set(videoData.map(v => v.category))];
+        datalist.innerHTML = uniqueCats.map(c => `<option value="${c}">`).join('');
+    }
 }
 
-if (window.location.pathname.includes('admin')) {
-    checkAuth();
-}
+document.addEventListener('DOMContentLoaded', populateCategoryList);
+
+if (window.location.pathname.includes('admin')) checkAuth();
