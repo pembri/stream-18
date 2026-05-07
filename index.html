@@ -1,183 +1,24 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <script>
-  // SPA Redirect fix
-  const r = sessionStorage.getItem('redirect');
-  if (r) { sessionStorage.removeItem('redirect'); history.replaceState(null, '', r); }
-</script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Stream 18</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STREAM 18 - Streaming Video Kualitas Terbaik</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
-
-  <!-- OVERLAY -->
-  <div class="overlay" id="overlay"></div>
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <span class="logo">Stream <span class="accent">18</span></span>
-      <button class="close-btn" id="closeBtn"><i class="fas fa-times"></i></button>
-    </div>
-
-    <div class="sidebar-search">
-      <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" id="sidebarSearch" placeholder="Cari video..." />
-      </div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <p class="nav-label">Kategori</p>
-      <ul id="categoryList">
-        <li class="active" data-category="all">
-          <i class="fas fa-th-large"></i> Semua
-        </li>
-      </ul>
-    </nav>
-
-    <div class="sidebar-footer-note">
-      <p>© 2025 Stream 18</p>
-    </div>
-  </aside>
-
-  <!-- NAVBAR -->
-  <header class="navbar" id="navbar">
-    <div class="navbar-left">
-      <button class="hamburger" id="hamburgerBtn">
-        <i class="fas fa-bars"></i>
-      </button>
-      <a href="/" class="logo-link">
-        <span class="logo">Stream <span class="accent">18</span></span>
-      </a>
-    </div>
-
-    <div class="navbar-center">
-      <div class="search-box desktop-search">
-        <i class="fas fa-search"></i>
-        <input type="text" id="desktopSearch" placeholder="Cari video..." />
-        <button class="search-clear" id="searchClear"><i class="fas fa-times"></i></button>
-      </div>
-    </div>
-
-    <div class="navbar-right">
-      <button class="mobile-search-btn" id="mobileSearchBtn">
-        <i class="fas fa-search"></i>
-      </button>
-    </div>
-  </header>
-
-  <!-- MOBILE SEARCH BAR -->
-  <div class="mobile-search-bar" id="mobileSearchBar">
-    <div class="search-box">
-      <i class="fas fa-search"></i>
-      <input type="text" id="mobileSearch" placeholder="Cari video..." />
-      <button id="mobileSearchClose"><i class="fas fa-times"></i></button>
-    </div>
-  </div>
-
-  <!-- MAIN CONTENT -->
-  <main class="main-content" id="mainContent">
-
-    <!-- HOME PAGE -->
-    <div id="homePage">
-      <div class="page-header">
-        <h2 class="page-title" id="pageTitle">Semua Video</h2>
-        <span class="video-count" id="videoCount"></span>
-      </div>
-
-      <div class="video-grid" id="videoGrid">
-        <!-- Video cards inject dari JS -->
-      </div>
-
-      <!-- SKELETON LOADER -->
-      <div class="skeleton-grid" id="skeletonGrid">
-        <div class="skeleton-card" id="skeletonTemplate">
-          <div class="skeleton skeleton-thumb"></div>
-          <div class="skeleton-info">
-            <div class="skeleton skeleton-title"></div>
-            <div class="skeleton skeleton-meta"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- EMPTY STATE -->
-      <div class="empty-state" id="emptyState" style="display:none;">
-        <i class="fas fa-film"></i>
-        <p>Tidak ada video ditemukan</p>
-        <span>Coba kata kunci lain atau pilih kategori berbeda</span>
-      </div>
-
-      <!-- PAGINATION -->
-      <div class="pagination" id="pagination"></div>
-    </div>
-
-    <!-- WATCH PAGE -->
-    <div id="watchPage" style="display:none;">
-      <div class="watch-layout">
-        <div class="watch-main">
-          <div class="player-wrapper">
-            <div class="player-container" id="playerContainer">
-              <!-- Player inject dari JS -->
-            </div>
-          </div>
-          <div class="watch-info">
-            <h1 class="watch-title" id="watchTitle"></h1>
-            <div class="watch-meta">
-              <span class="watch-category" id="watchCategory"></span>
-              <span class="watch-date" id="watchDate"></span>
-            </div>
-            <div class="watch-divider"></div>
-            <p class="watch-desc" id="watchDesc"></p>
-          </div>
+    <main>
+        <div style="margin-bottom: 30px;">
+            <h2 class="section-title">Video Terbaru</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Tonton koleksi video terbaru kami.</p>
         </div>
 
-        <aside class="watch-sidebar">
-          <h3 class="rec-title">Rekomendasi</h3>
-          <div class="rec-list" id="recList">
-            <!-- Rekomendasi inject dari JS -->
-          </div>
-        </aside>
-      </div>
-    </div>
+        <div id="video-list-container" class="video-grid"></div>
+        
+        <div id="pagination" class="pagination"></div>
+    </main>
 
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="footer" id="footer">
-    <div class="footer-inner">
-      <div class="footer-top">
-        <div class="footer-brand">
-          <span class="logo">Stream <span class="accent">18</span></span>
-          <p>Platform streaming video terbaik.</p>
-        </div>
-        <div class="footer-links">
-          <h4>Navigasi</h4>
-          <ul>
-            <li><a href="/">Beranda</a></li>
-            <li><a href="/admin">Admin</a></li>
-          </ul>
-        </div>
-        <div class="footer-links">
-          <h4>Kategori</h4>
-          <ul id="footerCategories">
-            <!-- Inject dari JS -->
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2025 Stream 18. All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
-
-  <script src="database.js"></script>
-  <script src="app.js"></script>
+    <script src="/database.js"></script>
+    <script src="/assets/js/app.js"></script>
 </body>
 </html>
