@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - STREAM 18</title>
     <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+        th, td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
+        th { color: var(--accent-color); font-weight: bold; }
+        .btn-sm { padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-right: 5px; }
+        .btn-edit { background: #f39c12; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+    </style>
 </head>
 <body>
     <main>
@@ -18,12 +26,13 @@
                     <label for="targetDomain">URL Domain Baru</label>
                     <input type="text" id="targetDomain" placeholder="contoh: stream18.musikanywhere.online">
                 </div>
-                <p class="helper-text">*Mengubah ini akan memperbarui file CNAME di repository secara otomatis.</p>
                 <button class="btn-publish" onclick="updateGlobalDomain()">Update Domain</button>
             </div>
 
-            <div class="admin-section">
-                <h2>Posting Video Baru</h2>
+            <div class="admin-section" id="formSection">
+                <h2 id="formTitle">Posting Video Baru</h2>
+                <input type="hidden" id="vId" value="">
+                <input type="hidden" id="vOldSlug" value="">
                 
                 <div class="form-group">
                     <label for="vTitle">Judul Video</label>
@@ -46,9 +55,27 @@
                     <textarea id="vEmbed" rows="3" placeholder="Masukkan URL Embed Video"></textarea>
                 </div>
                 
-                <p class="helper-text">*Sistem otomatis membuat slug dan menyimpan ke folder.</p>
-                <button id="btnPublish" class="btn-publish" onclick="publishVideo()">Publish Video Sekarang</button>
+                <button id="btnPublish" class="btn-publish" onclick="saveVideo()">Publish Video Sekarang</button>
+                <button id="btnCancel" class="btn-publish" style="display:none; background:#555; margin-top:10px;" onclick="cancelEdit()">Batal Edit</button>
             </div>
+
+            <div class="admin-section">
+                <h2>Kelola Video</h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Judul</th>
+                                <th>Kategori</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminVideoList">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </main>
 
