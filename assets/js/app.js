@@ -1,5 +1,4 @@
 /** * STREAM 18 - CORE APP JS
- * Author: Ahmad Supembri (Pembri)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,8 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSearchAndFilters();
 });
 
-// 1. INJEKSI HEADER & FOOTER IDENTIK
+// 1. INJEKSI HEADER & FOOTER IDENTIK (MENU DINAMIS)
 function initLayout() {
+    let categories = [];
+    if (typeof videoData !== 'undefined') {
+        const allCats = videoData.map(v => v.category);
+        categories = [...new Set(allCats)];
+    }
+
+    let categoryLinks = categories.map(cat => 
+        `<li><a href="/category/${cat.toLowerCase()}">${cat}</a></li>`
+    ).join('');
+
     const headerHTML = `
         <header>
             <div class="logo"><a href="/">STREAM 18</a></div>
@@ -22,13 +31,14 @@ function initLayout() {
         </header>
         <div class="overlay" onclick="toggleMenu()"></div>
         <nav id="side-menu">
+            <div class="menu-header">Menu Utama</div>
             <ul>
                 <li><a href="/">Beranda</a></li>
-                <li><a href="/category/action">List Category</a></li>
+                <li class="menu-label">Kategori Video</li>
+                ${categoryLinks}
+                <li class="menu-label">Lainnya</li>
                 <li><a href="/about">About</a></li>
                 <li><a href="/privacy-policy">Privacy Policy</a></li>
-                <li><hr style="border:0; border-top:1px solid #333; margin:10px 0;"></li>
-                <li><a href="/admin">Admin Panel</a></li>
             </ul>
         </nav>
     `;
@@ -46,7 +56,6 @@ function initLayout() {
     document.body.insertAdjacentHTML('afterbegin', headerHTML);
     document.body.insertAdjacentHTML('beforeend', footerHTML);
 
-    // Clean URL Handling for Links
     document.querySelectorAll('a').forEach(link => {
         const href = link.getAttribute('href');
         if (href && href.endsWith('.html') && !href.startsWith('http')) {
@@ -60,7 +69,7 @@ function toggleMenu() {
     document.querySelector('.overlay').classList.toggle('active');
 }
 
-// 2. RENDER VIDEO LIST (DARI database.js)
+// 2. RENDER VIDEO LIST
 let currentPage = 1;
 const itemsPerPage = 10;
 
@@ -68,10 +77,7 @@ function renderVideoList(filteredData = null) {
     const container = document.getElementById('video-list-container');
     if (!container) return;
 
-    // Ambil data dari database.js (Global Variable: videoData)
     let data = filteredData || (typeof videoData !== 'undefined' ? videoData : []);
-    
-    // Sort Terbaru (berdasarkan ID atau Tanggal)
     data.sort((a, b) => b.id - a.id);
 
     const start = (currentPage - 1) * itemsPerPage;
