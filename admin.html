@@ -5,45 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - STREAM 18</title>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        /* Tambahan style khusus halaman admin untuk memisahkan section */
-        .admin-section {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border: 1px solid var(--border-color);
-        }
-        .admin-section h2 {
-            color: var(--accent-color);
-            margin-bottom: 20px;
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .admin-section h2::before {
-            content: '';
-            width: 4px;
-            height: 20px;
-            background: var(--accent-color);
-            display: inline-block;
-        }
-        .helper-text {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-top: -15px;
-            margin-bottom: 15px;
-        }
-        .status-msg {
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            display: none;
-        }
-        .success { background: rgba(0, 255, 0, 0.1); color: #00ff00; border: 1px solid #00ff00; }
-        .error { background: rgba(255, 0, 0, 0.1); color: #ff0000; border: 1px solid #ff0000; }
-    </style>
 </head>
 <body>
     <main>
@@ -70,15 +31,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="vCategory">Kategori</label>
-                    <select id="vCategory">
-                        <option value="Action">Action</option>
-                        <option value="Comedy">Comedy</option>
-                        <option value="Drama">Drama</option>
-                        <option value="Horror">Horror</option>
-                        <option value="Romance">Romance</option>
-                        <option value="Thriller">Thriller</option>
-                    </select>
+                    <label for="vCategory">Kategori (Ketik baru atau pilih yang ada)</label>
+                    <input type="text" id="vCategory" list="existingCategories" placeholder="Contoh: Action, VLOG, dll" autocomplete="off">
+                    <datalist id="existingCategories"></datalist>
                 </div>
 
                 <div class="form-group">
@@ -87,15 +42,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="vEmbed">Embed URL Video (Support All Player)</label>
-                    <textarea id="vEmbed" rows="3" placeholder="Masukkan URL Embed atau Direct Link Video"></textarea>
+                    <label for="vEmbed">Embed URL Video</label>
+                    <textarea id="vEmbed" rows="3" placeholder="Masukkan URL Embed Video"></textarea>
                 </div>
                 
-                <p class="helper-text">*Sistem akan otomatis membuat slug ramah SEO dan memposting ke folder /content_video.</p>
-                
+                <p class="helper-text">*Sistem otomatis membuat slug dan menyimpan ke folder.</p>
                 <button id="btnPublish" class="btn-publish" onclick="publishVideo()">Publish Video Sekarang</button>
-                
-                <div id="statusMessage" class="status-msg"></div>
             </div>
         </div>
     </main>
