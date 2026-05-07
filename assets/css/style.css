@@ -1,6 +1,6 @@
 /* ROOT VARIABLES - NETFLIX/STREAMING PREMIUM VIBE */
 :root {
-    --bg-color: #050505; /* Hitam pekat */
+    --bg-color: #050505;
     --card-bg: #141414;
     --text-primary: #ffffff;
     --text-secondary: #aaaaaa;
@@ -38,7 +38,7 @@ header {
     width: 100%;
     z-index: 1000;
     display: flex;
-    flex-wrap: wrap; /* Agar search bar bisa turun ke bawah di HP */
+    flex-wrap: wrap; /* Wajib agar search bar turun di HP */
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
@@ -53,7 +53,7 @@ header {
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-/* SEARCH BAR - DIPERBAIKI */
+/* SEARCH BAR */
 .search-bar {
     flex: 1;
     max-width: 500px;
@@ -85,28 +85,73 @@ header {
     color: var(--text-primary);
     transition: 0.2s;
 }
-.hamburger-menu:hover { color: var(--accent-color); }
 
-/* SIDEBAR / MOBILE MENU */
+.hamburger-menu:hover { 
+    color: var(--accent-color); 
+}
+
+/* SIDEBAR / MOBILE MENU (PREMIUM LOOK) */
 #side-menu {
     position: fixed;
     top: 0;
     right: -300px;
     width: 280px;
     height: 100%;
-    background: #111;
+    background: #0f0f0f;
     transition: right 0.3s ease;
     z-index: 1001;
-    padding: 80px 20px;
+    padding: 0;
     border-left: 1px solid var(--border-color);
     box-shadow: -5px 0 20px rgba(0,0,0,0.8);
+    overflow-y: auto;
 }
 
 #side-menu.active { right: 0; }
-#side-menu ul { list-style: none; }
-#side-menu ul li { margin-bottom: 20px; font-size: 1.1rem; font-weight: 500; }
-#side-menu ul li a { display: block; padding: 8px 0; transition: 0.2s; }
-#side-menu ul li a:hover { color: var(--accent-color); padding-left: 10px; }
+
+.menu-header {
+    background: linear-gradient(135deg, var(--accent-hover), var(--accent-color));
+    padding: 30px 20px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    margin-bottom: 10px;
+}
+
+.menu-label {
+    font-size: 0.8rem !important;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 10px 20px 0;
+    margin-bottom: 5px !important;
+    border-top: 1px solid #222;
+    margin-top: 10px;
+}
+
+#side-menu ul { 
+    list-style: none; 
+    padding-bottom: 20px; 
+}
+
+#side-menu ul li { 
+    margin-bottom: 5px; 
+    font-size: 1rem; 
+}
+
+#side-menu ul li a { 
+    display: block; 
+    padding: 12px 20px; 
+    color: #ccc;
+    transition: 0.2s; 
+    border-left: 3px solid transparent;
+}
+
+#side-menu ul li a:hover { 
+    color: #fff; 
+    background: #1a1a1a;
+    border-left: 3px solid var(--accent-color);
+}
 
 .overlay {
     display: none;
@@ -116,6 +161,7 @@ header {
     backdrop-filter: blur(2px);
     z-index: 1000;
 }
+
 .overlay.active { display: block; }
 
 /* MAIN CONTENT */
@@ -156,16 +202,14 @@ main {
     z-index: 2;
 }
 
-/* Gambar cover penuh */
 .video-card img {
     width: 100%;
     aspect-ratio: 16/9;
     object-fit: cover;
     display: block;
-    background-color: #222; /* Fallback kalau gambar broken */
+    background-color: #222; /* Penyelamat kalau gambar error/broken */
 }
 
-/* Info overlay di atas gambar (seperti Netflix) */
 .video-info { 
     position: absolute;
     bottom: 0;
@@ -208,7 +252,12 @@ main {
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0,0,0,0.8);
 }
-.player-container iframe { width: 100%; height: 100%; border: none; }
+
+.player-container iframe { 
+    width: 100%; 
+    height: 100%; 
+    border: none; 
+}
 
 /* ADMIN PANEL UI */
 .admin-container {
@@ -220,56 +269,110 @@ main {
     border: 1px solid var(--border-color);
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
+
 .admin-section {
     background: #1a1a1a;
     padding: 25px;
     border-radius: 10px;
     margin-bottom: 30px;
 }
-.admin-section h2 { color: var(--accent-color); margin-bottom: 20px; font-size: 1.3rem; }
+
+.admin-section h2 { 
+    color: var(--accent-color); 
+    margin-bottom: 20px; 
+    font-size: 1.3rem; 
+}
+
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-secondary); }
+
 .form-group input, .form-group select, .form-group textarea {
-    width: 100%; padding: 12px; background: #222; border: 1px solid #333;
-    color: #fff; border-radius: 6px; transition: 0.3s;
-}
-.form-group input:focus, .form-group textarea:focus { border-color: var(--accent-color); outline: none; background: #2a2a2a; }
-.btn-publish {
-    background: var(--accent-color); color: white; border: none;
-    padding: 14px 25px; border-radius: 6px; cursor: pointer;
-    font-weight: bold; width: 100%; font-size: 1.1rem; text-transform: uppercase;
+    width: 100%;
+    padding: 12px;
+    background: #222;
+    border: 1px solid #333;
+    color: #fff;
+    border-radius: 6px;
     transition: 0.3s;
 }
-.btn-publish:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+.form-group input:focus, .form-group textarea:focus { 
+    border-color: var(--accent-color); 
+    outline: none; 
+    background: #2a2a2a; 
+}
+
+.btn-publish {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 14px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    transition: 0.3s;
+}
+
+.btn-publish:hover { 
+    background: var(--accent-hover); 
+    transform: translateY(-2px); 
+}
 
 /* FOOTER */
 footer {
-    padding: 40px 5%; background: #080808; text-align: center;
-    border-top: 1px solid var(--border-color); margin-top: 60px;
+    padding: 40px 5%;
+    background: #080808;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+    margin-top: 60px;
 }
 
 /* PAGINATION */
-.pagination { display: flex; justify-content: center; gap: 10px; margin-top: 40px; }
-.page-btn {
-    padding: 10px 20px; background: #222; border: none; border-radius: 5px;
-    color: white; cursor: pointer; font-weight: bold; transition: 0.3s;
+.pagination { 
+    display: flex; 
+    justify-content: center; 
+    gap: 10px; 
+    margin-top: 40px; 
 }
+
+.page-btn {
+    padding: 10px 20px;
+    background: #222;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
 .page-btn:hover { background: #333; }
 .page-btn.active { background: var(--accent-color); }
 
 /* RESPONSIVE SITUS DESKTOP vs MOBILE */
 @media (max-width: 768px) {
     header { padding: 15px; }
-    /* Memaksa logo dan menu di baris atas, search bar penuh di bawahnya */
+    
+    /* Penempatan ulang elemen di mobile agar search bar tidak tersembunyi */
     .logo { order: 1; }
     .hamburger-menu { order: 2; }
+    
     .search-bar { 
         order: 3; 
         max-width: 100%; 
         margin: 15px 0 0 0; 
         flex: 100%; 
     }
-    main { margin-top: 140px; } /* Jarak ditambahkan karena header jadi 2 baris */
-    .video-grid { grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); gap: 15px; }
+    
+    main { margin-top: 140px; } /* Jarak ditambah karena header sekarang 2 baris */
+    
+    .video-grid { 
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); 
+        gap: 15px; 
+    }
+    
     .admin-container { padding: 20px; }
 }
