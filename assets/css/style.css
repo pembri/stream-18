@@ -1,13 +1,13 @@
-/* ROOT VARIABLES - DARK THEME & RED ACCENT */
+/* ROOT VARIABLES - NETFLIX/STREAMING PREMIUM VIBE */
 :root {
-    --bg-color: #0b0b0b;
-    --card-bg: #161616;
+    --bg-color: #050505; /* Hitam pekat */
+    --card-bg: #141414;
     --text-primary: #ffffff;
-    --text-secondary: #b3b3b3;
-    --accent-color: #ff0000;
-    --accent-hover: #cc0000;
-    --header-bg: rgba(0, 0, 0, 0.9);
-    --border-color: #222;
+    --text-secondary: #aaaaaa;
+    --accent-color: #E50914; /* Merah streaming premium */
+    --accent-hover: #b20610;
+    --header-bg: rgba(0, 0, 0, 0.85);
+    --border-color: rgba(255, 255, 255, 0.1);
     --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -23,55 +23,69 @@ body {
     font-family: var(--font-main);
     line-height: 1.6;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
 a { text-decoration: none; color: inherit; }
 
 /* HEADER & NAVIGATION */
 header {
-    background: var(--header-bg);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 100%);
+    backdrop-filter: blur(10px);
     padding: 15px 5%;
     position: fixed;
     top: 0;
     width: 100%;
     z-index: 1000;
     display: flex;
+    flex-wrap: wrap; /* Agar search bar bisa turun ke bawah di HP */
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid var(--accent-color);
-    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
 }
 
-.logo {
-    font-size: 1.5rem;
-    font-weight: bold;
+.logo a {
+    font-size: 1.6rem;
+    font-weight: 900;
     color: var(--accent-color);
     text-transform: uppercase;
     letter-spacing: 2px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
+/* SEARCH BAR - DIPERBAIKI */
 .search-bar {
-    flex: 0 1 400px;
+    flex: 1;
+    max-width: 500px;
+    margin: 0 20px;
     position: relative;
 }
 
 .search-bar input {
     width: 100%;
-    padding: 8px 15px;
-    border-radius: 20px;
+    padding: 10px 20px;
+    border-radius: 30px;
     border: 1px solid var(--border-color);
-    background: #222;
+    background: rgba(255, 255, 255, 0.05);
     color: #fff;
     outline: none;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
 }
 
-.search-bar input:focus { border-color: var(--accent-color); }
+.search-bar input:focus { 
+    border-color: var(--accent-color); 
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
+}
 
 .hamburger-menu {
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     color: var(--text-primary);
+    transition: 0.2s;
 }
+.hamburger-menu:hover { color: var(--accent-color); }
 
 /* SIDEBAR / MOBILE MENU */
 #side-menu {
@@ -80,27 +94,28 @@ header {
     right: -300px;
     width: 280px;
     height: 100%;
-    background: var(--card-bg);
-    transition: 0.3s;
+    background: #111;
+    transition: right 0.3s ease;
     z-index: 1001;
     padding: 80px 20px;
-    border-left: 2px solid var(--accent-color);
+    border-left: 1px solid var(--border-color);
+    box-shadow: -5px 0 20px rgba(0,0,0,0.8);
 }
 
 #side-menu.active { right: 0; }
-
 #side-menu ul { list-style: none; }
-#side-menu ul li { margin-bottom: 20px; font-size: 1.1rem; }
-#side-menu ul li a:hover { color: var(--accent-color); }
+#side-menu ul li { margin-bottom: 20px; font-size: 1.1rem; font-weight: 500; }
+#side-menu ul li a { display: block; padding: 8px 0; transition: 0.2s; }
+#side-menu ul li a:hover { color: var(--accent-color); padding-left: 10px; }
 
 .overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(2px);
     z-index: 1000;
 }
-
 .overlay.active { display: block; }
 
 /* MAIN CONTENT */
@@ -113,124 +128,148 @@ main {
 .section-title {
     margin-bottom: 25px;
     font-size: 1.8rem;
+    font-weight: bold;
     border-left: 4px solid var(--accent-color);
     padding-left: 15px;
+    text-transform: uppercase;
 }
 
-/* VIDEO GRID */
+/* VIDEO GRID - GAYA PREMIUM STREAMING */
 .video-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    gap: 25px;
 }
 
 .video-card {
     background: var(--card-bg);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
-    transition: transform 0.3s;
-    border: 1px solid transparent;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
 }
 
 .video-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--accent-color);
+    transform: scale(1.03) translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.8);
+    z-index: 2;
 }
 
+/* Gambar cover penuh */
 .video-card img {
     width: 100%;
     aspect-ratio: 16/9;
     object-fit: cover;
+    display: block;
+    background-color: #222; /* Fallback kalau gambar broken */
 }
 
-.video-info { padding: 12px; }
-.video-info h3 { font-size: 1rem; margin-bottom: 5px; height: 2.4em; overflow: hidden; }
+/* Info overlay di atas gambar (seperti Netflix) */
+.video-info { 
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 40px 15px 15px;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
+}
+
+.video-info h3 { 
+    font-size: 1.1rem; 
+    margin-top: 5px; 
+    font-weight: 600;
+    line-height: 1.3;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+}
+
 .video-tag {
-    font-size: 0.8rem;
-    color: var(--accent-color);
-    background: rgba(255,0,0,0.1);
-    padding: 2px 8px;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #fff;
+    background: var(--accent-color);
+    padding: 4px 10px;
     border-radius: 4px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
 
-/* PLAYER CONTAINER (Universal) */
+/* PLAYER CONTAINER */
 .player-container {
     width: 100%;
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
     background: #000;
     aspect-ratio: 16/9;
-    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
 }
-
-.player-container iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-}
+.player-container iframe { width: 100%; height: 100%; border: none; }
 
 /* ADMIN PANEL UI */
 .admin-container {
     max-width: 800px;
     margin: 0 auto;
-    background: var(--card-bg);
-    padding: 30px;
-    border-radius: 10px;
-}
-
-.form-group { margin-bottom: 20px; }
-.form-group label { display: block; margin-bottom: 8px; }
-.form-group input, .form-group select, .form-group textarea {
-    width: 100%;
-    padding: 10px;
-    background: #222;
+    background: #111;
+    padding: 40px;
+    border-radius: 15px;
     border: 1px solid var(--border-color);
-    color: #fff;
-    border-radius: 5px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-
+.admin-section {
+    background: #1a1a1a;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+.admin-section h2 { color: var(--accent-color); margin-bottom: 20px; font-size: 1.3rem; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-secondary); }
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 12px; background: #222; border: 1px solid #333;
+    color: #fff; border-radius: 6px; transition: 0.3s;
+}
+.form-group input:focus, .form-group textarea:focus { border-color: var(--accent-color); outline: none; background: #2a2a2a; }
 .btn-publish {
-    background: var(--accent-color);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    width: 100%;
+    background: var(--accent-color); color: white; border: none;
+    padding: 14px 25px; border-radius: 6px; cursor: pointer;
+    font-weight: bold; width: 100%; font-size: 1.1rem; text-transform: uppercase;
+    transition: 0.3s;
 }
-
-.btn-publish:hover { background: var(--accent-hover); }
+.btn-publish:hover { background: var(--accent-hover); transform: translateY(-2px); }
 
 /* FOOTER */
 footer {
-    padding: 40px 5%;
-    background: #050505;
-    text-align: center;
-    border-top: 1px solid var(--border-color);
-    margin-top: 50px;
+    padding: 40px 5%; background: #080808; text-align: center;
+    border-top: 1px solid var(--border-color); margin-top: 60px;
 }
 
 /* PAGINATION */
-.pagination {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 30px;
-}
-
+.pagination { display: flex; justify-content: center; gap: 10px; margin-top: 40px; }
 .page-btn {
-    padding: 8px 16px;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    cursor: pointer;
+    padding: 10px 20px; background: #222; border: none; border-radius: 5px;
+    color: white; cursor: pointer; font-weight: bold; transition: 0.3s;
 }
-
-.page-btn.active { background: var(--accent-color); border-color: var(--accent-color); }
+.page-btn:hover { background: #333; }
+.page-btn.active { background: var(--accent-color); }
 
 /* RESPONSIVE SITUS DESKTOP vs MOBILE */
 @media (max-width: 768px) {
-    .video-grid { grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); }
-    .search-bar { display: none; } /* Mobile search usually via menu */
-    header { padding: 10px 15px; }
+    header { padding: 15px; }
+    /* Memaksa logo dan menu di baris atas, search bar penuh di bawahnya */
+    .logo { order: 1; }
+    .hamburger-menu { order: 2; }
+    .search-bar { 
+        order: 3; 
+        max-width: 100%; 
+        margin: 15px 0 0 0; 
+        flex: 100%; 
+    }
+    main { margin-top: 140px; } /* Jarak ditambahkan karena header jadi 2 baris */
+    .video-grid { grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); gap: 15px; }
+    .admin-container { padding: 20px; }
 }
