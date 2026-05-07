@@ -1,385 +1,107 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Stream 18</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - STREAM 18</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        /* Tambahan style khusus halaman admin untuk memisahkan section */
+        .admin-section {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+        .admin-section h2 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-section h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--accent-color);
+            display: inline-block;
+        }
+        .helper-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: -15px;
+            margin-bottom: 15px;
+        }
+        .status-msg {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success { background: rgba(0, 255, 0, 0.1); color: #00ff00; border: 1px solid #00ff00; }
+        .error { background: rgba(255, 0, 0, 0.1); color: #ff0000; border: 1px solid #ff0000; }
+    </style>
 </head>
-<body class="admin-body">
+<body>
+    <main>
+        <div class="admin-container">
+            <h1 class="section-title">Dashboard Admin</h1>
+            <p style="margin-bottom: 30px; color: var(--text-secondary);">Kelola konten dan konfigurasi website STREAM 18 Anda.</p>
 
-  <!-- OVERLAY -->
-  <div class="overlay" id="overlay"></div>
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <span class="logo">Stream <span class="accent">18</span></span>
-      <button class="close-btn" id="closeBtn"><i class="fas fa-times"></i></button>
-    </div>
-
-    <div class="sidebar-search">
-      <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" id="sidebarSearch" placeholder="Cari video..." />
-      </div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <p class="nav-label">Kategori</p>
-      <ul id="categoryList">
-        <li class="active" data-category="all">
-          <i class="fas fa-th-large"></i> Semua
-        </li>
-      </ul>
-    </nav>
-
-    <div class="sidebar-footer-note">
-      <p>© 2025 Stream 18</p>
-    </div>
-  </aside>
-
-  <!-- NAVBAR -->
-  <header class="navbar" id="navbar">
-    <div class="navbar-left">
-      <button class="hamburger" id="hamburgerBtn">
-        <i class="fas fa-bars"></i>
-      </button>
-      <a href="/" class="logo-link">
-        <span class="logo">Stream <span class="accent">18</span></span>
-      </a>
-    </div>
-    <div class="navbar-center"></div>
-    <div class="navbar-right">
-      <span class="admin-badge">
-        <i class="fas fa-shield-alt"></i> Admin
-      </span>
-    </div>
-  </header>
-
-  <!-- MAIN -->
-  <main class="admin-main" id="adminMain">
-
-    <!-- TOKEN GATE -->
-    <div class="token-gate" id="tokenGate">
-      <div class="token-card">
-        <i class="fas fa-lock lock-icon"></i>
-        <h2>Admin Panel</h2>
-        <p>Masukkan GitHub Personal Access Token untuk mengakses panel admin Stream 18.</p>
-
-        <div class="token-input-wrap">
-          <input 
-            type="password" 
-            id="tokenInput" 
-            placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <button class="token-toggle" id="tokenToggle">
-            <i class="fas fa-eye"></i>
-          </button>
-        </div>
-
-        <div class="token-hint">
-          <i class="fas fa-info-circle"></i>
-          <span>Token harus punya permission <strong>repo</strong> (read & write)</span>
-        </div>
-
-        <button class="btn-primary" id="tokenSubmit" style="margin-top:20px;">
-          <i class="fas fa-sign-in-alt"></i> Masuk
-        </button>
-
-        <div id="tokenError" class="token-error" style="display:none;">
-          <i class="fas fa-times-circle"></i>
-          <span>Token tidak valid atau tidak punya akses ke repository ini.</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ADMIN PANEL -->
-    <div class="admin-panel" id="adminPanel">
-
-      <!-- ADMIN HEADER -->
-      <div class="admin-header">
-        <h2>Panel <span>Admin</span></h2>
-        <div style="display:flex;gap:10px;align-items:center;">
-          <span class="token-active-badge">
-            <i class="fas fa-circle"></i> Token Aktif
-          </span>
-          <button class="btn-secondary" id="logoutBtn">
-            <i class="fas fa-sign-out-alt"></i> Logout
-          </button>
-        </div>
-      </div>
-
-      <!-- TABS -->
-      <div class="admin-tabs">
-        <button class="tab-btn active" data-tab="upload">
-          <i class="fas fa-upload"></i> Upload Video
-        </button>
-        <button class="tab-btn" data-tab="manage">
-          <i class="fas fa-list"></i> Kelola Video
-        </button>
-      </div>
-
-      <!-- TAB: UPLOAD -->
-      <div class="tab-content active" id="tab-upload">
-        <div class="form-section">
-          <h3 class="form-section-title">
-            <i class="fas fa-plus-circle"></i> Tambah Video Baru
-          </h3>
-
-          <!-- VIDEO URL INPUT -->
-          <div class="form-group">
-            <label for="videoUrl">
-              <i class="fas fa-link"></i> URL Video / Embed Code
-            </label>
-            <div class="url-input-wrap">
-              <input 
-                type="text" 
-                id="videoUrl" 
-                placeholder="https://youtube.com/watch?v=... atau paste embed code"
-                autocomplete="off"
-              />
-              <button class="btn-scan" id="scanBtn">
-                <i class="fas fa-magic"></i> Scan
-              </button>
-            </div>
-            <p class="form-hint">
-              <i class="fas fa-info-circle"></i>
-              Support: YouTube, Vimeo, Dailymotion, Facebook, Streamable, Twitch, Google Drive, Direct MP4, dll
-            </p>
-          </div>
-
-          <!-- VIDEO PREVIEW -->
-          <div class="video-preview-box" id="videoPreviewBox">
-            <div class="preview-placeholder" id="previewPlaceholder">
-              <i class="fas fa-play-circle"></i>
-              <p>Preview video akan muncul di sini</p>
-            </div>
-            <div class="preview-embed-wrap" id="previewEmbedWrap" style="display:none;">
-              <!-- Embed inject dari JS -->
-            </div>
-          </div>
-
-          <!-- DETECTED INFO -->
-          <div class="detected-info" id="detectedInfo" style="display:none;">
-            <div class="detected-badge">
-              <i class="fas fa-check-circle"></i>
-              <span id="detectedPlatform">Platform terdeteksi</span>
-            </div>
-          </div>
-
-          <!-- JUDUL -->
-          <div class="form-group">
-            <label for="videoTitle">
-              <i class="fas fa-heading"></i> Judul Video
-            </label>
-            <input 
-              type="text" 
-              id="videoTitle" 
-              placeholder="Masukkan judul video..."
-              maxlength="150"
-            />
-            <p class="form-hint">
-              <i class="fas fa-keyboard"></i>
-              <span id="titleCharCount">0</span>/150 karakter
-            </p>
-          </div>
-
-          <!-- KATEGORI -->
-          <div class="form-group">
-            <label for="videoCategory">
-              <i class="fas fa-tag"></i> Kategori
-            </label>
-            <div class="category-input-wrap">
-              <select id="videoCategorySelect">
-                <option value="">-- Pilih atau ketik kategori baru --</option>
-              </select>
-              <span class="or-divider">atau</span>
-              <input 
-                type="text" 
-                id="videoCategoryNew" 
-                placeholder="Ketik kategori baru..."
-                maxlength="50"
-              />
-            </div>
-            <p class="form-hint">
-              <i class="fas fa-lightbulb"></i>
-              Kategori baru akan otomatis dibuat dan muncul di situs
-            </p>
-          </div>
-
-          <!-- DESKRIPSI -->
-          <div class="form-group">
-            <label for="videoDesc">
-              <i class="fas fa-align-left"></i> Deskripsi <span style="color:var(--text-muted);font-weight:400;">(opsional)</span>
-            </label>
-            <textarea 
-              id="videoDesc" 
-              placeholder="Masukkan deskripsi video..."
-              rows="3"
-              maxlength="500"
-            ></textarea>
-          </div>
-
-          <!-- THUMBNAIL -->
-          <div class="form-group">
-            <label>
-              <i class="fas fa-image"></i> Thumbnail
-            </label>
-            <div class="thumb-status" id="thumbStatus">
-              <div class="thumb-loading" id="thumbLoading" style="display:none;">
-                <div class="spinner"></div>
-                <span>Mengambil thumbnail otomatis...</span>
-              </div>
-              <div class="thumb-result" id="thumbResult" style="display:none;">
-                <div class="thumb-preview-wrap visible">
-                  <img id="thumbPreviewImg" src="" alt="Thumbnail Preview" />
+            <div class="admin-section">
+                <h2>Pengaturan Domain Global</h2>
+                <div class="form-group">
+                    <label for="targetDomain">URL Domain Baru</label>
+                    <input type="text" id="targetDomain" placeholder="contoh: stream18.musikanywhere.online">
                 </div>
-                <div class="thumb-actions">
-                  <span class="thumb-ok">
-                    <i class="fas fa-check-circle"></i> Thumbnail berhasil diambil
-                  </span>
-                  <button class="btn-sm-ghost" id="retryThumbBtn">
-                    <i class="fas fa-redo"></i> Retry
-                  </button>
+                <p class="helper-text">*Mengubah ini akan memperbarui file CNAME di repository secara otomatis.</p>
+                <button class="btn-publish" onclick="updateGlobalDomain()">Update Domain</button>
+            </div>
+
+            <div class="admin-section">
+                <h2>Posting Video Baru</h2>
+                
+                <div class="form-group">
+                    <label for="vTitle">Judul Video</label>
+                    <input type="text" id="vTitle" placeholder="Masukkan judul video lengkap">
                 </div>
-              </div>
-              <div class="thumb-fallback" id="thumbFallback" style="display:none;">
-                <p>
-                  <i class="fas fa-exclamation-triangle"></i>
-                  Thumbnail tidak bisa diambil otomatis.
-                </p>
-                <input 
-                  type="text" 
-                  id="thumbManualUrl" 
-                  placeholder="Paste URL thumbnail manual (opsional)..."
-                />
-              </div>
+
+                <div class="form-group">
+                    <label for="vCategory">Kategori</label>
+                    <select id="vCategory">
+                        <option value="Action">Action</option>
+                        <option value="Comedy">Comedy</option>
+                        <option value="Drama">Drama</option>
+                        <option value="Horror">Horror</option>
+                        <option value="Romance">Romance</option>
+                        <option value="Thriller">Thriller</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="vThumb">URL Thumbnail (Image)</label>
+                    <input type="text" id="vThumb" placeholder="https://link-gambar.com/foto.jpg">
+                </div>
+
+                <div class="form-group">
+                    <label for="vEmbed">Embed URL Video (Support All Player)</label>
+                    <textarea id="vEmbed" rows="3" placeholder="Masukkan URL Embed atau Direct Link Video"></textarea>
+                </div>
+                
+                <p class="helper-text">*Sistem akan otomatis membuat slug ramah SEO dan memposting ke folder /content_video.</p>
+                
+                <button id="btnPublish" class="btn-publish" onclick="publishVideo()">Publish Video Sekarang</button>
+                
+                <div id="statusMessage" class="status-msg"></div>
             </div>
-          </div>
-
-          <!-- PUBLISH BUTTON -->
-          <div class="publish-row">
-            <button class="btn-secondary" id="resetFormBtn">
-              <i class="fas fa-times"></i> Reset
-            </button>
-            <button class="btn-primary" id="publishBtn">
-              <i class="fas fa-upload"></i> Publish Video
-            </button>
-          </div>
-
         </div>
-      </div>
+    </main>
 
-      <!-- TAB: MANAGE -->
-      <div class="tab-content" id="tab-manage" style="display:none;">
-        <div class="video-list-section">
-          <div class="video-list-header">
-            <h3>
-              <i class="fas fa-film"></i> Daftar Video
-              <span class="video-list-count" id="videoListCount"></span>
-            </h3>
-            <div class="list-search-wrap">
-              <div class="search-box" style="max-width:240px;">
-                <i class="fas fa-search"></i>
-                <input type="text" id="manageSearch" placeholder="Cari video..." />
-              </div>
-              <button class="btn-secondary" id="refreshListBtn">
-                <i class="fas fa-sync-alt"></i> Refresh
-              </button>
-            </div>
-          </div>
-
-          <!-- LOADING STATE -->
-          <div class="list-loading" id="listLoading" style="display:none;">
-            <div class="spinner"></div>
-            <span>Memuat daftar video...</span>
-          </div>
-
-          <!-- TABLE -->
-          <div class="table-wrap" id="tableWrap">
-            <table class="video-table" id="videoTable">
-              <thead>
-                <tr>
-                  <th style="width:80px;">Thumb</th>
-                  <th>Judul</th>
-                  <th>Kategori</th>
-                  <th>Tanggal</th>
-                  <th style="width:100px;">Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="videoTableBody">
-                <!-- Inject dari JS -->
-              </tbody>
-            </table>
-          </div>
-
-          <!-- EMPTY -->
-          <div class="list-empty" id="listEmpty" style="display:none;">
-            <i class="fas fa-inbox"></i>
-            <p>Belum ada video</p>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- DELETE CONFIRM MODAL -->
-  <div class="modal-overlay" id="deleteModal" style="display:none;">
-    <div class="modal-card">
-      <div class="modal-icon">
-        <i class="fas fa-trash-alt"></i>
-      </div>
-      <h3>Hapus Video?</h3>
-      <p id="deleteModalDesc">Video ini akan dihapus permanen dan tidak bisa dikembalikan.</p>
-      <div class="modal-actions">
-        <button class="btn-secondary" id="cancelDeleteBtn">
-          <i class="fas fa-times"></i> Batal
-        </button>
-        <button class="btn-danger" id="confirmDeleteBtn">
-          <i class="fas fa-trash-alt"></i> Hapus
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-top">
-        <div class="footer-brand">
-          <span class="logo">Stream <span class="accent">18</span></span>
-          <p>Platform streaming video terbaik.</p>
-        </div>
-        <div class="footer-links">
-          <h4>Navigasi</h4>
-          <ul>
-            <li><a href="/">Beranda</a></li>
-            <li><a href="/admin">Admin</a></li>
-          </ul>
-        </div>
-        <div class="footer-links">
-          <h4>Kategori</h4>
-          <ul id="footerCategories"></ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2025 Stream 18. All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- TOAST CONTAINER -->
-  <div class="toast-container" id="toastContainer"></div>
-
-  <script src="database.js"></script>
-  <script src="admin.js"></script>
+    <script src="/database.js"></script>
+    <script src="/assets/js/app.js"></script>
+    <script src="/assets/js/admin.js"></script>
 </body>
 </html>
