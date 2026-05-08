@@ -1,47 +1,63 @@
-<!DOCTYPE html> 
-<html lang="en"> 
-<head> 
-    <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>STREAM 18 - Premium Video Streaming</title> 
-     
-    <!-- SEO & Metadata --> 
-    <meta name="description" content="Watch the latest premium videos on STREAM 18. High-quality streaming across all categories."> 
-    <link rel="canonical" href="https://stream18.musikanywhere.online"> 
- 
-    <!-- CSS --> 
-    <link rel="stylesheet" href="/assets/css/style.css"> 
-     
-    <!-- Database and App Logic --> 
-    <script src="/database.js"></script> 
-    <script src="/assets/js/app.js" defer></script> 
-</head> 
-<body> 
- 
-    <!-- Content Area --> 
-    <main class="container"> 
-        <div id="categoryHeader" style="margin-bottom: 20px;"> 
-            <h2 id="viewTitle" style="border-left: 5px solid var(--primary-red); padding-left: 15px; text-transform: uppercase;">Latest Uploads</h2> 
-        </div> 
- 
-        <!-- The video grid where app.js will render the cards --> 
-        <div class="video-grid" id="videoGrid"> 
-            <!-- Dynamic content loads here --> 
-            <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 50px;"> 
-                <p>Loading videos...</p> 
-            </div> 
-        </div> 
- 
-        <!-- Pagination is injected here by app.js --> 
-    </main> 
- 
-    <!-- Script to handle small UI triggers for index specifically --> 
-    <script> 
-        // Placeholder for any index-specific triggers 
-        window.addEventListener('DOMContentLoaded', () => { 
-            console.log("STREAM 18 Index Initialized."); 
-        }); 
-    </script> 
- 
-</body> 
-</html> 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STREAM 18 - Nonton Video Streaming Tanpa Batas</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+    <header id="main-header">
+        <a href="/index" class="logo">STREAM 18</a>
+        <div class="header-right">
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Cari judul atau kategori...">
+            </div>
+            <button id="hamburger-btn" class="hamburger-btn">&#9776;</button>
+        </div>
+    </header>
+
+    <div id="overlay" class="overlay"></div>
+    <aside id="sidebar" class="sidebar">
+        <button id="close-btn" class="close-btn">&times;</button>
+        
+        <h3>Navigasi</h3>
+        <ul>
+            <li><a href="/index">Beranda</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+        </ul>
+
+        <h3>Kategori</h3>
+        <ul id="category-list-sidebar">
+            <li><a href="/index">Semua Video</a></li>
+            <li><a href="#">Musik</a></li>
+            <li><a href="#">Film Pendek</a></li>
+            <li><a href="#">Podcast</a></li>
+            <li><a href="#">Pencak Silat</a></li>
+            <li><a href="#">Olahraga</a></li>
+        </ul>
+    </aside>
+
+    <main>
+        <h1 class="section-title">Video Terbaru</h1>
+        
+        <div id="video-grid" class="video-grid">
+            </div>
+        
+        <div class="pagination">
+            <button id="load-more" class="btn" style="display: none;">Muat Lebih Banyak</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 STREAM 18. Hak Cipta Dilindungi.</p>
+        <p style="margin-top: 10px; font-size: 12px;"><a href="/admin" style="color: var(--accent-red);">Login Admin Panel</a></p>
+    </footer>
+
+    <script src="database.js"></script>
+    <script src="assets/js/app.js"></script>
+
+</body>
+</html>
