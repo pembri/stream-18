@@ -1,83 +1,106 @@
-<!DOCTYPE html> 
-<html lang="id"> 
-<head> 
-    <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>Admin Dashboard - STREAM 18</title> 
-    <link rel="stylesheet" href="/assets/css/style.css"> 
-    <style> 
-        .admin-box { max-width: 900px; margin: 30px auto; padding: 25px; background: #111; border: 1px solid #333; border-radius: 8px; } 
-        .admin-box h2 { color: var(--primary-red); margin-bottom: 20px; border-bottom: 2px solid var(--primary-red); display: inline-block; } 
-        .form-group { margin-bottom: 15px; } 
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #ccc; } 
-        input, select, textarea { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; outline: none; } 
-        input:focus { border-color: var(--primary-red); } 
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; } 
-        .btn-main { background: var(--primary-red); color: white; border: none; padding: 12px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; flex: 1; } 
-        .btn-sec { background: #333; color: white; border: none; padding: 12px 20px; cursor: pointer; border-radius: 4px; } 
-        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; z-index: 9999; display: flex; align-items: center; justify-content: center; } 
-        .hidden { display: none !important; } 
-        #statusLog { margin-top: 15px; font-size: 0.9rem; color: #ffcc00; } 
-    </style> 
-</head> 
-<body> 
- 
-    <!-- Overlay Login --> 
-    <div id="loginOverlay" class="login-screen"> 
-        <div class="admin-box" style="width: 400px; text-align: center;"> 
-            <h2 style="border:none;">ADMIN ACCESS</h2> 
-            <p style="margin-bottom:20px; color:#666;">Masukkan GitHub Personal Access Token</p> 
-            <input type="password" id="ghTokenInput" placeholder="ghp_xxxxxxxxxxxx"> 
-            <button class="btn-main" style="margin-top:20px;" onclick="saveToken()">MASUK</button> 
-        </div> 
-    </div> 
- 
-    <main class="container"> 
-        <!-- Form Post Video --> 
-        <div class="admin-box"> 
-            <h2>Post Video Baru</h2> 
-            <div id="statusLog"></div> 
-             
-            <div class="form-group"> 
-                <label>Judul Video</label> 
-                <input type="text" id="videoTitle" placeholder="Contoh: Film Action Terbaru 2026" oninput="updateSlugPreview()"> 
-                <small id="slugDisplay" style="color:#555;">Slug: /...</small> 
-            </div> 
- 
-            <div class="form-group"> 
-                <label>Kategori</label> 
-                <div style="display:flex; gap:10px;"> 
-                    <select id="videoCategorySelect"></select> 
-                    <input type="text" id="newCategoryInput" placeholder="Atau ketik kategori baru..." style="flex:1;"> 
-                </div> 
-            </div> 
- 
-            <div class="form-group"> 
-                <label>Embed URL (Semua Provider)</label> 
-                <input type="text" id="videoEmbed" placeholder="https://www.youtube.com/embed/xxx atau provider lain"> 
-            </div> 
- 
-            <div class="form-group"> 
-                <label>Thumbnail URL</label> 
-                <input type="text" id="videoThumb" placeholder="https://image.com/poster.jpg"> 
-            </div> 
- 
-            <button class="btn-main" id="publishBtn" onclick="handlePublish()">PUBLISH KE GITHUB</button> 
-        </div> 
- 
-        <!-- Pengaturan Domain --> 
-        <div class="admin-box"> 
-            <h2>Pengaturan Situs</h2> 
-            <div class="form-group"> 
-                <label>Ubah Domain Utama (CNAME)</label> 
-                <input type="text" id="domainInput" placeholder="stream18.musikanywhere.online"> 
-            </div> 
-            <button class="btn-sec" onclick="updateSiteDomain()">Update Domain & CNAME</button> 
-            <button class="btn-sec" onclick="logoutAdmin()" style="margin-left:10px; color:red;">Logout</button> 
-        </div> 
-    </main> 
- 
-    <script src="/database.js"></script> 
-    <script src="/assets/js/admin.js"></script> 
-</body> 
-</html> 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - STREAM 18</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+    <header id="main-header">
+        <a href="/index" class="logo">STREAM 18</a>
+        <div class="header-right">
+            <button id="hamburger-btn" class="hamburger-btn">&#9776;</button>
+        </div>
+    </header>
+
+    <div id="overlay" class="overlay"></div>
+    <aside id="sidebar" class="sidebar">
+        <button id="close-btn" class="close-btn">&times;</button>
+        <h3>Navigasi</h3>
+        <ul>
+            <li><a href="/index">Beranda</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/admin" class="active">Admin Panel</a></li>
+        </ul>
+    </aside>
+
+    <main>
+        <div id="admin-alert" class="alert"></div>
+
+        <section id="login-section" class="admin-container" style="display: block;">
+            <h2 class="section-title">Login Admin</h2>
+            <div class="form-group">
+                <label>GitHub Personal Access Token</label>
+                <input type="password" id="token-input" class="form-control" placeholder="ghp_xxxxxxxxxxxx">
+            </div>
+            <button id="btn-login" class="btn" style="width: 100%;">Masuk & Simpan</button>
+        </section>
+
+        <section id="admin-panel" style="display: none;">
+            
+            <div class="admin-container" style="margin-bottom: 30px;">
+                <h2 class="section-title">Posting Video Baru</h2>
+                <form id="post-form">
+                    <div class="form-group">
+                        <label>Judul Video</label>
+                        <input type="text" id="vid-title" class="form-control" placeholder="Contoh: Konser Reggae 2026">
+                        <small style="color: var(--text-muted);">Slug: <span id="vid-slug-preview"></span>.html</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <input type="text" id="vid-category" class="form-control" placeholder="Musik, Action, dll">
+                    </div>
+                    <div class="form-group">
+                        <label>URL Embed / Video URL</label>
+                        <input type="text" id="vid-embed" class="form-control" placeholder="https://www.youtube.com/embed/xxx atau link .mp4">
+                    </div>
+                    <div class="form-group">
+                        <label>URL Thumbnail</label>
+                        <input type="text" id="vid-thumb" class="form-control" placeholder="https://image.com/thumb.jpg">
+                    </div>
+                    <button type="button" id="btn-publish" class="btn">Publish Ke GitHub</button>
+                </form>
+            </div>
+
+            <div class="admin-container" style="margin-bottom: 30px; border: 1px solid var(--warning-yellow);">
+                <h2 class="section-title" style="color: var(--warning-yellow);">Pengaturan Domain</h2>
+                <div class="form-group">
+                    <label>Domain Lama</label>
+                    <input type="text" id="old-domain" class="form-control" value="stream18.musikanywhere.online" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Domain Baru</label>
+                    <input type="text" id="new-domain" class="form-control" placeholder="domain-baru.com">
+                </div>
+                <button id="btn-change-domain" class="btn" style="background: var(--warning-yellow); color: #000;">Ganti Massal (Beta)</button>
+            </div>
+
+            <div class="admin-container">
+                <h2 class="section-title">Kelola Konten</h2>
+                <table class="table-admin">
+                    <thead>
+                        <tr>
+                            <th>Judul</th>
+                            <th>Kategori</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-video-list">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 STREAM 18. Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <script src="database.js"></script>
+    <script src="assets/js/admin.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
