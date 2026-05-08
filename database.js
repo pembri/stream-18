@@ -15,5 +15,14 @@ const videoData = [
         "thumbnail": "https://muviblast.com/wp-content/uploads/2024/03/Mucikari-2022-KB-Kelas-Bintang-152x228.jpg",
         "embed": "https://q324op.cloudatacdn.com/u5kj2q5sw3dlsdgge6zsqlyadkka5mlr6bidawxgdsqmfqd2pkd35dpcfe5q/vzaxy1kk5d~CdrK1BGwLB?token=cl1ytcko0akkyhubsuqv3n9q&expiry=1778218684335",
         "date": "2026-05-08"
+    },
+    {
+        "id": 1778218978787,
+        "title": "Birahi Muda (2023)",
+        "category": "Kelas Bintang",
+        "slug": "/content_video/Kelas Bintang/birahi-muda-2023.html",
+        "thumbnail": "https://muviblast.com/wp-content/uploads/2024/03/Birahi-Muda-2023-Kelas-Bintang-152x228.jpg",
+        "embed": "https://c513ed.cloudatacdn.com/u5kj62luzxdlsdgge6etyly5de63opofrrpwrmsoxpkmfitak2ceyhfrceta/bzwufk2q8g~ddAAdoh22G?token=0srdp6g9g6bztq5vgdangwlj&expiry=1778218911504",
+        "date": "2026-05-08"
     }
 ];
