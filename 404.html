@@ -1,27 +1,44 @@
-<!DOCTYPE html> 
-<html> 
-<head> 
-    <meta charset="utf-8"> 
-    <title>STREAM 18 - Redirecting...</title> 
-    <script type="text/javascript"> 
-        // Single Page Apps for GitHub Pages 
-        // This script takes the current URL and converts it into a query string 
-        // so that index.html can load the correct content. 
-        var pathSegmentsToKeep = 0; 
- 
-        var l = window.location; 
-        l.replace( 
-            l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + 
-            l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' + 
-            l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') + 
-            (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') + 
-            l.hash 
-        ); 
-    </script> 
-</head> 
-<body> 
-    <div style="background:#0a0a0a; color:white; height:100vh; display:flex; align-items:center; justify-content:center; font-family:sans-serif;"> 
-        <p>Loading <span style="color:red">STREAM 18</span> content...</p> 
-    </div> 
-</body> 
-</html> 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Tidak Ditemukan - STREAM 18</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header id="main-header">
+        <a href="/index" class="logo">STREAM 18</a>
+        <div class="header-right">
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Cari...">
+            </div>
+            <button id="hamburger-btn" class="hamburger-btn">&#9776;</button>
+        </div>
+    </header>
+
+    <div id="overlay" class="overlay"></div>
+    <aside id="sidebar" class="sidebar">
+        <button id="close-btn" class="close-btn">&times;</button>
+        <h3>Navigasi</h3>
+        <ul>
+            <li><a href="/index">Beranda</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+        </ul>
+    </aside>
+
+    <main style="text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 60vh;">
+        <h1 style="font-size: 80px; color: var(--accent-red);">404</h1>
+        <p style="font-size: 20px; color: var(--text-muted); margin-bottom: 30px;">Waduh! Halaman yang kamu cari nggak ada di sini.</p>
+        <a href="/index" class="btn">Kembali ke Beranda</a>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 STREAM 18. Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <script src="/database.js"></script>
+    <script src="/assets/js/app.js"></script>
+</body>
+</html>
