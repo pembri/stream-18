@@ -1,30 +1,33 @@
 /** 
  * STREAM 18 - Core App Logic 
- * Menangani UI Konsisten, Render Video, Paginasi, dan Pencarian. 
+ * Memastikan Header, Footer, dan Navigasi Muncul di Semua Halaman 
  */ 
  
-document.addEventListener('DOMContentLoaded', () => { 
-    initUI(); 
-    loadVideos(); 
-    setupEventListeners(); 
-}); 
+const initApp = () => { 
+    renderGlobalUI(); 
+    setupHamburger(); 
+    setupSearch(); 
+    if (document.getElementById('videoGrid')) { 
+        loadVideoGrid(); 
+    } 
+}; 
  
-// 1. Injeksi UI Konsisten (Header, Menu, Footer) 
-function initUI() { 
+// 1. Suntikkan HTML Header & Footer secara paksa 
+function renderGlobalUI() { 
     const headerHTML = ` 
         <header> 
             <a href="/" class="logo">STREAM 18</a> 
             <div class="search-bar"> 
                 <input type="text" id="searchInput" placeholder="Cari video atau kategori..."> 
             </div> 
-            <div class="menu-btn" onclick="toggleMenu()">☰</div> 
+            <div class="menu-btn" id="menuToggle">☰</div> 
         </header> 
         <div class="side-menu" id="sideMenu"> 
-            <div style="text-align:right; cursor:pointer; font-size:2rem;" onclick="toggleMenu()">×</div> 
-            <ul> 
-                <li><strong>List Category</strong></li> 
-                <div id="catListMenu"></div> 
-                <hr style="border:0; border-top:1px solid #333; margin:10px 0;"> 
+            <div class="close-menu" id="closeMenu">×</div> 
+            <ul class="nav-links"> 
+                <li><span class="menu-label">LIST CATEGORY</span></li> 
+                <div id="categoryLinks"></div> 
+                <hr> 
                 <li><a href="/about">About</a></li> 
                 <li><a href="/privacy-policy">Privacy Policy</a></li> 
             </ul> 
@@ -33,131 +36,86 @@ function initUI() {
  
     const footerHTML = ` 
         <footer> 
-            <p>&copy; 2026 <span style="color:red">STREAM 18</span>. All Rights Reserved.</p> 
-            <p style="font-size:0.8rem; margin-top:10px;">Powered by Sapiens AI Technology</p> 
+            <div class="footer-content"> 
+                <p>&copy; 2026 <span style="color:var(--primary-red)">STREAM 18</span>. All Rights Reserved.</p> 
+                <p style="font-size:0.7rem; color:#444; margin-top:10px;">PROPRIETARY TECHNOLOGY BY SAPIENS AI</p> 
+            </div> 
         </footer> 
     `; 
  
+    // Masukkan ke posisi paling atas dan bawah body 
     document.body.insertAdjacentHTML('afterbegin', headerHTML); 
     document.body.insertAdjacentHTML('beforeend', footerHTML); 
-    renderCategoryMenu(); 
-} 
  
-function toggleMenu() { 
-    document.getElementById('sideMenu').classList.toggle('active'); 
-} 
- 
-// 2. Render Daftar Kategori di Sidebar 
-function renderCategoryMenu() { 
-    const container = document.getElementById('catListMenu'); 
-    if (!container) return; 
-     
-    let html = ''; 
+    // Isi daftar kategori di sidebar 
+    const catContainer = document.getElementById('categoryLinks'); 
     categoryList.forEach(cat => { 
-        html += `<li><a href="#" onclick="filterByCategory('${cat}')">${cat}</a></li>`; 
+        catContainer.innerHTML += `<li><a href="#" onclick="filterByCat('${cat}')">${cat}</a></li>`; 
     }); 
-    container.innerHTML = html; 
 } 
  
-// 3. Logika Render Video & Paginasi 
-let currentPage = 1; 
-const itemsPerPage = 10; 
-let filteredData = ; 
+// 2. Logika Hamburger (Buka/Tutup) 
+function setupHamburger() { 
+    const menu = document.getElementById('sideMenu'); 
+    const openBtn = document.getElementById('menuToggle'); 
+    const closeBtn = document.getElementById('closeMenu'); 
  
-function loadVideos(data = null) { 
+    openBtn.onclick = () => menu.classList.add('active'); 
+    closeBtn.onclick = () => menu.classList.remove('active'); 
+     
+    // Klik di luar menu untuk menutup 
+    window.onclick = (e) => { 
+        if (e.target == menu) menu.classList.remove('active'); 
+    }; 
+} 
+ 
+// 3. Logika Pencarian Cerdas 
+function setupSearch() { 
+    const input = document.getElementById('searchInput'); 
+    if (!input) return; 
+ 
+    input.onkeyup = (e) => { 
+        const keyword = e.target.value.toLowerCase(); 
+        const filtered = videoDatabase.filter(v =>  
+            v.title.toLowerCase().includes(keyword) ||  
+            v.category.toLowerCase().includes(keyword) 
+        ); 
+        displayVideos(filtered); 
+    }; 
+} 
+ 
+// 4. Render Video (Urutan Terbaru di Atas) 
+function displayVideos(data) { 
     const grid = document.getElementById('videoGrid'); 
     if (!grid) return; 
  
-    // Jika data kosong, ambil dari database.js, urutkan terbaru (descending) 
-    if (!data) { 
-        filteredData = .sort((a, b) => new Date(b.date) - new Date(a.date)); 
-    } else { 
-        filteredData = data; 
-    } 
- 
-    renderPage(1); 
-} 
- 
-function renderPage(page) { 
-    const grid = document.getElementById('videoGrid'); 
-    currentPage = page; 
     grid.innerHTML = ''; 
+    const sorted = data.sort((a, b) => new Date(b.date) - new Date(a.date)); 
  
-    const start = (page - 1) * itemsPerPage; 
-    const end = start + itemsPerPage; 
-    const paginatedItems = filteredData.slice(start, end); 
- 
-    if (paginatedItems.length === 0) { 
-        grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Video tidak ditemukan.</p>'; 
-        return; 
-    } 
- 
-    paginatedItems.forEach(video => { 
-        const card = ` 
+    sorted.forEach(v => { 
+        grid.innerHTML += ` 
             <div class="video-card"> 
-                <a href="/content_video/${video.category.toLowerCase().replace(/\s+/g, '-')}/${video.slug}" style="text-decoration:none; color:inherit;"> 
+                <a href="/content_video/${v.category.toLowerCase().replace(/\s+/g, '-')}/${v.slug}"> 
                     <div class="thumbnail-box"> 
-                        <img src="${video.thumbnail}" alt="${video.title}" loading="lazy"> 
+                        <img src="${v.thumbnail}" alt="${v.title}"> 
+                        <span class="category-tag">${v.category}</span> 
                     </div> 
                     <div class="video-info"> 
-                        <span class="category-tag">${video.category}</span> 
-                        <h3 class="video-title">${video.title}</h3> 
-                        <div class="video-meta">${new Date(video.date).toLocaleDateString('id-ID')}</div> 
+                        <h3 class="video-title">${v.title}</h3> 
+                        <small>${new Date(v.date).toLocaleDateString('id-ID')}</small> 
                     </div> 
                 </a> 
             </div> 
         `; 
-        grid.insertAdjacentHTML('beforeend', card); 
     }); 
- 
-    renderPaginationControls(); 
 } 
  
-function renderPaginationControls() { 
-    let paginationDiv = document.getElementById('pagination'); 
-    if (!paginationDiv) { 
-        paginationDiv = document.createElement('div'); 
-        paginationDiv.id = 'pagination'; 
-        paginationDiv.style.textAlign = 'center'; 
-        paginationDiv.style.marginTop = '30px'; 
-        document.querySelector('.container').appendChild(paginationDiv); 
-    } 
- 
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage); 
-    let html = ''; 
- 
-    for (let i = 1; i <= totalPages; i++) { 
-        html += `<button onclick="renderPage(${i})" style="margin:0 5px; padding:8px 15px; cursor:pointer; background:${i === currentPage ? 'red' : '#333'}; color:white; border:none; border-radius:5px;">${i}</button>`; 
-    } 
-    paginationDiv.innerHTML = totalPages > 1 ? html : ''; 
-} 
- 
-// 4. Fitur Pencarian & Filter 
-function setupEventListeners() { 
-    const searchInput = document.getElementById('searchInput'); 
-    if (searchInput) { 
-        searchInput.addEventListener('input', (e) => { 
-            const val = e.target.value.toLowerCase(); 
-            const filtered = videoDatabase.filter(v =>  
-                v.title.toLowerCase().includes(val) ||  
-                v.category.toLowerCase().includes(val) 
-            ); 
-            loadVideos(filtered); 
-        }); 
-    } 
-} 
- 
-function filterByCategory(cat) { 
+function filterByCat(cat) { 
     const filtered = videoDatabase.filter(v => v.category === cat); 
-    loadVideos(filtered); 
-    toggleMenu(); // Tutup menu setelah klik 
+    displayVideos(filtered); 
+    document.getElementById('sideMenu').classList.remove('active'); 
+    document.getElementById('viewTitle').innerText = "Category: " + cat; 
 } 
  
-// 5. Handle Clean URLs (Hanya di Client-side) 
-// Memastikan link navigasi tidak menampilkan .html 
-document.addEventListener('click', e => { 
-    const origin = window.location.origin; 
-    if (e.target.tagName === 'A' && e.target.href.startsWith(origin)) { 
-        // Logika routing tambahan bisa diletakkan di sini jika perlu pushState 
-    } 
-}); 
+// Jalankan saat DOM siap 
+document.addEventListener('DOMContentLoaded', initApp); 
