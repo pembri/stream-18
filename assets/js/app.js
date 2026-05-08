@@ -1,121 +1,107 @@
-/** 
- * STREAM 18 - Core App Logic 
- * Memastikan Header, Footer, dan Navigasi Muncul di Semua Halaman 
- */ 
- 
-const initApp = () => { 
-    renderGlobalUI(); 
-    setupHamburger(); 
-    setupSearch(); 
-    if (document.getElementById('videoGrid')) { 
-        loadVideoGrid(); 
-    } 
-}; 
- 
-// 1. Suntikkan HTML Header & Footer secara paksa 
-function renderGlobalUI() { 
-    const headerHTML = ` 
-        <header> 
-            <a href="/" class="logo">STREAM 18</a> 
-            <div class="search-bar"> 
-                <input type="text" id="searchInput" placeholder="Cari video atau kategori..."> 
-            </div> 
-            <div class="menu-btn" id="menuToggle">☰</div> 
-        </header> 
-        <div class="side-menu" id="sideMenu"> 
-            <div class="close-menu" id="closeMenu">×</div> 
-            <ul class="nav-links"> 
-                <li><span class="menu-label">LIST CATEGORY</span></li> 
-                <div id="categoryLinks"></div> 
-                <hr> 
-                <li><a href="/about">About</a></li> 
-                <li><a href="/privacy-policy">Privacy Policy</a></li> 
-            </ul> 
-        </div> 
-    `; 
- 
-    const footerHTML = ` 
-        <footer> 
-            <div class="footer-content"> 
-                <p>&copy; 2026 <span style="color:var(--primary-red)">STREAM 18</span>. All Rights Reserved.</p> 
-                <p style="font-size:0.7rem; color:#444; margin-top:10px;">PROPRIETARY TECHNOLOGY BY SAPIENS AI</p> 
-            </div> 
-        </footer> 
-    `; 
- 
-    // Masukkan ke posisi paling atas dan bawah body 
-    document.body.insertAdjacentHTML('afterbegin', headerHTML); 
-    document.body.insertAdjacentHTML('beforeend', footerHTML); 
- 
-    // Isi daftar kategori di sidebar 
-    const catContainer = document.getElementById('categoryLinks'); 
-    categoryList.forEach(cat => { 
-        catContainer.innerHTML += `<li><a href="#" onclick="filterByCat('${cat}')">${cat}</a></li>`; 
-    }); 
-} 
- 
-// 2. Logika Hamburger (Buka/Tutup) 
-function setupHamburger() { 
-    const menu = document.getElementById('sideMenu'); 
-    const openBtn = document.getElementById('menuToggle'); 
-    const closeBtn = document.getElementById('closeMenu'); 
- 
-    openBtn.onclick = () => menu.classList.add('active'); 
-    closeBtn.onclick = () => menu.classList.remove('active'); 
-     
-    // Klik di luar menu untuk menutup 
-    window.onclick = (e) => { 
-        if (e.target == menu) menu.classList.remove('active'); 
-    }; 
-} 
- 
-// 3. Logika Pencarian Cerdas 
-function setupSearch() { 
-    const input = document.getElementById('searchInput'); 
-    if (!input) return; 
- 
-    input.onkeyup = (e) => { 
-        const keyword = e.target.value.toLowerCase(); 
-        const filtered = videoDatabase.filter(v =>  
-            v.title.toLowerCase().includes(keyword) ||  
-            v.category.toLowerCase().includes(keyword) 
-        ); 
-        displayVideos(filtered); 
-    }; 
-} 
- 
-// 4. Render Video (Urutan Terbaru di Atas) 
-function displayVideos(data) { 
-    const grid = document.getElementById('videoGrid'); 
-    if (!grid) return; 
- 
-    grid.innerHTML = ''; 
-    const sorted = data.sort((a, b) => new Date(b.date) - new Date(a.date)); 
- 
-    sorted.forEach(v => { 
-        grid.innerHTML += ` 
-            <div class="video-card"> 
-                <a href="/content_video/${v.category.toLowerCase().replace(/\s+/g, '-')}/${v.slug}"> 
-                    <div class="thumbnail-box"> 
-                        <img src="${v.thumbnail}" alt="${v.title}"> 
-                        <span class="category-tag">${v.category}</span> 
-                    </div> 
-                    <div class="video-info"> 
-                        <h3 class="video-title">${v.title}</h3> 
-                        <small>${new Date(v.date).toLocaleDateString('id-ID')}</small> 
-                    </div> 
-                </a> 
-            </div> 
-        `; 
-    }); 
-} 
- 
-function filterByCat(cat) { 
-    const filtered = videoDatabase.filter(v => v.category === cat); 
-    displayVideos(filtered); 
-    document.getElementById('sideMenu').classList.remove('active'); 
-    document.getElementById('viewTitle').innerText = "Category: " + cat; 
-} 
- 
-// Jalankan saat DOM siap 
-document.addEventListener('DOMContentLoaded', initApp); 
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Clean URL System (Hilangkan .html dari address bar)
+    const currentPath = window.location.pathname;
+    if (currentPath.endsWith('.html')) {
+        const cleanPath = currentPath.slice(0, -5);
+        window.history.replaceState({}, document.title, cleanPath);
+    }
+
+    // 2. Header Scroll Effect
+    const header = document.querySelector('header');
+    if(header) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        });
+    }
+
+    // 3. Hamburger Menu & Overlay Logic
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebar = document.getElementById('sidebar');
+    const closeBtn = document.getElementById('close-btn');
+    const overlay = document.getElementById('overlay');
+
+    if(hamburgerBtn && sidebar) {
+        hamburgerBtn.addEventListener('click', () => {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+        });
+
+        closeBtn.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    }
+
+    // 4. Inisialisasi Data dari database.js (Asumsi window.DB_VIDEOS ada di index.html)
+    if (document.getElementById('video-grid')) {
+        initIndexPage();
+    }
+});
+
+function initIndexPage() {
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    const videoGrid = document.getElementById('video-grid');
+    const loadMoreBtn = document.getElementById('load-more');
+    const searchInput = document.getElementById('search-input');
+    
+    // Pastikan db_videos ada dari database.js, lalu reverse agar terbaru di atas
+    let allVideos = window.DB_VIDEOS ? [...window.DB_VIDEOS].reverse() : [];
+    let filteredVideos = [...allVideos];
+
+    function renderVideos() {
+        videoGrid.innerHTML = '';
+        const limit = currentPage * itemsPerPage;
+        const videosToShow = filteredVideos.slice(0, limit);
+
+        videosToShow.forEach(vid => {
+            const card = document.createElement('a');
+            // Clean URL destination
+            card.href = `/content_video/content_category/${vid.slug}`;
+            card.className = 'video-card';
+            card.innerHTML = `
+                <div class="thumbnail" style="background-image: url('${vid.thumbnail}')"></div>
+                <div class="video-info">
+                    <div class="video-category">${vid.category}</div>
+                    <div class="video-title">${vid.title}</div>
+                </div>
+            `;
+            videoGrid.appendChild(card);
+        });
+
+        if (limit >= filteredVideos.length) {
+            if(loadMoreBtn) loadMoreBtn.style.display = 'none';
+        } else {
+            if(loadMoreBtn) loadMoreBtn.style.display = 'block';
+        }
+    }
+
+    if(loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', () => {
+            currentPage++;
+            renderVideos();
+        });
+    }
+
+    // Pencarian Cerdas
+    if(searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            filteredVideos = allVideos.filter(vid => 
+                vid.title.toLowerCase().includes(query) || 
+                vid.category.toLowerCase().includes(query)
+            );
+            currentPage = 1;
+            renderVideos();
+        });
+    }
+
+    // Render Awal
+    renderVideos();
+}
