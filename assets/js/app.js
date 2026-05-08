@@ -1,311 +1,163 @@
-/* assets/js/app.js */
-
-// Konfigurasi Global
-const CONFIG = {
-    itemsPerPage: 10,
-    databasePath: 'database.js', // Path ke file database
-    contentBasePath: 'content_video/'
-};
-
-// State Aplikasi
-let appState = {
-    videos: [],
-    filteredVideos: [],
-    currentPage: 1,
-    currentCategory: 'all',
-    searchQuery: ''
-};
-
-// Inisialisasi saat DOM siap
-document.addEventListener('DOMContentLoaded', () => {
-    initApp();
-});
-
-async function initApp() {
-    setupEventListeners();
-    await loadDatabase();
-    
-    // Cek apakah kita berada di halaman index atau halaman konten
-    const path = window.location.pathname;
-    
-    if (path.endsWith('index.html') || path === '/' || path.endsWith('/')) {
-        renderIndexPage();
-    } else if (path.includes('content_video/')) {
-        renderContentPage();
-    }
-    
-    updateActiveMenu();
-}
-
-// Memuat database.js
-async function loadDatabase() {
-    try {
-        // Kita mengambil script tag database.js yang sudah dimuat di HTML
-        // Atau jika belum, kita bisa fetch secara manual jika strukturnya JSON
-        // Karena database.js mendefinisikan variabel global 'videoDatabase', kita tunggu sebentar
-        // Jika variable belum ada, kita anggap perlu fetch (fallback)
-        
-        if (typeof videoDatabase !== 'undefined') {
-            appState.videos = videoDatabase;
-        } else {
-            // Fallback jika tidak terload sebagai script global
-            const response = await fetch(CONFIG.databasePath);
-            const text = await response.text();
-            // Ekstrak array dari text script (cara kasar tapi efektif untuk static file tanpa module)
-            // Asumsi format: const videoDatabase = [...];
-            const jsonStr = text.match(/const videoDatabase = ($$.*$$);/s);
-            if (jsonStr && jsonStr[1]) {
-                appState.videos = JSON.parse(jsonStr[1]);
-            } else {
-                console.error("Gagal memparse database.js");
-                appState.videos = [];
-            }
-        }
-        
-        // Urutkan berdasarkan tanggal upload terbaru (descending)
-        appState.videos.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
-        appState.filteredVideos = [...appState.videos];
-        
-    } catch (error) {
-        console.error("Error loading database:", error);
-        appState.videos = [];
-        appState.filteredVideos = [];
-    }
-}
-
-function setupEventListeners() {
-    // Hamburger Menu
-    const hamburger = document.getElementById('hamburger-btn');
-    const menuDropdown = document.getElementById('menu-dropdown');
-    
-    if (hamburger && menuDropdown) {
-        hamburger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            menuDropdown.classList.toggle('active');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!hamburger.contains(e.target) && !menuDropdown.contains(e.target)) {
-                menuDropdown.classList.remove('active');
-            }
-        });
-    }
-
-    // Search Bar
-    const searchInput = document.getElementById('search-input');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            appState.searchQuery = e.target.value.toLowerCase();
-            appState.currentPage = 1;
-            applyFilters();
-        });
-    }
-
-    // Filter Buttons (Jika ada di halaman index)
-    const filterContainer = document.getElementById('filter-container');
-    if (filterContainer) {
-        // Generate tombol kategori dinamis
-        const categories = ['all', ...new Set(appState.videos.map(v => v.category))];
-        filterContainer.innerHTML = categories.map(cat => `
-            <button class="filter-btn ${cat === 'all' ? 'active' : ''}" data-category="${cat}">
-                ${cat.charAt(0).toUpperCase() + cat.slice(1)}
-            </button>
-        `).join('');
-
-        // Event listener untuk tombol filter
-        filterContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('filter-btn')) {
-                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                appState.currentCategory = e.target.dataset.category;
-                appState.currentPage = 1;
-                applyFilters();
-            }
-        });
-    }
-
-    // Pagination
-    const prevBtn = document.getElementById('prev-page');
-    const nextBtn = document.getElementById('next-page');
-    
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            if (appState.currentPage > 1) {
-                appState.currentPage--;
-                renderVideoGrid();
-                window.scrollTo(0, 0);
-            }
-        });
-    }
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            const totalPages = Math.ceil(appState.filteredVideos.length / CONFIG.itemsPerPage);
-            if (appState.currentPage < totalPages) {
-                appState.currentPage++;
-                renderVideoGrid();
-                window.scrollTo(0, 0);
-            }
-        });
-    }
-}
-
-function applyFilters() {
-    let filtered = appState.videos;
-
-    // Filter Kategori
-    if (appState.currentCategory !== 'all') {
-        filtered = filtered.filter(v => v.category === appState.currentCategory);
-    }
-
-    // Filter Pencarian
-    if (appState.searchQuery) {
-        filtered = filtered.filter(v => 
-            v.title.toLowerCase().includes(appState.searchQuery) || 
-            v.category.toLowerCase().includes(appState.searchQuery)
-        );
-    }
-
-    appState.filteredVideos = filtered;
-    renderVideoGrid();
-    updatePaginationControls();
-}
-
-function renderIndexPage() {
-    applyFilters(); // Ini akan memanggil renderVideoGrid
-}
-
-function renderVideoGrid() {
-    const grid = document.getElementById('video-grid');
-    if (!grid) return;
-
-    const start = (appState.currentPage - 1) * CONFIG.itemsPerPage;
-    const end = start + CONFIG.itemsPerPage;
-    const videosToShow = appState.filteredVideos.slice(start, end);
-
-    if (videosToShow.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">Tidak ada video ditemukan.</p>';
-        return;
-    }
-
-    grid.innerHTML = videosToShow.map(video => `
-        <div class="video-card" onclick="window.location.href='${video.url}'">
-            <div class="thumbnail-container">
-                <img src="${video.thumbnail}" alt="${video.title}" class="thumbnail" onerror="this.src='assets/images/placeholder.png'">
-                <span class="category-tag">${video.category}</span>
-            </div>
-            <div class="video-info">
-                <h3 class="video-title">${video.title}</h3>
-                <p class="video-meta">${new Date(video.uploadDate).toLocaleDateString()}</p>
-            </div>
-        </div>
-    `).join('');
-    
-    updatePaginationControls();
-}
-
-function updatePaginationControls() {
-    const prevBtn = document.getElementById('prev-page');
-    const nextBtn = document.getElementById('next-page');
-    const pageInfo = document.getElementById('page-info');
-    
-    if (!prevBtn || !nextBtn) return;
-
-    const totalPages = Math.ceil(appState.filteredVideos.length / CONFIG.itemsPerPage) || 1;
-    
-    prevBtn.disabled = appState.currentPage === 1;
-    nextBtn.disabled = appState.currentPage === totalPages;
-    
-    if (pageInfo) {
-        pageInfo.textContent = `Halaman ${appState.currentPage} dari ${totalPages}`;
-    }
-}
-
-// Render Halaman Konten Video (isi_konten.html)
-function renderContentPage() {
-    // Ambil slug dari URL
-    const pathParts = window.location.pathname.split('/');
-    const filename = pathParts[pathParts.length - 1].replace('.html', '');
-    
-    // Cari video di database berdasarkan slug
-    const video = appState.videos.find(v => v.slug === filename);
-    
-    if (!video) {
-        window.location.href = '/404.html';
-        return;
-    }
-
-    // Update Judul Halaman
-    document.title = `${video.title} - STREAM 18`;
-    
-    // Render Player
-    const playerContainer = document.getElementById('video-player-container');
-    if (playerContainer) {
-        playerContainer.innerHTML = generatePlayerHTML(video.embedUrl);
-        initPlayer(video.embedUrl);
-    }
-
-    // Update Info Video
-    const infoContainer = document.getElementById('video-info-container');
-    if (infoContainer) {
-        infoContainer.innerHTML = `
-            <h1>${video.title}</h1>
-            <div class="video-meta">
-                <span>Kategori: ${video.category}</span> | 
-                <span>Upload: ${new Date(video.uploadDate).toLocaleDateString()}</span>
-            </div>
-            <p style="margin-top: 1rem; color: var(--text-secondary);">${video.description || 'Tidak ada deskripsi.'}</p>
-        `;
-    }
-}
-
-function generatePlayerHTML(embedUrl) {
-    // Deteksi tipe URL
-    if (embedUrl.includes('youtube.com') || embedUrl.includes('youtu.be')) {
-        return `<div id="player" data-plyr-provider="youtube" data-plyr-embed-id="${extractYouTubeID(embedUrl)}"></div>`;
-    } else if (embedUrl.includes('vimeo.com')) {
-        return `<div id="player" data-plyr-provider="vimeo" data-plyr-embed-id="${extractVimeoID(embedUrl)}"></div>`;
-    } else {
-        // Asumsi direct video file (mp4, m3u8, dll)
-        return `
-            <video id="player" playsinline controls data-poster="/path/to/poster.jpg">
-                <source src="${embedUrl}" type="video/mp4" />
-            </video>
-        `;
-    }
-}
-
-function initPlayer(embedUrl) {
-    // Pastikan Plyr loaded
-    if (typeof Plyr === 'undefined') {
-        console.error("Plyr library not loaded");
-        return;
-    }
-
-    const player = new Plyr('#player', {
-        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
-        settings: ['quality', 'speed', 'loop'],
-        speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
-    });
-
-    // Jika direct file, coba deteksi kualitas otomatis (jika HLS)
-    // Untuk YouTube/Vimeo, Plyr menangani quality secara otomatis via API mereka
-}
-
-// Helper Functions
-function extractYouTubeID(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-}
-
-function extractVimeoID(url) {
-    const regExp = /vimeo.*\/(\d+)/i;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-}
-
-function updateActiveMenu() {
-    // Highlight menu aktif jika diperlukan
-    // Saat ini belum ada navigasi kompleks selain hamburger
-}
+/** 
+ * STREAM 18 - Core App Logic 
+ * Menangani UI Konsisten, Render Video, Paginasi, dan Pencarian. 
+ */ 
+ 
+document.addEventListener('DOMContentLoaded', () => { 
+    initUI(); 
+    loadVideos(); 
+    setupEventListeners(); 
+}); 
+ 
+// 1. Injeksi UI Konsisten (Header, Menu, Footer) 
+function initUI() { 
+    const headerHTML = ` 
+        <header> 
+            <a href="/" class="logo">STREAM 18</a> 
+            <div class="search-bar"> 
+                <input type="text" id="searchInput" placeholder="Cari video atau kategori..."> 
+            </div> 
+            <div class="menu-btn" onclick="toggleMenu()">☰</div> 
+        </header> 
+        <div class="side-menu" id="sideMenu"> 
+            <div style="text-align:right; cursor:pointer; font-size:2rem;" onclick="toggleMenu()">×</div> 
+            <ul> 
+                <li><strong>List Category</strong></li> 
+                <div id="catListMenu"></div> 
+                <hr style="border:0; border-top:1px solid #333; margin:10px 0;"> 
+                <li><a href="/about">About</a></li> 
+                <li><a href="/privacy-policy">Privacy Policy</a></li> 
+            </ul> 
+        </div> 
+    `; 
+ 
+    const footerHTML = ` 
+        <footer> 
+            <p>&copy; 2026 <span style="color:red">STREAM 18</span>. All Rights Reserved.</p> 
+            <p style="font-size:0.8rem; margin-top:10px;">Powered by Sapiens AI Technology</p> 
+        </footer> 
+    `; 
+ 
+    document.body.insertAdjacentHTML('afterbegin', headerHTML); 
+    document.body.insertAdjacentHTML('beforeend', footerHTML); 
+    renderCategoryMenu(); 
+} 
+ 
+function toggleMenu() { 
+    document.getElementById('sideMenu').classList.toggle('active'); 
+} 
+ 
+// 2. Render Daftar Kategori di Sidebar 
+function renderCategoryMenu() { 
+    const container = document.getElementById('catListMenu'); 
+    if (!container) return; 
+     
+    let html = ''; 
+    categoryList.forEach(cat => { 
+        html += `<li><a href="#" onclick="filterByCategory('${cat}')">${cat}</a></li>`; 
+    }); 
+    container.innerHTML = html; 
+} 
+ 
+// 3. Logika Render Video & Paginasi 
+let currentPage = 1; 
+const itemsPerPage = 10; 
+let filteredData = ; 
+ 
+function loadVideos(data = null) { 
+    const grid = document.getElementById('videoGrid'); 
+    if (!grid) return; 
+ 
+    // Jika data kosong, ambil dari database.js, urutkan terbaru (descending) 
+    if (!data) { 
+        filteredData = .sort((a, b) => new Date(b.date) - new Date(a.date)); 
+    } else { 
+        filteredData = data; 
+    } 
+ 
+    renderPage(1); 
+} 
+ 
+function renderPage(page) { 
+    const grid = document.getElementById('videoGrid'); 
+    currentPage = page; 
+    grid.innerHTML = ''; 
+ 
+    const start = (page - 1) * itemsPerPage; 
+    const end = start + itemsPerPage; 
+    const paginatedItems = filteredData.slice(start, end); 
+ 
+    if (paginatedItems.length === 0) { 
+        grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Video tidak ditemukan.</p>'; 
+        return; 
+    } 
+ 
+    paginatedItems.forEach(video => { 
+        const card = ` 
+            <div class="video-card"> 
+                <a href="/content_video/${video.category.toLowerCase().replace(/\s+/g, '-')}/${video.slug}" style="text-decoration:none; color:inherit;"> 
+                    <div class="thumbnail-box"> 
+                        <img src="${video.thumbnail}" alt="${video.title}" loading="lazy"> 
+                    </div> 
+                    <div class="video-info"> 
+                        <span class="category-tag">${video.category}</span> 
+                        <h3 class="video-title">${video.title}</h3> 
+                        <div class="video-meta">${new Date(video.date).toLocaleDateString('id-ID')}</div> 
+                    </div> 
+                </a> 
+            </div> 
+        `; 
+        grid.insertAdjacentHTML('beforeend', card); 
+    }); 
+ 
+    renderPaginationControls(); 
+} 
+ 
+function renderPaginationControls() { 
+    let paginationDiv = document.getElementById('pagination'); 
+    if (!paginationDiv) { 
+        paginationDiv = document.createElement('div'); 
+        paginationDiv.id = 'pagination'; 
+        paginationDiv.style.textAlign = 'center'; 
+        paginationDiv.style.marginTop = '30px'; 
+        document.querySelector('.container').appendChild(paginationDiv); 
+    } 
+ 
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage); 
+    let html = ''; 
+ 
+    for (let i = 1; i <= totalPages; i++) { 
+        html += `<button onclick="renderPage(${i})" style="margin:0 5px; padding:8px 15px; cursor:pointer; background:${i === currentPage ? 'red' : '#333'}; color:white; border:none; border-radius:5px;">${i}</button>`; 
+    } 
+    paginationDiv.innerHTML = totalPages > 1 ? html : ''; 
+} 
+ 
+// 4. Fitur Pencarian & Filter 
+function setupEventListeners() { 
+    const searchInput = document.getElementById('searchInput'); 
+    if (searchInput) { 
+        searchInput.addEventListener('input', (e) => { 
+            const val = e.target.value.toLowerCase(); 
+            const filtered = videoDatabase.filter(v =>  
+                v.title.toLowerCase().includes(val) ||  
+                v.category.toLowerCase().includes(val) 
+            ); 
+            loadVideos(filtered); 
+        }); 
+    } 
+} 
+ 
+function filterByCategory(cat) { 
+    const filtered = videoDatabase.filter(v => v.category === cat); 
+    loadVideos(filtered); 
+    toggleMenu(); // Tutup menu setelah klik 
+} 
+ 
+// 5. Handle Clean URLs (Hanya di Client-side) 
+// Memastikan link navigasi tidak menampilkan .html 
+document.addEventListener('click', e => { 
+    const origin = window.location.origin; 
+    if (e.target.tagName === 'A' && e.target.href.startsWith(origin)) { 
+        // Logika routing tambahan bisa diletakkan di sini jika perlu pushState 
+    } 
+}); 
