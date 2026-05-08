@@ -1,28 +1,25 @@
-const videoData = [
-    {
-        "id": 1715113800000,
-        "title": "Trailer Film Action Super Keren 2026",
-        "category": "Action",
-        "slug": "/content_video/Action/trailer-film-action-super-keren-2026",
-        "thumbnail": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        "date": "2026-05-08"
-    },
-    {
-        "id": 1778218699719,
-        "title": "Mucikari (2022)",
-        "category": "Kelas Bintang",
-        "slug": "/content_video/Kelas Bintang/mucikari-2022.html",
-        "thumbnail": "https://muviblast.com/wp-content/uploads/2024/03/Mucikari-2022-KB-Kelas-Bintang-152x228.jpg",
-        "embed": "https://q324op.cloudatacdn.com/u5kj2q5sw3dlsdgge6zsqlyadkka5mlr6bidawxgdsqmfqd2pkd35dpcfe5q/vzaxy1kk5d~CdrK1BGwLB?token=cl1ytcko0akkyhubsuqv3n9q&expiry=1778218684335",
-        "date": "2026-05-08"
-    },
-    {
-        "id": 1778218978787,
-        "title": "Birahi Muda (2023)",
-        "category": "Kelas Bintang",
-        "slug": "/content_video/Kelas Bintang/birahi-muda-2023.html",
-        "thumbnail": "https://muviblast.com/wp-content/uploads/2024/03/Birahi-Muda-2023-Kelas-Bintang-152x228.jpg",
-        "embed": "https://c513ed.cloudatacdn.com/u5kj62luzxdlsdgge6etyly5de63opofrrpwrmsoxpkmfitak2ceyhfrceta/bzwufk2q8g~ddAAdoh22G?token=0srdp6g9g6bztq5vgdangwlj&expiry=1778218911504",
-        "date": "2026-05-08"
-    }
-];
+/** 
+ * Database Pusat STREAM 18 
+ * Digunakan untuk menyimpan index video, kategori, dan pengaturan situs. 
+ */ 
+const DB_CONFIG = { 
+    siteName: "STREAM 18", 
+    baseUrl: "https://stream18.musikanywhere.online", 
+    itemsPerPage: 10 
+}; 
+ 
+let videoDatabase = [ 
+    /* Data video akan otomatis terisi melalui admin.html dalam format: 
+    { 
+        id: "12345", 
+        title: "Judul Video Contoh", 
+        slug: "judul-video-contoh", 
+        category: "Action", 
+        thumbnail: "https://link-image.com/img.jpg", 
+        embedUrl: "https://player-link.com/video", 
+        date: "2026-05-08T06:30:51Z" 
+    } 
+    */ 
+]; 
+ 
+let categoryList = ; // Kategori awal 
