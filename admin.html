@@ -1,86 +1,83 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - STREAM 18</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
-        th, td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
-        th { color: var(--accent-color); font-weight: bold; }
-        .btn-sm { padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-right: 5px; }
-        .btn-edit { background: #f39c12; color: white; }
-        .btn-delete { background: #e74c3c; color: white; }
-    </style>
-</head>
-<body>
-    <main>
-        <div class="admin-container">
-            <h1 class="section-title">Dashboard Admin</h1>
-            <p style="margin-bottom: 30px; color: var(--text-secondary);">Kelola konten dan konfigurasi website STREAM 18 Anda.</p>
-
-            <div class="admin-section">
-                <h2>Pengaturan Domain Global</h2>
-                <div class="form-group">
-                    <label for="targetDomain">URL Domain Baru</label>
-                    <input type="text" id="targetDomain" placeholder="contoh: stream18.musikanywhere.online">
-                </div>
-                <button class="btn-publish" onclick="updateGlobalDomain()">Update Domain</button>
-            </div>
-
-            <div class="admin-section" id="formSection">
-                <h2 id="formTitle">Posting Video Baru</h2>
-                <input type="hidden" id="vId" value="">
-                <input type="hidden" id="vOldSlug" value="">
-                
-                <div class="form-group">
-                    <label for="vTitle">Judul Video</label>
-                    <input type="text" id="vTitle" placeholder="Masukkan judul video lengkap">
-                </div>
-
-                <div class="form-group">
-                    <label for="vCategory">Kategori (Ketik baru atau pilih yang ada)</label>
-                    <input type="text" id="vCategory" list="existingCategories" placeholder="Contoh: Action, VLOG, dll" autocomplete="off">
-                    <datalist id="existingCategories"></datalist>
-                </div>
-
-                <div class="form-group">
-                    <label for="vThumb">URL Thumbnail (Image)</label>
-                    <input type="text" id="vThumb" placeholder="https://link-gambar.com/foto.jpg">
-                </div>
-
-                <div class="form-group">
-                    <label for="vEmbed">Embed URL Video</label>
-                    <textarea id="vEmbed" rows="3" placeholder="Masukkan URL Embed Video"></textarea>
-                </div>
-                
-                <button id="btnPublish" class="btn-publish" onclick="saveVideo()">Publish Video Sekarang</button>
-                <button id="btnCancel" class="btn-publish" style="display:none; background:#555; margin-top:10px;" onclick="cancelEdit()">Batal Edit</button>
-            </div>
-
-            <div class="admin-section">
-                <h2>Kelola Video</h2>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Judul</th>
-                                <th>Kategori</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminVideoList">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <script src="/database.js"></script>
-    <script src="/assets/js/app.js"></script>
-    <script src="/assets/js/admin.js"></script>
-</body>
-</html>
+<!DOCTYPE html> 
+<html lang="id"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Admin Dashboard - STREAM 18</title> 
+    <link rel="stylesheet" href="/assets/css/style.css"> 
+    <style> 
+        .admin-box { max-width: 900px; margin: 30px auto; padding: 25px; background: #111; border: 1px solid #333; border-radius: 8px; } 
+        .admin-box h2 { color: var(--primary-red); margin-bottom: 20px; border-bottom: 2px solid var(--primary-red); display: inline-block; } 
+        .form-group { margin-bottom: 15px; } 
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #ccc; } 
+        input, select, textarea { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; outline: none; } 
+        input:focus { border-color: var(--primary-red); } 
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; } 
+        .btn-main { background: var(--primary-red); color: white; border: none; padding: 12px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; flex: 1; } 
+        .btn-sec { background: #333; color: white; border: none; padding: 12px 20px; cursor: pointer; border-radius: 4px; } 
+        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; z-index: 9999; display: flex; align-items: center; justify-content: center; } 
+        .hidden { display: none !important; } 
+        #statusLog { margin-top: 15px; font-size: 0.9rem; color: #ffcc00; } 
+    </style> 
+</head> 
+<body> 
+ 
+    <!-- Overlay Login --> 
+    <div id="loginOverlay" class="login-screen"> 
+        <div class="admin-box" style="width: 400px; text-align: center;"> 
+            <h2 style="border:none;">ADMIN ACCESS</h2> 
+            <p style="margin-bottom:20px; color:#666;">Masukkan GitHub Personal Access Token</p> 
+            <input type="password" id="ghTokenInput" placeholder="ghp_xxxxxxxxxxxx"> 
+            <button class="btn-main" style="margin-top:20px;" onclick="saveToken()">MASUK</button> 
+        </div> 
+    </div> 
+ 
+    <main class="container"> 
+        <!-- Form Post Video --> 
+        <div class="admin-box"> 
+            <h2>Post Video Baru</h2> 
+            <div id="statusLog"></div> 
+             
+            <div class="form-group"> 
+                <label>Judul Video</label> 
+                <input type="text" id="videoTitle" placeholder="Contoh: Film Action Terbaru 2026" oninput="updateSlugPreview()"> 
+                <small id="slugDisplay" style="color:#555;">Slug: /...</small> 
+            </div> 
+ 
+            <div class="form-group"> 
+                <label>Kategori</label> 
+                <div style="display:flex; gap:10px;"> 
+                    <select id="videoCategorySelect"></select> 
+                    <input type="text" id="newCategoryInput" placeholder="Atau ketik kategori baru..." style="flex:1;"> 
+                </div> 
+            </div> 
+ 
+            <div class="form-group"> 
+                <label>Embed URL (Semua Provider)</label> 
+                <input type="text" id="videoEmbed" placeholder="https://www.youtube.com/embed/xxx atau provider lain"> 
+            </div> 
+ 
+            <div class="form-group"> 
+                <label>Thumbnail URL</label> 
+                <input type="text" id="videoThumb" placeholder="https://image.com/poster.jpg"> 
+            </div> 
+ 
+            <button class="btn-main" id="publishBtn" onclick="handlePublish()">PUBLISH KE GITHUB</button> 
+        </div> 
+ 
+        <!-- Pengaturan Domain --> 
+        <div class="admin-box"> 
+            <h2>Pengaturan Situs</h2> 
+            <div class="form-group"> 
+                <label>Ubah Domain Utama (CNAME)</label> 
+                <input type="text" id="domainInput" placeholder="stream18.musikanywhere.online"> 
+            </div> 
+            <button class="btn-sec" onclick="updateSiteDomain()">Update Domain & CNAME</button> 
+            <button class="btn-sec" onclick="logoutAdmin()" style="margin-left:10px; color:red;">Logout</button> 
+        </div> 
+    </main> 
+ 
+    <script src="/database.js"></script> 
+    <script src="/assets/js/admin.js"></script> 
+</body> 
+</html> 
