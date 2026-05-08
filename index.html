@@ -1,85 +1,47 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STREAM 18 - Premium Video Streaming</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
-</head>
-<body>
-    <header class="header">
-        <div class="container">
-            <div class="nav-brand">
-                <h1><a href="/">STREAM 18</a></h1>
-            </div>
-            <nav class="nav-menu" id="navMenu">
-                <ul>
-                    <li><a href="#categories">List Category</a></li>
-                    <li><a href="/about">About</a></li>
-                    <li><a href="/privacy">Privacy Policy</a></li>
-                </ul>
-            </nav>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Cari video...">
-                <button id="searchBtn">🔍</button>
-            </div>
-            <div class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </header>
-
-    <main class="main-content">
-        <div class="container">
-            <section class="hero-section">
-                <h2>Premium Video Streaming Platform</h2>
-                <p>Nikmati koleksi video terbaik dengan kualitas HD</p>
-            </section>
-
-            <section class="filter-section">
-                <div class="filter-container">
-                    <button class="filter-btn active" data-category="all">Semua</button>
-                    <div id="categoryFilters"></div>
-                </div>
-            </section>
-
-            <section class="video-grid">
-                <div class="grid-container" id="videoGrid">
-                    <!-- Video items will be loaded here -->
-                </div>
-                <div class="pagination" id="pagination"></div>
-            </section>
-        </div>
-    </main>
-
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>STREAM 18</h3>
-                    <p>Platform streaming video premium dengan koleksi terlengkap.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/about">About</a></li>
-                        <li><a href="/privacy">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Contact</h4>
-                    <p>Email: info@stream18.musikanywhere.online</p>
-                    <p>© 2026 STREAM 18. All rights reserved.</p>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <script src="database.js"></script>
-    <script src="assets/js/app.js"></script>
-</body>
-</html>
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>STREAM 18 - Premium Video Streaming</title> 
+     
+    <!-- SEO & Metadata --> 
+    <meta name="description" content="Watch the latest premium videos on STREAM 18. High-quality streaming across all categories."> 
+    <link rel="canonical" href="https://stream18.musikanywhere.online"> 
+ 
+    <!-- CSS --> 
+    <link rel="stylesheet" href="/assets/css/style.css"> 
+     
+    <!-- Database and App Logic --> 
+    <script src="/database.js"></script> 
+    <script src="/assets/js/app.js" defer></script> 
+</head> 
+<body> 
+ 
+    <!-- Content Area --> 
+    <main class="container"> 
+        <div id="categoryHeader" style="margin-bottom: 20px;"> 
+            <h2 id="viewTitle" style="border-left: 5px solid var(--primary-red); padding-left: 15px; text-transform: uppercase;">Latest Uploads</h2> 
+        </div> 
+ 
+        <!-- The video grid where app.js will render the cards --> 
+        <div class="video-grid" id="videoGrid"> 
+            <!-- Dynamic content loads here --> 
+            <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 50px;"> 
+                <p>Loading videos...</p> 
+            </div> 
+        </div> 
+ 
+        <!-- Pagination is injected here by app.js --> 
+    </main> 
+ 
+    <!-- Script to handle small UI triggers for index specifically --> 
+    <script> 
+        // Placeholder for any index-specific triggers 
+        window.addEventListener('DOMContentLoaded', () => { 
+            console.log("STREAM 18 Index Initialized."); 
+        }); 
+    </script> 
+ 
+</body> 
+</html> 
