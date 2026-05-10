@@ -3,63 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STREAM 18 - Premium Video Streaming</title>
+    <title>STREAM 18 - Premium Streaming</title>
     <link rel="stylesheet" href="style.css">
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 </head>
 <body>
-
-    <!-- HEADER / NAVBAR -->
     <header>
         <nav class="navbar">
             <a href="/" class="logo">STREAM <span>18</span></a>
-            
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" id="searchInput" placeholder="Cari film, series, anime...">
             </div>
-
-            <div class="menu-btn" onclick="toggleMenu()">
-                <i class="fas fa-bars"></i>
-            </div>
+            <div class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
         </nav>
     </header>
 
-    <!-- SIDEBAR MENU -->
     <div class="nav-links" id="navLinks">
-        <div style="text-align: right; padding: 0 20px;">
+        <div style="text-align: right; padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
             <i class="fas fa-times" onclick="toggleMenu()" style="cursor: pointer; font-size: 24px;"></i>
         </div>
-        <a href="/"><i class="fas fa-home"></i> Home</a>
-        <a href="#" onclick="filterCategory('all')"><i class="fas fa-list"></i> Semua Kategori</a>
-        <div id="categoryMenu">
-            <!-- Rendered via app.js -->
-        </div>
+        <a href="/" onclick="toggleMenu()"><i class="fas fa-home"></i> Home</a>
+        
+        <div class="cat-header">LIST CATEGORY</div>
+        <a href="#" onclick="filterCategory('all')"><i class="fas fa-layer-group"></i> Semua Kategori</a>
+        <div id="categoryMenu"></div>
+        
+        <div class="cat-header">PAGES</div>
         <a href="/about"><i class="fas fa-info-circle"></i> About</a>
         <a href="/privacy"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <main>
-        <h2 class="section-title" id="mainTitle">Terbaru Ditambahkan</h2>
-        
-        <div class="video-grid" id="videoGrid">
-            <!-- Video Cards Rendered Here by app.js -->
-        </div>
+    <main id="appContent">
+        </main>
 
-        <div class="load-more-container">
-            <button class="btn-primary" id="loadMoreBtn" style="display: none;" onclick="loadMore()">Muat Lebih Banyak</button>
-        </div>
-    </main>
-
-    <!-- FOOTER -->
     <footer>
         <p>&copy; 2026 STREAM 18. All Rights Reserved.</p>
-        <p style="font-size: 12px; margin-top: 5px;">Powered by GitHub Pages | Musik Anywhere Online</p>
     </footer>
 
     <script src="database.js"></script>
-    <script src="app.js"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script>
+        let currentVideos = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Urutkan Terbaru Paling Atas (Mutlak)
+            streamDB.videos.sort((a, b) => b.dateAdded - a.dateAdded);
+            currentVideos = [...streamDB.videos];
+            
+            renderMenuCategories();
+
+            // Cek URL: Apakah lagi di beranda atau lagi nonton video?
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoSlug = urlParams.get('v');
+
+            if (videoSlug) {
+                renderWatchPage(videoSlug);
+            } else {
+                renderHomePage();
+            }
+
+            // Fitur Pencarian Cerdas
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                if(videoSlug) { window.location.href = "/?search=" + encodeURIComponent(e.target.value); return; }
+                handleSearch(e.target.value);
+            });
+
+            // Handle pencarian dari URL jika ada
+            const searchQ = urlParams.get('search');
+            if(searchQ) {
+                document.getElementById('searchInput').value = searchQ;
+                handleSearch(searchQ);
+            }
+        });
+
+        function toggleMenu() { document.getElementById('navLinks').classList.toggle('active'); }
+
+        function renderMenuCategories() {
+            const menu = document.getElementById('categoryMenu');
+            menu.innerHTML = streamDB.categories.map(c => 
+                `<a href="#" onclick="filterCategory('${c.id}')"><i class="fas fa-caret-right" style="margin-right:8px; color:var(--accent);"></i> ${c.name}</a>`
+            ).join('');
+        }
+
+        // --- HALAMAN UTAMA (GRID & PAGINATION) ---
+        function renderHomePage(title = "Terbaru Ditambahkan") {
+            const app = document.getElementById('appContent');
+            app.innerHTML = `
+                <h2 class="section-title" id="mainTitle">${title}</h2>
+                <div class="video-grid" id="videoGrid"></div>
+                <div style="text-align: center; margin-top: 40px;">
+                    <button class="btn-primary" id="loadMoreBtn" style="display: none;" onclick="loadMoreVideos()">Muat Lebih Banyak</button>
+                </div>
+            `;
+            currentPage = 1;
+            renderVideoGrid();
+        }
+
+        function renderVideoGrid(append = false) {
+            const grid = document.getElementById('videoGrid');
+            const btn = document.getElementById('loadMoreBtn');
+            if(!append) grid.innerHTML = '';
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const shows = currentVideos.slice(start, end);
+
+            shows.forEach(v => {
+                const catName = streamDB.categories.find(c => c.id === v.categoryId)?.name || "Lainnya";
+                // CLEAN URL PARAMETER
+                const url = `/?v=${v.slug}`;
+                grid.innerHTML += `
+                    <a href="${url}" class="video-card">
+                        <div class="thumbnail-wrapper"><img src="${v.thumbnail}" loading="lazy"></div>
+                        <div class="video-info">
+                            <span class="video-category">${catName}</span>
+                            <h3 class="video-title">${v.title}</h3>
+                        </div>
+                    </a>
+                `;
+            });
+
+            btn.style.display = (end < currentVideos.length) ? 'inline-block' : 'none';
+        }
+
+        function loadMoreVideos() { currentPage++; renderVideoGrid(true); }
+
+        function filterCategory(catId) {
+            toggleMenu();
+            window.history.pushState({}, '', '/'); // Reset URL bersih
+            if(catId === 'all') {
+                currentVideos = [...streamDB.videos];
+                renderHomePage("Semua Video");
+            } else {
+                currentVideos = streamDB.videos.filter(v => v.categoryId === catId);
+                const name = streamDB.categories.find(c => c.id === catId).name;
+                renderHomePage(`Kategori: ${name}`);
+            }
+        }
+
+        function handleSearch(q) {
+            window.history.pushState({}, '', '/');
+            const query = q.toLowerCase();
+            currentVideos = streamDB.videos.filter(v => v.title.toLowerCase().includes(query) || v.desc.toLowerCase().includes(query));
+            renderHomePage(query ? `Hasil Pencarian: "${q}"` : "Terbaru Ditambahkan");
+        }
+
+        // --- HALAMAN NONTON & REKOMENDASI ---
+        function renderWatchPage(slug) {
+            const video = streamDB.videos.find(v => v.slug === slug);
+            if(!video) { document.getElementById('appContent').innerHTML = `<h2>Video tidak ditemukan.</h2>`; return; }
+
+            const catName = streamDB.categories.find(c => c.id === video.categoryId)?.name || "";
+            const app = document.getElementById('appContent');
+            
+            // Render Player (Bisa iframe embed atau direct mp4)
+            let playerHtml = '';
+            if(video.url.includes('.mp4') || video.url.includes('.m3u8')) {
+                playerHtml = `<video id="player" playsinline controls data-poster="${video.thumbnail}"><source src="${video.url}" type="video/mp4" /></video>`;
+            } else {
+                playerHtml = `<div class="plyr__video-embed" id="player"><iframe src="${video.url}" allowfullscreen allowtransparency allow="autoplay"></iframe></div>`;
+            }
+
+            app.innerHTML = `
+                <div class="player-wrapper">${playerHtml}</div>
+                <div class="video-details-box">
+                    <span class="video-category">${catName}</span>
+                    <h1>${video.title}</h1>
+                    <p>${video.desc}</p>
+                </div>
+                <h2 class="section-title">Rekomendasi Untuk Anda</h2>
+                <div class="video-grid" id="recGrid"></div>
+            `;
+
+            // Inisialisasi Universal Player
+            const player = new Plyr('#player', {
+                controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+                settings: ['captions', 'quality', 'speed', 'loop']
+            });
+
+            // Render Rekomendasi (Kategori sama, urut terbaru)
+            const recs = streamDB.videos.filter(v => v.categoryId === video.categoryId && v.id !== video.id).slice(0, 4);
+            const recGrid = document.getElementById('recGrid');
+            recs.forEach(v => {
+                recGrid.innerHTML += `
+                    <a href="/?v=${v.slug}" class="video-card">
+                        <div class="thumbnail-wrapper"><img src="${v.thumbnail}"></div>
+                        <div class="video-info"><h3 class="video-title" style="font-size:14px;">${v.title}</h3></div>
+                    </a>`;
+            });
+        }
+    </script>
 </body>
 </html>
