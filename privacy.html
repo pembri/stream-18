@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - STREAM 18</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <a href="/" class="logo">STREAM <span>18</span></a>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Cari film, series, anime...">
+            </div>
+            <div class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+        </nav>
+    </header>
+
+    <div class="nav-links" id="navLinks">
+        <div style="text-align: right; padding: 0 20px;"><i class="fas fa-times" onclick="toggleMenu()" style="cursor: pointer; font-size: 24px;"></i></div>
+        <a href="/"><i class="fas fa-home"></i> Home</a>
+        <a href="/about"><i class="fas fa-info-circle"></i> About</a>
+        <a href="/privacy"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
+    </div>
+
+    <main>
+        <h2 class="section-title">Kebijakan Privasi</h2>
+        <div style="background: var(--bg-surface); padding: 30px; border-radius: 15px; line-height: 1.8; color: var(--text-muted);">
+            <p>Kami sangat menjaga privasi data Anda. STREAM 18 tidak mengumpulkan data pribadi sensitif tanpa persetujuan pengguna. Semua log aktivitas hanya digunakan untuk meningkatkan kualitas layanan kami.</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 STREAM 18. All Rights Reserved.</p>
+    </footer>
+    <script src="/database.js"></script>
+    <script src="/app.js"></script>
+</body>
+</html>
