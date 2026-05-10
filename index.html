@@ -9,13 +9,16 @@
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 </head>
 <body>
+
     <header>
         <nav class="navbar">
             <a href="/" class="logo">STREAM <span>18</span></a>
+            
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Cari film, series, anime...">
+                <input type="text" id="searchInput" placeholder="Cari film, series, anime..." onkeypress="if(event.key === 'Enter') executeSearch(this.value);">
             </div>
+
             <div class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
         </nav>
     </header>
@@ -24,6 +27,7 @@
         <div style="text-align: right; padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
             <i class="fas fa-times" onclick="toggleMenu()" style="cursor: pointer; font-size: 24px;"></i>
         </div>
+        
         <a href="/" onclick="toggleMenu()"><i class="fas fa-home"></i> Home</a>
         
         <div class="cat-header">LIST CATEGORY</div>
@@ -42,46 +46,52 @@
         <p>&copy; 2026 STREAM 18. All Rights Reserved.</p>
     </footer>
 
+
     <script src="database.js"></script>
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script>
+        // Variabel Global
         let currentVideos = [];
         let currentPage = 1;
         const itemsPerPage = 10;
 
+        // EKSEKUSI SAAT WEB DIBUKA
         document.addEventListener('DOMContentLoaded', () => {
-            // Urutkan Terbaru Paling Atas (Mutlak)
+            // 1. Urutkan Video: Terbaru Paling Atas
             streamDB.videos.sort((a, b) => b.dateAdded - a.dateAdded);
             currentVideos = [...streamDB.videos];
             
+            // 2. Tampilkan Menu Kategori di Hamburger
             renderMenuCategories();
 
-            // Cek URL: Apakah lagi di beranda atau lagi nonton video?
+            // 3. Deteksi URL (Lagi di Beranda atau Nonton?)
             const urlParams = new URLSearchParams(window.location.search);
             const videoSlug = urlParams.get('v');
+            const searchQ = urlParams.get('search');
 
             if (videoSlug) {
                 renderWatchPage(videoSlug);
+            } else if (searchQ) {
+                document.getElementById('searchInput').value = searchQ;
+                handleSearch(searchQ);
             } else {
                 renderHomePage();
             }
 
-            // Fitur Pencarian Cerdas
+            // 4. Fitur Ketik Pencarian Langsung (Realtime)
             document.getElementById('searchInput').addEventListener('input', (e) => {
-                if(videoSlug) { window.location.href = "/?search=" + encodeURIComponent(e.target.value); return; }
-                handleSearch(e.target.value);
+                if(!videoSlug) {
+                    handleSearch(e.target.value);
+                }
             });
-
-            // Handle pencarian dari URL jika ada
-            const searchQ = urlParams.get('search');
-            if(searchQ) {
-                document.getElementById('searchInput').value = searchQ;
-                handleSearch(searchQ);
-            }
         });
 
-        function toggleMenu() { document.getElementById('navLinks').classList.toggle('active'); }
+        // Buka/Tutup Hamburger Menu
+        function toggleMenu() { 
+            document.getElementById('navLinks').classList.toggle('active'); 
+        }
 
+        // Render Kategori di Sidebar
         function renderMenuCategories() {
             const menu = document.getElementById('categoryMenu');
             menu.innerHTML = streamDB.categories.map(c => 
@@ -89,7 +99,14 @@
             ).join('');
         }
 
-        // --- HALAMAN UTAMA (GRID & PAGINATION) ---
+        // Jalankan Pencarian saat tombol Enter ditekan dari halaman nonton
+        function executeSearch(query) {
+            window.location.href = '/?search=' + encodeURIComponent(query);
+        }
+
+        // ==========================================
+        // FUNGSI 1: RENDER HALAMAN DEPAN (GRID VIDEO)
+        // ==========================================
         function renderHomePage(title = "Terbaru Ditambahkan") {
             const app = document.getElementById('appContent');
             app.innerHTML = `
@@ -114,11 +131,13 @@
 
             shows.forEach(v => {
                 const catName = streamDB.categories.find(c => c.id === v.categoryId)?.name || "Lainnya";
-                // CLEAN URL PARAMETER
-                const url = `/?v=${v.slug}`;
+                const url = `/?v=${v.slug}`; // Link Clean Parameter
+                
                 grid.innerHTML += `
                     <a href="${url}" class="video-card">
-                        <div class="thumbnail-wrapper"><img src="${v.thumbnail}" loading="lazy"></div>
+                        <div class="thumbnail-wrapper">
+                            <img src="${v.thumbnail}" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='https://via.placeholder.com/800x450/151C2C/00A8FF?text=Preview+Not+Available'">
+                        </div>
                         <div class="video-info">
                             <span class="video-category">${catName}</span>
                             <h3 class="video-title">${v.title}</h3>
@@ -127,20 +146,24 @@
                 `;
             });
 
+            // Tampilkan tombol "Load More" jika video masih ada
             btn.style.display = (end < currentVideos.length) ? 'inline-block' : 'none';
         }
 
-        function loadMoreVideos() { currentPage++; renderVideoGrid(true); }
+        function loadMoreVideos() { 
+            currentPage++; 
+            renderVideoGrid(true); 
+        }
 
         function filterCategory(catId) {
             toggleMenu();
-            window.history.pushState({}, '', '/'); // Reset URL bersih
+            window.history.pushState({}, '', '/'); // Bersihkan URL
             if(catId === 'all') {
                 currentVideos = [...streamDB.videos];
                 renderHomePage("Semua Video");
             } else {
                 currentVideos = streamDB.videos.filter(v => v.categoryId === catId);
-                const name = streamDB.categories.find(c => c.id === catId).name;
+                const name = streamDB.categories.find(c => c.id === catId)?.name || "Kategori";
                 renderHomePage(`Kategori: ${name}`);
             }
         }
@@ -148,53 +171,84 @@
         function handleSearch(q) {
             window.history.pushState({}, '', '/');
             const query = q.toLowerCase();
-            currentVideos = streamDB.videos.filter(v => v.title.toLowerCase().includes(query) || v.desc.toLowerCase().includes(query));
+            currentVideos = streamDB.videos.filter(v => 
+                v.title.toLowerCase().includes(query) || 
+                v.desc.toLowerCase().includes(query)
+            );
             renderHomePage(query ? `Hasil Pencarian: "${q}"` : "Terbaru Ditambahkan");
         }
 
-        // --- HALAMAN NONTON & REKOMENDASI ---
+        // ==========================================
+        // FUNGSI 2: RENDER HALAMAN NONTON VIDEO
+        // ==========================================
         function renderWatchPage(slug) {
             const video = streamDB.videos.find(v => v.slug === slug);
-            if(!video) { document.getElementById('appContent').innerHTML = `<h2>Video tidak ditemukan.</h2>`; return; }
+            if(!video) { 
+                document.getElementById('appContent').innerHTML = `
+                    <div style="text-align:center; padding: 100px 20px;">
+                        <h2 style="color:var(--accent);">404 - Video Tidak Ditemukan</h2>
+                        <a href="/" class="btn-primary" style="display:inline-block; margin-top:20px; text-decoration:none;">Kembali ke Beranda</a>
+                    </div>`; 
+                return; 
+            }
 
             const catName = streamDB.categories.find(c => c.id === video.categoryId)?.name || "";
             const app = document.getElementById('appContent');
             
-            // Render Player (Bisa iframe embed atau direct mp4)
+            // Logika Universal Player (Beda antara File Langsung vs Embed Luar)
             let playerHtml = '';
             if(video.url.includes('.mp4') || video.url.includes('.m3u8')) {
+                // Pakai Plyr Premium untuk direct file
                 playerHtml = `<video id="player" playsinline controls data-poster="${video.thumbnail}"><source src="${video.url}" type="video/mp4" /></video>`;
             } else {
-                playerHtml = `<div class="plyr__video-embed" id="player"><iframe src="${video.url}" allowfullscreen allowtransparency allow="autoplay"></iframe></div>`;
+                // Pakai Responsive Iframe standar untuk Embed pihak ke-3 (YouTube, Dailymotion, Web Streaming)
+                playerHtml = `
+                <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; max-width:100%; border-radius:12px;">
+                    <iframe src="${video.url}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;" allowfullscreen allow="autoplay"></iframe>
+                </div>`;
             }
 
+            // Injeksi Halaman Nonton + Rekomendasi
             app.innerHTML = `
-                <div class="player-wrapper">${playerHtml}</div>
+                <div class="player-wrapper" style="background:transparent; box-shadow:none;">
+                    ${playerHtml}
+                </div>
+                
                 <div class="video-details-box">
                     <span class="video-category">${catName}</span>
                     <h1>${video.title}</h1>
                     <p>${video.desc}</p>
                 </div>
+                
                 <h2 class="section-title">Rekomendasi Untuk Anda</h2>
                 <div class="video-grid" id="recGrid"></div>
             `;
 
-            // Inisialisasi Universal Player
-            const player = new Plyr('#player', {
-                controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
-                settings: ['captions', 'quality', 'speed', 'loop']
-            });
+            // Aktifkan Plyr.js Jika Video Pakai Direct File (.mp4)
+            if(document.getElementById('player')) {
+                new Plyr('#player', {
+                    controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+                    settings: ['quality', 'speed', 'loop']
+                });
+            }
 
-            // Render Rekomendasi (Kategori sama, urut terbaru)
+            // Render 4 Video Rekomendasi di bawahnya
             const recs = streamDB.videos.filter(v => v.categoryId === video.categoryId && v.id !== video.id).slice(0, 4);
             const recGrid = document.getElementById('recGrid');
-            recs.forEach(v => {
-                recGrid.innerHTML += `
-                    <a href="/?v=${v.slug}" class="video-card">
-                        <div class="thumbnail-wrapper"><img src="${v.thumbnail}"></div>
-                        <div class="video-info"><h3 class="video-title" style="font-size:14px;">${v.title}</h3></div>
-                    </a>`;
-            });
+            
+            if(recs.length === 0) {
+                recGrid.innerHTML = `<p style="color:var(--text-muted);">Belum ada rekomendasi di kategori ini.</p>`;
+            } else {
+                recs.forEach(v => {
+                    recGrid.innerHTML += `
+                        <a href="/?v=${v.slug}" class="video-card">
+                            <div class="thumbnail-wrapper">
+                                <img src="${v.thumbnail}" referrerpolicy="no-referrer" onerror="this.src='https://via.placeholder.com/800x450/151C2C/00A8FF?text=Preview+Not+Available'">
+                            </div>
+                            <div class="video-info"><h3 class="video-title" style="font-size:14px;">${v.title}</h3></div>
+                        </a>`;
+                });
+            }
         }
     </script>
 </body>
