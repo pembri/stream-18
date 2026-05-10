@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STREAM 18 - Premium Video Streaming</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- HEADER / NAVBAR -->
+    <header>
+        <nav class="navbar">
+            <a href="/" class="logo">STREAM <span>18</span></a>
+            
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Cari film, series, anime...">
+            </div>
+
+            <div class="menu-btn" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+    </header>
+
+    <!-- SIDEBAR MENU -->
+    <div class="nav-links" id="navLinks">
+        <div style="text-align: right; padding: 0 20px;">
+            <i class="fas fa-times" onclick="toggleMenu()" style="cursor: pointer; font-size: 24px;"></i>
+        </div>
+        <a href="/"><i class="fas fa-home"></i> Home</a>
+        <a href="#" onclick="filterCategory('all')"><i class="fas fa-list"></i> Semua Kategori</a>
+        <div id="categoryMenu">
+            <!-- Rendered via app.js -->
+        </div>
+        <a href="/about"><i class="fas fa-info-circle"></i> About</a>
+        <a href="/privacy"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <h2 class="section-title" id="mainTitle">Terbaru Ditambahkan</h2>
+        
+        <div class="video-grid" id="videoGrid">
+            <!-- Video Cards Rendered Here by app.js -->
+        </div>
+
+        <div class="load-more-container">
+            <button class="btn-primary" id="loadMoreBtn" style="display: none;" onclick="loadMore()">Muat Lebih Banyak</button>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2026 STREAM 18. All Rights Reserved.</p>
+        <p style="font-size: 12px; margin-top: 5px;">Powered by GitHub Pages | Musik Anywhere Online</p>
+    </footer>
+
+    <script src="database.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
