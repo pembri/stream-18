@@ -3,53 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Judul Video - STREAM 18</title>
-    <link rel="stylesheet" href="../../assets/css/style.css">
+    <title>Nonton [JUDUL_VIDEO] - STREAM 18</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .player-container {
+            width: 100%;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+        iframe { width: 100%; height: 100%; border: none; }
+        .video-details { margin-bottom: 40px; }
+        .video-details h1 { font-size: 24px; margin-bottom: 10px; color: var(--accent); }
+        .video-details p { color: var(--text-muted); line-height: 1.6; }
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+    </style>
 </head>
 <body>
-
-    <header id="main-header">
-        <a href="../../index" class="logo">STREAM 18</a>
-        <div class="header-right">
-            <button id="hamburger-btn" class="hamburger-btn">&#9776;</button>
-        </div>
+    <header>
+        <nav class="navbar">
+            <a href="/" class="logo">STREAM <span>18</span></a>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Cari...">
+            </div>
+            <div class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+        </nav>
     </header>
-
-    <div id="overlay" class="overlay"></div>
-    <aside id="sidebar" class="sidebar">
-        <button id="close-btn" class="close-btn">&times;</button>
-        <h3>Navigasi</h3>
-        <ul>
-            <li><a href="../../index">Beranda</a></li>
-            <li><a href="../../about">About</a></li>
-            <li><a href="../../privacy">Privacy Policy</a></li>
-        </ul>
-    </aside>
 
     <main>
         <div class="player-container">
-            <iframe 
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
-                allowfullscreen 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
-            </iframe>
+            <iframe src="[EMBED_URL]" allowfullscreen></iframe>
         </div>
 
-        <div class="video-details" style="margin-top: 20px;">
-            <span class="video-category">Kategori Video</span>
-            <h1 class="section-title" style="margin-top: 10px;">Ini Adalah Judul Video Kamu</h1>
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-            <p style="color: var(--text-muted); line-height: 1.6;">
-                Deskripsi video atau informasi tambahan bisa diletakkan di sini. Sistem admin kamu akan secara otomatis mengisi konten ini berdasarkan input yang kamu masukkan.
-            </p>
+        <div class="video-details">
+            <span class="video-category">[KATEGORI]</span>
+            <h1>[JUDUL_VIDEO]</h1>
+            <p>[DESKRIPSI]</p>
         </div>
+
+        <h2 class="section-title">Rekomendasi Untuk Anda</h2>
+        <div class="rec-grid" id="recommendationGrid">
+            </div>
     </main>
 
     <footer>
-        <p>&copy; 2026 STREAM 18. Hak Cipta Dilindungi.</p>
+        <p>&copy; 2026 STREAM 18. All Rights Reserved.</p>
     </footer>
 
-    <script src="../../database.js"></script>
-    <script src="../../assets/js/app.js"></script>
+    <script src="/database.js"></script>
+    <script src="/app.js"></script>
+    <script>
+        // Script khusus rekomendasi (filter berdasarkan kategori yang sama)
+        const currentCat = "[KATEGORI_ID]";
+        const currentVid = "[VIDEO_ID]";
+        
+        const recGrid = document.getElementById('recommendationGrid');
+        const recommendations = streamDB.videos
+            .filter(v => v.category === currentCat && v.id !== currentVid)
+            .slice(0, 4); // Ambil 4 saja
+
+        recommendations.forEach(vid => {
+            recGrid.innerHTML += `
+                <a href="/content_video/${vid.category}/${vid.slug}" class="video-card">
+                    <div class="thumbnail-wrapper">
+                        <img src="${vid.thumbnail}" alt="${vid.title}">
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title" style="font-size: 14px;">${vid.title}</h3>
+                    </div>
+                </a>
+            `;
+        });
+    </script>
 </body>
 </html>
