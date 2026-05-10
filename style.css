@@ -1,11 +1,10 @@
-/* style.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
 :root {
-    --bg-main: #0B0F19; /* Darkest Navy/Black */
-    --bg-surface: #151C2C; /* Lighter Navy */
+    --bg-main: #0B0F19;
+    --bg-surface: #151C2C;
     --bg-glass: rgba(21, 28, 44, 0.8);
-    --accent: #00A8FF; /* Sky Blue */
+    --accent: #00A8FF;
     --accent-hover: #008DDF;
     --text-main: #FFFFFF;
     --text-muted: #94A3B8;
@@ -25,7 +24,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
 ::-webkit-scrollbar-thumb { background: var(--bg-surface); border-radius: 4px; }
@@ -93,7 +91,6 @@ header {
     color: var(--text-muted);
 }
 
-/* Hamburger Menu */
 .menu-btn {
     cursor: pointer;
     font-size: 24px;
@@ -102,12 +99,13 @@ header {
     align-items: center;
 }
 
+/* --- SIDEBAR HAMBURGER MENU --- */
 .nav-links {
     position: fixed;
     top: 0;
     right: -100%;
     height: 100vh;
-    width: 250px;
+    width: 280px;
     background: var(--bg-surface);
     display: flex;
     flex-direction: column;
@@ -115,6 +113,7 @@ header {
     transition: var(--transition);
     border-left: 1px solid rgba(255,255,255,0.05);
     z-index: 999;
+    overflow-y: auto;
 }
 
 .nav-links.active { right: 0; }
@@ -125,11 +124,19 @@ header {
     padding: 15px 30px;
     font-weight: 600;
     transition: var(--transition);
+    display: block;
 }
 
 .nav-links a:hover {
     color: var(--accent);
     background: rgba(0, 168, 255, 0.1);
+}
+
+#categoryMenu {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: rgba(0,0,0,0.2);
 }
 
 /* --- MAIN CONTENT & GRID --- */
@@ -173,7 +180,7 @@ main {
 .thumbnail-wrapper {
     position: relative;
     width: 100%;
-    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    padding-top: 56.25%;
 }
 
 .thumbnail-wrapper img {
@@ -208,7 +215,6 @@ main {
     overflow: hidden;
 }
 
-/* Load More Btn */
 .load-more-container {
     text-align: center;
     margin-top: 40px;
@@ -230,7 +236,6 @@ main {
     box-shadow: 0 0 15px rgba(0, 168, 255, 0.4);
 }
 
-/* --- FOOTER --- */
 footer {
     background: var(--bg-surface);
     padding: 30px 5%;
@@ -239,8 +244,27 @@ footer {
     color: var(--text-muted);
 }
 
-/* Responsive */
+/* --- RESPONSIVE FIX UNTUK HP --- */
 @media (max-width: 768px) {
-    .search-container { display: none; /* Hide on mobile, can add toggle later */ }
-    .video-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+    .navbar {
+        flex-wrap: wrap; 
+        padding: 15px 5%;
+    }
+    .logo { flex: 1; }
+    
+    /* MUNCULIN PENCARIAN DI BAWAH LOGO */
+    .search-container {
+        display: block; 
+        order: 3; 
+        width: 100%;
+        max-width: 100%;
+        margin: 15px 0 0 0;
+    }
+    
+    main { margin-top: 130px; }
+    
+    .video-grid { 
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+        gap: 15px; 
+    }
 }
