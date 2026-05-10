@@ -4,395 +4,272 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - STREAM 18</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Admin Specific Styles */
         body { background-color: var(--bg-main); }
-        .admin-container {
-            max-width: 1000px;
-            margin: 100px auto 50px;
-            padding: 20px;
-        }
-        .card {
-            background: var(--bg-surface);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            margin-bottom: 30px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            background: var(--bg-main);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-main);
-            border-radius: 8px;
-            transition: var(--transition);
-        }
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--accent);
-            outline: none;
-        }
-        .btn-submit {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: var(--transition);
-        }
-        .btn-submit:hover { background: var(--accent-hover); }
+        .admin-box { max-width: 1100px; margin: 120px auto 50px; padding: 20px; }
+        .card { background: var(--bg-surface); border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid var(--border-color); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; }
+        .form-group input:focus { border-color: var(--accent); outline: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        th { color: var(--accent); }
+        .action-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;}
+        .action-btn.del { border-color: #e74c3c; color: #e74c3c; }
+        .btn-submit { width: 100%; }
         .hidden { display: none; }
-        .status-msg {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: 600;
-            text-align: center;
-        }
-        .success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
-        .error { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
-        .loader {
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top: 3px solid var(--accent);
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-            margin-left: 10px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; }
+        .alert.success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+        .alert.error { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
     </style>
 </head>
 <body>
-
-    <!-- Header Admin -->
     <header>
         <nav class="navbar">
             <a href="/" class="logo">STREAM <span>18</span> | ADMIN</a>
-            <div id="logoutBtn" class="hidden">
-                <button onclick="logout()" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 5px 15px; border-radius: 20px; cursor: pointer;">Logout</button>
+            <div id="logoutMenu" class="hidden">
+                <button onclick="logout()" style="background:transparent; color:#e74c3c; border:1px solid #e74c3c; padding:8px 15px; border-radius:20px; cursor:pointer;">Logout</button>
             </div>
         </nav>
     </header>
 
-    <div class="admin-container">
-        
-        <!-- Notifikasi -->
-        <div id="statusAlert" class="status-msg hidden"></div>
+    <div class="admin-box">
+        <div id="alertBox" class="alert hidden"></div>
 
-        <!-- SECTION LOGIN TOKEN -->
-        <div class="card" id="loginSection">
-            <h2 class="section-title">Otorisasi GitHub</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Masukkan Personal Access Token (PAT) GitHub untuk mengakses dashboard.</p>
-            <div class="form-group">
-                <label>GitHub PAT Token (repo scope)</label>
-                <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxx">
-            </div>
-            <button class="btn-submit" onclick="login()">Masuk <i class="fas fa-sign-in-alt"></i></button>
+        <div class="card" id="loginSec">
+            <h2>Login GitHub Token</h2>
+            <p style="color:var(--text-muted); margin: 10px 0 20px;">Masukkan PAT (scope: repo) untuk akses CRUD.</p>
+            <div class="form-group"><input type="password" id="ghToken" placeholder="ghp_xxxxxx"></div>
+            <button class="btn-primary btn-submit" onclick="login()">Masuk</button>
         </div>
 
-        <!-- SECTION DASHBOARD (Hidden sebelum login) -->
-        <div id="dashboardSection" class="hidden">
-            
-            <!-- Tambah Video -->
+        <div id="dashSec" class="hidden">
             <div class="card">
-                <h2 class="section-title">Posting Video Baru</h2>
-                <div class="form-group">
-                    <label>Judul Video</label>
-                    <input type="text" id="vidTitle" oninput="generateSlug()" placeholder="Contoh: The Avengers">
-                </div>
-                <div class="form-group">
-                    <label>Slug URL (Otomatis)</label>
-                    <input type="text" id="vidSlug" placeholder="the-avengers" readonly style="background: rgba(0,0,0,0.5);">
+                <h2 style="color: var(--accent); border-bottom: 1px solid var(--border-color); padding-bottom:10px; margin-bottom: 20px;">
+                    <i class="fas fa-video"></i> Manajemen Video
+                </h2>
+                <input type="hidden" id="editVidId" value="">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Judul Video</label>
+                        <input type="text" id="vTitle" oninput="autoSlug()" placeholder="Judul">
+                    </div>
+                    <div class="form-group">
+                        <label>Slug URL</label>
+                        <input type="text" id="vSlug" readonly style="background:#000;">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Kategori</label>
-                    <select id="vidCategory">
-                        <option value="movies">Movies</option>
-                        <option value="series">TV Series</option>
-                        <option value="anime">Anime</option>
-                        <!-- Nanti otomatis ditarik dari database.js -->
-                    </select>
+                    <select id="vCat"></select>
                 </div>
                 <div class="form-group">
-                    <label>URL Embed / Link Video M3u8/Mp4</label>
-                    <input type="text" id="vidUrl" placeholder="https://www.youtube.com/embed/xxxxx">
+                    <label>URL Video (Embed YT/DM, MP4, M3U8)</label>
+                    <input type="text" id="vUrl" placeholder="https://...">
                 </div>
                 <div class="form-group">
-                    <label>Thumbnail Image URL</label>
-                    <input type="url" id="vidThumb" placeholder="https://domain.com/image.jpg">
+                    <label>Thumbnail URL</label>
+                    <input type="text" id="vThumb" placeholder="https://...">
                 </div>
                 <div class="form-group">
-                    <label>Deskripsi Pendek</label>
-                    <textarea id="vidDesc" rows="3" placeholder="Sinopsis singkat..."></textarea>
+                    <label>Deskripsi</label>
+                    <textarea id="vDesc" rows="2"></textarea>
                 </div>
-                <button class="btn-submit" id="btnPublish" onclick="publishVideo()">Publish Video Ke GitHub</button>
+                <button class="btn-primary btn-submit" id="btnSaveVid" onclick="saveVideo()">Tambah / Update Video</button>
+
+                <div style="margin-top: 30px; overflow-x: auto;">
+                    <table>
+                        <thead><tr><th>Judul</th><th>Kategori</th><th>Aksi</th></tr></thead>
+                        <tbody id="vidTableBody"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Ganti Domain Massal -->
             <div class="card">
-                <h2 class="section-title" style="border-color: #e67e22;">Ubah Domain Website</h2>
-                <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 13px;">Ganti semua string domain secara massal di pengaturan repo.</p>
-                <div class="form-group">
-                    <label>Domain Baru</label>
-                    <input type="text" id="newDomain" placeholder="Contoh: stream18.musikanywhere.online">
+                <h2 style="color: #f39c12; border-bottom: 1px solid var(--border-color); padding-bottom:10px; margin-bottom: 20px;">
+                    <i class="fas fa-layer-group"></i> Manajemen Kategori
+                </h2>
+                <div style="display: flex; gap: 10px;">
+                    <input type="hidden" id="editCatId" value="">
+                    <input type="text" id="cId" placeholder="ID (cth: action)" style="flex:1; padding:10px; border-radius:5px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border-color);">
+                    <input type="text" id="cName" placeholder="Nama Kategori (cth: Action Movies)" style="flex:2; padding:10px; border-radius:5px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border-color);">
+                    <button class="btn-primary" onclick="saveCategory()" style="background:#f39c12;">Simpan</button>
                 </div>
-                <button class="btn-submit" onclick="changeDomain()" style="background: #e67e22;">Update Domain</button>
+                <table style="margin-top:20px;">
+                    <thead><tr><th>ID</th><th>Nama Kategori</th><th>Aksi</th></tr></thead>
+                    <tbody id="catTableBody"></tbody>
+                </table>
             </div>
 
+             <div class="card" style="text-align: center; border-color: #2ecc71;">
+                <h2 style="color:#2ecc71; margin-bottom: 15px;">PUBLISH PERUBAHAN</h2>
+                <p style="color:var(--text-muted); margin-bottom:20px;">Setelah Anda Menambah/Edit/Hapus, klik tombol ini untuk menyimpan permanen ke GitHub.</p>
+                <button class="btn-primary btn-submit" id="btnPush" onclick="pushToGitHub()" style="background:#2ecc71; font-size:16px;">🚀 COMMIT & PUSH KE REPO</button>
+            </div>
         </div>
     </div>
 
+    <script src="database.js"></script>
     <script>
-        // === KONFIGURASI REPO ===
         const REPO_OWNER = "pembri";
         const REPO_NAME = "stream-18";
-        const BRANCH = "main"; 
+        const BRANCH = "main";
+        let token = localStorage.getItem('s18_token') || "";
         
-        let GH_TOKEN = localStorage.getItem('stream_admin_token') || "";
+        // Buat clone lokal database untuk diedit sebelum di push
+        let localDB = JSON.parse(JSON.stringify(streamDB));
 
-        // Utilitas Encoding/Decoding Base64 yang aman untuk Unicode
-        const b64EncodeUnicode = str => btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
-        const b64DecodeUnicode = str => decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-
-        // Cek Login Saat Muat
         window.onload = () => {
-            if (GH_TOKEN) {
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('dashboardSection').classList.remove('hidden');
-                document.getElementById('logoutBtn').classList.remove('hidden');
+            if (token) {
+                document.getElementById('loginSec').classList.add('hidden');
+                document.getElementById('dashSec').classList.remove('hidden');
+                document.getElementById('logoutMenu').classList.remove('hidden');
+                renderAdminUI();
             }
         };
 
         function login() {
-            const token = document.getElementById('ghToken').value;
-            if(!token) return showAlert('Token tidak boleh kosong', 'error');
-            localStorage.setItem('stream_admin_token', token);
+            token = document.getElementById('ghToken').value;
+            if(!token) return;
+            localStorage.setItem('s18_token', token);
             window.location.reload();
         }
 
-        function logout() {
-            localStorage.removeItem('stream_admin_token');
-            window.location.reload();
+        function logout() { localStorage.removeItem('s18_token'); window.location.reload(); }
+        function showMsg(msg, type) {
+            const b = document.getElementById('alertBox');
+            b.className = `alert ${type}`; b.innerHTML = msg; window.scrollTo(0,0);
+            setTimeout(() => b.classList.add('hidden'), 4000);
         }
 
-        function showAlert(msg, type) {
-            const alertBox = document.getElementById('statusAlert');
-            alertBox.className = `status-msg ${type}`;
-            alertBox.innerHTML = msg;
-            window.scrollTo(0, 0);
-            setTimeout(() => alertBox.classList.add('hidden'), 5000);
+        function autoSlug() {
+            document.getElementById('vSlug').value = document.getElementById('vTitle').value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
         }
 
-        function generateSlug() {
-            const title = document.getElementById('vidTitle').value;
-            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-            document.getElementById('vidSlug').value = slug;
-        }
-
-        // --- FUNGSI API GITHUB INTI ---
-
-        async function fetchGitHubAPI(path, method = "GET", body = null) {
-            const headers = {
-                "Authorization": `token ${GH_TOKEN}`,
-                "Accept": "application/vnd.github.v3+json",
-                "Content-Type": "application/json"
-            };
-            const config = { method, headers };
-            if (body) config.body = JSON.stringify(body);
-
-            const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/${path}`, config);
-            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-            return await res.json();
-        }
-
-        async function getFile(filePath) {
-            try {
-                const data = await fetchGitHubAPI(`contents/${filePath}?ref=${BRANCH}`);
-                return {
-                    content: b64DecodeUnicode(data.content),
-                    sha: data.sha
-                };
-            } catch (e) {
-                return null; // File tidak ditemukan
-            }
-        }
-
-        async function pushFile(filePath, contentStr, message, sha = null) {
-            const body = {
-                message: message,
-                content: b64EncodeUnicode(contentStr),
-                branch: BRANCH
-            };
-            if (sha) body.sha = sha;
-            return await fetchGitHubAPI(`contents/${filePath}`, "PUT", body);
-        }
-
-        // --- LOGIKA POSTING VIDEO ---
-
-        async function publishVideo() {
-            const btn = document.getElementById('btnPublish');
-            btn.innerHTML = 'Memproses... <div class="loader"></div>';
-            btn.disabled = true;
-
-            try {
-                // 1. Ambil Data Form
-                const title = document.getElementById('vidTitle').value;
-                const slug = document.getElementById('vidSlug').value;
-                const category = document.getElementById('vidCategory').value;
-                const embedUrl = document.getElementById('vidUrl').value;
-                const thumbnail = document.getElementById('vidThumb').value;
-                const description = document.getElementById('vidDesc').value;
-                const id = "vid-" + Date.now();
-                const dateAdded = new Date().toISOString();
-
-                if(!title || !slug || !embedUrl) throw new Error("Judul, Slug, dan URL wajib diisi!");
-
-                // 2. Update database.js
-                const dbFile = await getFile('database.js');
-                if(!dbFile) throw new Error("Gagal mengambil database.js dari GitHub.");
-
-                // Parsing text database.js (mengambil string JS, membuang deklarasi variabel untuk di-parse)
-                let dbContent = dbFile.content;
-                let jsonString = dbContent.replace("const streamDB = ", "").replace(/;$/, "");
-                let dbObj = JSON.parse(jsonString);
-
-                // Tambahkan video baru ke array teratas
-                dbObj.videos.unshift({ id, title, slug, category, thumbnail, embedUrl, dateAdded, description });
-
-                // Jadikan string lagi
-                const newDbContent = "const streamDB = " + JSON.stringify(dbObj, null, 4) + ";";
-
-                // Push perubahan database.js
-                await pushFile('database.js', newDbContent, `Add video: ${title}`, dbFile.sha);
-
-                // 3. Buat File HTML Baru di folder /content_video/[kategori]/[slug].html
-                const htmlTemplate = `<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nonton ${title} - STREAM 18</title>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .player-container { width: 100%; background: #000; border-radius: 15px; overflow: hidden; aspect-ratio: 16/9; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .video-details { margin-bottom: 40px; }
-        .video-details h1 { font-size: 24px; margin-bottom: 10px; color: var(--accent); }
-        .video-details p { color: var(--text-muted); line-height: 1.6; }
-        .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-    </style>
-</head>
-<body>
-    <header>
-        <nav class="navbar">
-            <a href="/" class="logo">STREAM <span>18</span></a>
-            <div class="search-container"><i class="fas fa-search search-icon"></i><input type="text" id="searchInput" placeholder="Cari..."></div>
-            <div class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
-        </nav>
-    </header>
-    <div class="nav-links" id="navLinks">
-        <div style="text-align: right; padding: 0 20px;"><i class="fas fa-times" onclick="toggleMenu()" style="cursor: pointer; font-size: 24px;"></i></div>
-        <a href="/"><i class="fas fa-home"></i> Home</a>
-        <a href="/about"><i class="fas fa-info-circle"></i> About</a>
-        <a href="/privacy"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
-    </div>
-
-    <main>
-        <div class="player-container">
-            <iframe src="${embedUrl}" allowfullscreen></iframe>
-        </div>
-        <div class="video-details">
-            <span class="video-category" style="font-size: 12px; color: var(--accent); text-transform: uppercase; font-weight: 700;">${category}</span>
-            <h1>${title}</h1>
-            <p>${description}</p>
-        </div>
-        <h2 class="section-title">Rekomendasi Untuk Anda</h2>
-        <div class="rec-grid" id="recommendationGrid"></div>
-    </main>
-
-    <footer><p>&copy; 2026 STREAM 18. All Rights Reserved.</p></footer>
-    <script src="/database.js"><\/script>
-    <script src="/app.js"><\/script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const recGrid = document.getElementById('recommendationGrid');
-            const recommendations = streamDB.videos.filter(v => v.category === '${category}' && v.id !== '${id}').slice(0, 4);
-            recommendations.forEach(vid => {
-                recGrid.innerHTML += '<a href="/content_video/' + vid.category + '/' + vid.slug + '" class="video-card" style="text-decoration:none; background:var(--bg-surface); border-radius:12px; overflow:hidden;"><div class="thumbnail-wrapper" style="position:relative; width:100%; padding-top:56.25%;"><img src="' + vid.thumbnail + '" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;"></div><div class="video-info" style="padding:15px;"><h3 class="video-title" style="font-size: 14px; color:var(--text-main);">' + vid.title + '</h3></div></a>';
+        function renderAdminUI() {
+            // Render Select & Table Kategori
+            const catSelect = document.getElementById('vCat');
+            const catBody = document.getElementById('catTableBody');
+            catSelect.innerHTML = ''; catBody.innerHTML = '';
+            
+            localDB.categories.forEach(c => {
+                catSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                catBody.innerHTML += `<tr><td>${c.id}</td><td>${c.name}</td>
+                    <td>
+                        <button class="action-btn" onclick="editCat('${c.id}', '${c.name}')"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn del" onclick="delCat('${c.id}')"><i class="fas fa-trash"></i></button>
+                    </td></tr>`;
             });
-        });
-    <\/script>
-</body>
-</html>`;
 
-                const htmlPath = `content_video/${category}/${slug}.html`;
-                await pushFile(htmlPath, htmlTemplate, `Create HTML for: ${title}`);
-
-                showAlert('Berhasil! Video telah dipublish. Perubahan di GitHub Pages mungkin butuh 1-3 menit untuk tampil.', 'success');
-                
-                // Reset Form
-                document.getElementById('vidTitle').value = '';
-                document.getElementById('vidSlug').value = '';
-                document.getElementById('vidUrl').value = '';
-                document.getElementById('vidThumb').value = '';
-                document.getElementById('vidDesc').value = '';
-
-            } catch (error) {
-                console.error(error);
-                showAlert('Error: ' + error.message, 'error');
-            } finally {
-                btn.innerHTML = 'Publish Video Ke GitHub';
-                btn.disabled = false;
-            }
+            // Render Table Video
+            const vidBody = document.getElementById('vidTableBody');
+            vidBody.innerHTML = '';
+            localDB.videos.forEach(v => {
+                const cName = localDB.categories.find(c => c.id === v.categoryId)?.name || v.categoryId;
+                vidBody.innerHTML += `<tr><td>${v.title}</td><td>${cName}</td>
+                    <td>
+                        <button class="action-btn" onclick="editVid('${v.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn del" onclick="delVid('${v.id}')"><i class="fas fa-trash"></i></button>
+                    </td></tr>`;
+            });
         }
 
-        // --- LOGIKA UPDATE DOMAIN ---
-        async function changeDomain() {
-            const newDomain = document.getElementById('newDomain').value;
-            if(!newDomain) return showAlert('Domain tidak boleh kosong', 'error');
+        // --- CRUD KATEGORI ---
+        function saveCategory() {
+            const id = document.getElementById('cId').value;
+            const name = document.getElementById('cName').value;
+            const editId = document.getElementById('editCatId').value;
+            if(!id || !name) return showMsg("ID dan Nama wajib isi", "error");
 
+            if(editId) {
+                const idx = localDB.categories.findIndex(c => c.id === editId);
+                localDB.categories[idx] = {id, name};
+            } else {
+                localDB.categories.push({id, name});
+            }
+            document.getElementById('cId').value = ''; document.getElementById('cName').value = ''; document.getElementById('editCatId').value = '';
+            renderAdminUI(); showMsg("Kategori disiapkan sementara. Ingat klik Push!", "success");
+        }
+        function editCat(id, name) { document.getElementById('cId').value = id; document.getElementById('cName').value = name; document.getElementById('editCatId').value = id; }
+        function delCat(id) { localDB.categories = localDB.categories.filter(c => c.id !== id); renderAdminUI(); }
+
+        // --- CRUD VIDEO ---
+        function saveVideo() {
+            const id = document.getElementById('editVidId').value || Date.now().toString();
+            const vid = {
+                id: id,
+                title: document.getElementById('vTitle').value,
+                slug: document.getElementById('vSlug').value,
+                categoryId: document.getElementById('vCat').value,
+                url: document.getElementById('vUrl').value,
+                thumbnail: document.getElementById('vThumb').value,
+                desc: document.getElementById('vDesc').value,
+                dateAdded: document.getElementById('editVidId').value ? localDB.videos.find(v=>v.id===id).dateAdded : Date.now()
+            };
+            if(!vid.title || !vid.url) return showMsg("Judul dan URL wajib isi!", "error");
+
+            if(document.getElementById('editVidId').value) {
+                const idx = localDB.videos.findIndex(v => v.id === id);
+                localDB.videos[idx] = vid;
+            } else {
+                localDB.videos.unshift(vid); // Taruh atas
+            }
+            
+            // Reset Form
+            ['editVidId','vTitle','vSlug','vUrl','vThumb','vDesc'].forEach(i => document.getElementById(i).value = '');
+            renderAdminUI(); showMsg("Video disiapkan sementara. Ingat klik Push!", "success");
+        }
+        function editVid(id) {
+            const v = localDB.videos.find(x => x.id === id);
+            document.getElementById('editVidId').value = v.id;
+            document.getElementById('vTitle').value = v.title;
+            document.getElementById('vSlug').value = v.slug;
+            document.getElementById('vCat').value = v.categoryId;
+            document.getElementById('vUrl').value = v.url;
+            document.getElementById('vThumb').value = v.thumbnail;
+            document.getElementById('vDesc').value = v.desc;
+            window.scrollTo(0,0);
+        }
+        function delVid(id) { localDB.videos = localDB.videos.filter(v => v.id !== id); renderAdminUI(); }
+
+        // --- GITHUB API PUSH ---
+        const b64EncodeUnicode = str => btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode('0x' + p1)));
+        
+        async function pushToGitHub() {
+            const btn = document.getElementById('btnPush');
+            btn.innerHTML = "Memproses... Mohon tunggu"; btn.disabled = true;
             try {
-                // Update file CNAME
-                const cnameFile = await getFile('CNAME');
-                if (cnameFile) {
-                    await pushFile('CNAME', newDomain, `Update CNAME domain`, cnameFile.sha);
-                } else {
-                    await pushFile('CNAME', newDomain, `Create CNAME domain`);
-                }
+                // 1. Get current SHA of database.js
+                const getRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.js?ref=${BRANCH}`, {
+                    headers: {"Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json"}
+                });
+                if(!getRes.ok) throw new Error("Gagal mengambil file database dari repo.");
+                const fileData = await getRes.json();
 
-                // Update settings di database.js
-                const dbFile = await getFile('database.js');
-                if (dbFile) {
-                    let dbContent = dbFile.content;
-                    let jsonString = dbContent.replace("const streamDB = ", "").replace(/;$/, "");
-                    let dbObj = JSON.parse(jsonString);
-                    
-                    dbObj.settings.domain = newDomain;
-                    
-                    const newDbContent = "const streamDB = " + JSON.stringify(dbObj, null, 4) + ";";
-                    await pushFile('database.js', newDbContent, `Update domain in DB`, dbFile.sha);
-                }
+                // 2. Prepare new content
+                const newContent = "const streamDB = " + JSON.stringify(localDB, null, 4) + ";";
 
-                showAlert('Domain berhasil diupdate! Silakan atur Custom Domain di Settings GitHub repo Anda.', 'success');
-            } catch (error) {
-                showAlert('Error: ' + error.message, 'error');
+                // 3. Push File
+                const putRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.js`, {
+                    method: "PUT",
+                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: "Admin Update Content",
+                        content: b64EncodeUnicode(newContent),
+                        sha: fileData.sha,
+                        branch: BRANCH
+                    })
+                });
+                if(!putRes.ok) throw new Error("Gagal Commit ke GitHub. Cek izin Token PAT Anda.");
+                
+                showMsg("Berhasil! Perubahan telah Live di Website.", "success");
+            } catch(e) {
+                showMsg(e.message, "error");
+            } finally {
+                btn.innerHTML = "🚀 COMMIT & PUSH KE REPO"; btn.disabled = false;
             }
         }
     </script>
