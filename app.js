@@ -1,22 +1,18 @@
-// app.js
-
 let currentPage = 1;
 const itemsPerPage = 10;
-let currentVideos = []; // Menyimpan video yang sedang aktif (setelah filter/search)
+let currentVideos = []; 
 
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
 function initApp() {
-    // 1. Urutkan video dari yang terbaru (berdasarkan dateAdded)
     streamDB.videos.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
     currentVideos = [...streamDB.videos];
     
     renderCategories();
     renderVideos();
 
-    // Event Listener Search Cerdas
     document.getElementById('searchInput').addEventListener('input', (e) => {
         handleSearch(e.target.value);
     });
@@ -31,8 +27,8 @@ function renderCategories() {
     const catMenu = document.getElementById('categoryMenu');
     let html = '';
     streamDB.categories.forEach(cat => {
-        // Indentasi sedikit untuk submenu
-        html += `<a href="#" style="padding-left: 50px; font-size: 14px;" onclick="filterCategory('${cat.id}')">- ${cat.name}</a>`;
+        // FIX: Display block biar baris ke bawah
+        html += `<a href="#" onclick="filterCategory('${cat.id}')" style="display: block; padding: 12px 20px 12px 50px; font-size: 14px; font-weight: 500; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.05);"><i class="fas fa-caret-right" style="margin-right: 8px; color: var(--accent);"></i> ${cat.name}</a>`;
     });
     catMenu.innerHTML = html;
 }
@@ -51,11 +47,7 @@ function renderVideos(reset = true) {
     const videosToShow = currentVideos.slice(startIndex, endIndex);
 
     videosToShow.forEach(vid => {
-        // Ambil nama kategori
         const categoryName = streamDB.categories.find(c => c.id === vid.category)?.name || "Uncategorized";
-        
-        // Membangun URL Clean (tanpa .html)
-        // Nanti file aslinya ada di: /content_video/kategori/slug.html
         const cleanUrl = `/content_video/${vid.category}/${vid.slug}`;
 
         const card = document.createElement('a');
@@ -73,7 +65,6 @@ function renderVideos(reset = true) {
         grid.appendChild(card);
     });
 
-    // Atur tombol Load More
     if (endIndex < currentVideos.length) {
         loadMoreBtn.style.display = 'inline-block';
     } else {
@@ -83,11 +74,11 @@ function renderVideos(reset = true) {
 
 function loadMore() {
     currentPage++;
-    renderVideos(false); // false = jangan reset grid, tambahkan ke bawahnya
+    renderVideos(false); 
 }
 
 function filterCategory(catId) {
-    toggleMenu(); // tutup menu
+    toggleMenu(); 
     if (catId === 'all') {
         currentVideos = [...streamDB.videos];
         document.getElementById('mainTitle').innerText = "Terbaru Ditambahkan";
