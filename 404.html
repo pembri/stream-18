@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Halaman Tidak Ditemukan - STREAM 18</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center;">
+    <div>
+        <h1 style="font-size: 80px; color: var(--accent);">404</h1>
+        <p style="margin-bottom: 20px;">Halaman sedang dialihkan...</p>
+        <div class="loader"></div>
+    </div>
+
+    <script>
+        // Logika Router Clean URL
+        let path = window.location.pathname;
+        
+        // Jika path berakhir tanpa .html dan bukan root, coba arahkan ke file .html nya
+        if (path !== "/" && !path.includes(".html")) {
+            // Cek apakah ini bagian dari content_video
+            // Redirect otomatis
+            window.location.replace(path + ".html");
+        } else {
+            // Jika memang benar-benar tidak ada, balik ke home dalam 3 detik
+            setTimeout(() => { window.location.href = "/"; }, 3000);
+        }
+    </script>
+</body>
+</html>
