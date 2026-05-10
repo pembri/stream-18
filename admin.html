@@ -14,7 +14,7 @@
         .form-group label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; }
         .form-group input:focus { border-color: var(--accent); outline: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 400px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
         th { color: var(--accent); }
         .action-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;}
@@ -24,6 +24,17 @@
         .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; }
         .alert.success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
         .alert.error { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+        
+        /* --- FIX RESPONSIVE KHUSUS FORM ADMIN --- */
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .cat-flex { display: flex; gap: 10px; }
+        .table-responsive { overflow-x: auto; margin-top: 20px; }
+        
+        @media (max-width: 768px) {
+            .input-grid { grid-template-columns: 1fr; } /* Judul & Slug turun atas-bawah */
+            .cat-flex { flex-direction: column; } /* Form Kategori turun atas-bawah */
+            .cat-flex input, .cat-flex button { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -52,16 +63,18 @@
                     <i class="fas fa-video"></i> Manajemen Video
                 </h2>
                 <input type="hidden" id="editVidId" value="">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                
+                <div class="input-grid">
                     <div class="form-group">
                         <label>Judul Video</label>
                         <input type="text" id="vTitle" oninput="autoSlug()" placeholder="Judul">
                     </div>
                     <div class="form-group">
                         <label>Slug URL</label>
-                        <input type="text" id="vSlug" readonly style="background:#000;">
+                        <input type="text" id="vSlug" readonly style="background:rgba(0,0,0,0.5);">
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label>Kategori</label>
                     <select id="vCat"></select>
@@ -76,11 +89,11 @@
                 </div>
                 <div class="form-group">
                     <label>Deskripsi</label>
-                    <textarea id="vDesc" rows="2"></textarea>
+                    <textarea id="vDesc" rows="3"></textarea>
                 </div>
                 <button class="btn-primary btn-submit" id="btnSaveVid" onclick="saveVideo()">Tambah / Update Video</button>
 
-                <div style="margin-top: 30px; overflow-x: auto;">
+                <div class="table-responsive">
                     <table>
                         <thead><tr><th>Judul</th><th>Kategori</th><th>Aksi</th></tr></thead>
                         <tbody id="vidTableBody"></tbody>
@@ -92,21 +105,26 @@
                 <h2 style="color: #f39c12; border-bottom: 1px solid var(--border-color); padding-bottom:10px; margin-bottom: 20px;">
                     <i class="fas fa-layer-group"></i> Manajemen Kategori
                 </h2>
-                <div style="display: flex; gap: 10px;">
+                <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">Tambahkan kategori baru di sini agar muncul di pilihan video.</p>
+                
+                <div class="cat-flex">
                     <input type="hidden" id="editCatId" value="">
-                    <input type="text" id="cId" placeholder="ID (cth: action)" style="flex:1; padding:10px; border-radius:5px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border-color);">
-                    <input type="text" id="cName" placeholder="Nama Kategori (cth: Action Movies)" style="flex:2; padding:10px; border-radius:5px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border-color);">
-                    <button class="btn-primary" onclick="saveCategory()" style="background:#f39c12;">Simpan</button>
+                    <input type="text" id="cId" placeholder="ID Singkat (cth: horor)" style="padding:10px; border-radius:5px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border-color);">
+                    <input type="text" id="cName" placeholder="Nama Kategori (cth: Horor Seram)" style="padding:10px; border-radius:5px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border-color);">
+                    <button class="btn-primary" onclick="saveCategory()" style="background:#f39c12; padding:12px 20px;">Simpan Kategori</button>
                 </div>
-                <table style="margin-top:20px;">
-                    <thead><tr><th>ID</th><th>Nama Kategori</th><th>Aksi</th></tr></thead>
-                    <tbody id="catTableBody"></tbody>
-                </table>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>ID</th><th>Nama Kategori</th><th>Aksi</th></tr></thead>
+                        <tbody id="catTableBody"></tbody>
+                    </table>
+                </div>
             </div>
 
              <div class="card" style="text-align: center; border-color: #2ecc71;">
                 <h2 style="color:#2ecc71; margin-bottom: 15px;">PUBLISH PERUBAHAN</h2>
-                <p style="color:var(--text-muted); margin-bottom:20px;">Setelah Anda Menambah/Edit/Hapus, klik tombol ini untuk menyimpan permanen ke GitHub.</p>
+                <p style="color:var(--text-muted); margin-bottom:20px;">Setelah Anda Menambah Kategori atau Video, klik tombol ini agar tersimpan permanen di website.</p>
                 <button class="btn-primary btn-submit" id="btnPush" onclick="pushToGitHub()" style="background:#2ecc71; font-size:16px;">🚀 COMMIT & PUSH KE REPO</button>
             </div>
         </div>
@@ -119,7 +137,6 @@
         const BRANCH = "main";
         let token = localStorage.getItem('s18_token') || "";
         
-        // Buat clone lokal database untuk diedit sebelum di push
         let localDB = JSON.parse(JSON.stringify(streamDB));
 
         window.onload = () => {
@@ -139,10 +156,11 @@
         }
 
         function logout() { localStorage.removeItem('s18_token'); window.location.reload(); }
+        
         function showMsg(msg, type) {
             const b = document.getElementById('alertBox');
             b.className = `alert ${type}`; b.innerHTML = msg; window.scrollTo(0,0);
-            setTimeout(() => b.classList.add('hidden'), 4000);
+            setTimeout(() => b.classList.add('hidden'), 5000);
         }
 
         function autoSlug() {
@@ -182,7 +200,7 @@
             const id = document.getElementById('cId').value;
             const name = document.getElementById('cName').value;
             const editId = document.getElementById('editCatId').value;
-            if(!id || !name) return showMsg("ID dan Nama wajib isi", "error");
+            if(!id || !name) return showMsg("ID dan Nama Kategori wajib diisi!", "error");
 
             if(editId) {
                 const idx = localDB.categories.findIndex(c => c.id === editId);
@@ -191,7 +209,7 @@
                 localDB.categories.push({id, name});
             }
             document.getElementById('cId').value = ''; document.getElementById('cName').value = ''; document.getElementById('editCatId').value = '';
-            renderAdminUI(); showMsg("Kategori disiapkan sementara. Ingat klik Push!", "success");
+            renderAdminUI(); showMsg("Kategori berhasil ditambahkan! Silakan geser ke bawah dan klik 'Commit & Push'.", "success");
         }
         function editCat(id, name) { document.getElementById('cId').value = id; document.getElementById('cName').value = name; document.getElementById('editCatId').value = id; }
         function delCat(id) { localDB.categories = localDB.categories.filter(c => c.id !== id); renderAdminUI(); }
@@ -209,18 +227,17 @@
                 desc: document.getElementById('vDesc').value,
                 dateAdded: document.getElementById('editVidId').value ? localDB.videos.find(v=>v.id===id).dateAdded : Date.now()
             };
-            if(!vid.title || !vid.url) return showMsg("Judul dan URL wajib isi!", "error");
+            if(!vid.title || !vid.url) return showMsg("Judul dan URL Video wajib diisi!", "error");
 
             if(document.getElementById('editVidId').value) {
                 const idx = localDB.videos.findIndex(v => v.id === id);
                 localDB.videos[idx] = vid;
             } else {
-                localDB.videos.unshift(vid); // Taruh atas
+                localDB.videos.unshift(vid); 
             }
             
-            // Reset Form
             ['editVidId','vTitle','vSlug','vUrl','vThumb','vDesc'].forEach(i => document.getElementById(i).value = '');
-            renderAdminUI(); showMsg("Video disiapkan sementara. Ingat klik Push!", "success");
+            renderAdminUI(); showMsg("Video berhasil diproses! Silakan geser ke bawah dan klik 'Commit & Push'.", "success");
         }
         function editVid(id) {
             const v = localDB.videos.find(x => x.id === id);
@@ -242,30 +259,27 @@
             const btn = document.getElementById('btnPush');
             btn.innerHTML = "Memproses... Mohon tunggu"; btn.disabled = true;
             try {
-                // 1. Get current SHA of database.js
                 const getRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.js?ref=${BRANCH}`, {
                     headers: {"Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json"}
                 });
-                if(!getRes.ok) throw new Error("Gagal mengambil file database dari repo.");
+                if(!getRes.ok) throw new Error("Gagal terhubung ke GitHub. Cek koneksi atau Token Anda.");
                 const fileData = await getRes.json();
 
-                // 2. Prepare new content
                 const newContent = "const streamDB = " + JSON.stringify(localDB, null, 4) + ";";
 
-                // 3. Push File
                 const putRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.js`, {
                     method: "PUT",
                     headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        message: "Admin Update Content",
+                        message: "Admin Update Video/Kategori",
                         content: b64EncodeUnicode(newContent),
                         sha: fileData.sha,
                         branch: BRANCH
                     })
                 });
-                if(!putRes.ok) throw new Error("Gagal Commit ke GitHub. Cek izin Token PAT Anda.");
+                if(!putRes.ok) throw new Error("Gagal Push ke GitHub. Pastikan Token PAT Anda punya izin 'repo'.");
                 
-                showMsg("Berhasil! Perubahan telah Live di Website.", "success");
+                showMsg("Mantap Bos! Data berhasil dipublish ke Website. Tunggu 1 menit lalu refresh halaman depan.", "success");
             } catch(e) {
                 showMsg(e.message, "error");
             } finally {
