@@ -1,29 +1,20 @@
 /**
- * STREAM 18 - DATABASE & CORE LOGIC
+ * STREAM 18 - DATABASE & CORE LOGIC (FIXED)
  */
 
 window.STREAM_DB = {
-    categories: ["Film","Anime","Series","Indonesia"],
+    categories: ["Film", "Anime", "Series"],
     videos: [
         {
-                "id": "contoh-video-1",
-                "title": "Contoh Video Trailer",
-                "slug": "contoh-video-trailer",
-                "category": "Film",
-                "thumbnail": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80",
-                "url": "content_video/Film/contoh-video-trailer",
-                "timestamp": 1715500000000
-        },
-        {
-                "id": "bokep-live-silla-priscila-spek-lc-memandu-cinta-1778600466575",
-                "title": "Bokep Live Silla Priscila Spek Lc Memandu Cinta",
-                "slug": "bokep-live-silla-priscila-spek-lc-memandu-cinta",
-                "category": "Indonesia",
-                "thumbnail": "https://www.pasrahh.com/528c6d75-964c-41b6-82a1-071f2b26fc35-528c6d75/index.m3u8",
-                "url": "content_video/Indonesia/bokep-live-silla-priscila-spek-lc-memandu-cinta",
-                "timestamp": 1778600466575
+            id: "contoh-1",
+            title: "Contoh Video Trailer",
+            slug: "contoh-video-trailer",
+            category: "Film",
+            thumbnail: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80",
+            url: "content_video/Film/contoh-video-trailer",
+            timestamp: 1715500000000
         }
-]
+    ]
 };
 
 const CONFIG = {
@@ -34,7 +25,7 @@ const CONFIG = {
 };
 
 // ==========================================
-// FRONTEND LOGIC
+// FRONTEND & ADMIN LOGIC
 // ==========================================
 let currentPage = 1;
 let currentCategory = 'all';
@@ -42,22 +33,8 @@ let currentSearch = '';
 
 function initIndex() {
     if (!document.getElementById('videoGrid') || document.getElementById('recommendedGrid')) return;
-
     renderCategories();
     renderVideos();
-
-    const catFilter = document.getElementById('categoryFilter');
-    if (catFilter) {
-        catFilter.addEventListener('click', (e) => {
-            if (e.target.classList.contains('tag')) {
-                document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
-                e.target.classList.add('active');
-                currentCategory = e.target.dataset.category;
-                currentPage = 1;
-                renderVideos();
-            }
-        });
-    }
 
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -69,94 +46,25 @@ function initIndex() {
     }
 }
 
-function renderCategories() {
-    const filterContainer = document.getElementById('categoryFilter');
-    if (filterContainer) {
-        let html = '<div class="tag active" data-category="all">Semua</div>';
-        window.STREAM_DB.categories.forEach(cat => {
-            html += `<div class="tag" data-category="${cat}">${cat}</div>`;
-        });
-        filterContainer.innerHTML = html;
-    }
-}
-
 function renderVideos() {
     const grid = document.getElementById('videoGrid');
     if (!grid) return;
 
     let filtered = window.STREAM_DB.videos.filter(v => {
         const matchCategory = currentCategory === 'all' || v.category === currentCategory;
-        const matchSearch = v.title.toLowerCase().includes(currentSearch) || v.category.toLowerCase().includes(currentSearch);
+        const matchSearch = v.title.toLowerCase().includes(currentSearch);
         return matchCategory && matchSearch;
     });
 
     filtered.sort((a, b) => b.timestamp - a.timestamp);
-    const totalPages = Math.ceil(filtered.length / CONFIG.itemsPerPage);
     const startIdx = (currentPage - 1) * CONFIG.itemsPerPage;
     const paginatedItems = filtered.slice(startIdx, startIdx + CONFIG.itemsPerPage);
 
-    if (paginatedItems.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #777; padding: 40px;">Tidak ada video ditemukan.</div>';
-        document.getElementById('pagination').innerHTML = '';
-        return;
-    }
-
+    // FIX: Dukungan .webp otomatis lewat tag <img> standar
     grid.innerHTML = paginatedItems.map(video => `
-        <a href="${video.url}" class="video-card">
+        <a href="/${video.url}" class="video-card">
             <div class="thumbnail-container">
-                <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
-            </div>
-            <div class="video-info">
-                <div class="video-title">${video.title}</div>
-                <div class="video-meta">
-                    <span><i class="fas fa-folder"></i> ${video.category}</span>
-                    <span>${new Date(video.timestamp).toLocaleDateString('id-ID')}</span>
-                </div>
-            </div>
-        </a>
-    `).join('');
-
-    renderPagination(totalPages);
-}
-
-function renderPagination(totalPages) {
-    const pagination = document.getElementById('pagination');
-    if (!pagination || totalPages <= 1) {
-        if(pagination) pagination.innerHTML = '';
-        return;
-    }
-
-    let html = '';
-    for (let i = 1; i <= totalPages; i++) {
-        html += `<button class="btn-page ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
-    }
-    pagination.innerHTML = html;
-}
-
-window.goToPage = function(page) {
-    currentPage = page;
-    renderVideos();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function initVideoPage() {
-    const grid = document.getElementById('recommendedGrid');
-    if (!grid) return;
-
-    const currentTitle = grid.dataset.currentTitle;
-    let others = window.STREAM_DB.videos.filter(v => v.title !== currentTitle);
-    others.sort(() => 0.5 - Math.random());
-    let recommended = others.slice(0, 8);
-
-    if (recommended.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1/-1; color: #777;">Belum ada video rekomendasi lainnya.</div>';
-        return;
-    }
-
-    grid.innerHTML = recommended.map(video => `
-        <a href="../../${video.url}" class="video-card">
-            <div class="thumbnail-container">
-                <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
+                <img src="${video.thumbnail}" alt="${video.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x170?text=Error+Loading+Image'">
             </div>
             <div class="video-info">
                 <div class="video-title">${video.title}</div>
@@ -166,37 +74,94 @@ function initVideoPage() {
             </div>
         </a>
     `).join('');
-}
-
-// INJECT KATEGORI KE HAMBURGER (Berlaku Global)
-function renderGlobalHamburger() {
-    const mobileCatList = document.getElementById('mobileCategoryList');
-    if (!mobileCatList) return;
-    
-    let mobHtml = '';
-    window.STREAM_DB.categories.forEach(cat => {
-        // Ambil path root otomatis (agar bekerja di halaman admin/about/dll)
-        const homeLink = document.querySelector('#menuOverlay ul li a').getAttribute('href'); 
-        mobHtml += `<li style="margin-bottom: 15px;"><a href="${homeLink}?cat=${cat}" style="font-size: 1rem; color: #b3b3b3;"><i class="fas fa-angle-right"></i> ${cat}</a></li>`;
-    });
-    mobileCatList.innerHTML = mobHtml;
 }
 
 // ==========================================
-// ADMIN LOGIC & GITHUB API
+// KELOLA KONTEN (ADMIN) - INI YANG KEMARIN KOSONG
+// ==========================================
+function renderAdminVideoList() {
+    const adminList = document.getElementById('adminVideoList');
+    if (!adminList) return;
+
+    if (window.STREAM_DB.videos.length === 0) {
+        adminList.innerHTML = '<p style="color: #777;">Belum ada video.</p>';
+        return;
+    }
+
+    let html = `<table style="width:100%; border-collapse: collapse; margin-top:20px; color: white;">
+        <tr style="text-align:left; border-bottom: 1px solid #333;">
+            <th style="padding:10px;">Judul</th>
+            <th style="padding:10px;">Kategori</th>
+            <th style="padding:10px;">Aksi</th>
+        </tr>`;
+
+    window.STREAM_DB.videos.forEach(v => {
+        html += `<tr style="border-bottom: 1px solid #222;">
+            <td style="padding:10px;">${v.title}</td>
+            <td style="padding:10px;">${v.category}</td>
+            <td style="padding:10px;">
+                <button onclick="deleteVideo('${v.id}', '${v.category}', '${v.slug}')" style="background:red; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:3px;">Hapus</button>
+            </td>
+        </tr>`;
+    });
+    html += `</table>`;
+    adminList.innerHTML = html;
+}
+
+// FUNGSI HAPUS VIDEO DARI GITHUB
+window.deleteVideo = async function(id, category, slug) {
+    if (!confirm('Yakin mau hapus video ini? File HTML di GitHub juga akan dihapus.')) return;
+
+    try {
+        const filePath = `content_video/${category}/${slug}.html`;
+        const fileData = await githubRequest(filePath);
+        
+        if (fileData) {
+            // 1. Hapus file HTML-nya
+            await githubRequest(filePath, 'DELETE', {
+                message: `Hapus video: ${slug}`,
+                sha: fileData.sha,
+                branch: CONFIG.branch
+            });
+        }
+
+        // 2. Update database.js (Hapus dari array)
+        const dbFile = await githubRequest('database.js');
+        let dbContent = decodeURIComponent(escape(atob(dbFile.content)));
+        
+        window.STREAM_DB.videos = window.STREAM_DB.videos.filter(v => v.id !== id);
+        const videoStr = JSON.stringify(window.STREAM_DB.videos, null, 8);
+        dbContent = dbContent.replace(/videos:\s*\[[\s\S]*?\]/, `videos: ${videoStr}`);
+
+        await githubRequest('database.js', 'PUT', {
+            message: `Hapus data video dari DB`,
+            content: btoa(unescape(encodeURIComponent(dbContent))),
+            sha: dbFile.sha,
+            branch: CONFIG.branch
+        });
+
+        alert('Video Berhasil Dihapus!');
+        location.reload();
+    } catch (err) {
+        alert('Gagal menghapus: ' + err.message);
+    }
+};
+
+// ==========================================
+// FIX PLAYER & TEMPLATE
 // ==========================================
 function generateEmbedHtml(url) {
+    // YouTube Fix
     const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
     if (ytMatch) return `<div class="js-player" data-plyr-provider="youtube" data-plyr-embed-id="${ytMatch[1]}"></div>`;
     
-    const vimMatch = url.match(/vimeo\.com\/(?:.*#|.*\/videos\/)?([0-9]+)/i);
-    if (vimMatch) return `<div class="js-player" data-plyr-provider="vimeo" data-plyr-embed-id="${vimMatch[1]}"></div>`;
+    // Direct MP4 / WebM Fix
+    if (url.includes('.mp4') || url.includes('.webm')) {
+        return `<video class="js-player" playsinline controls><source src="${url}" type="video/mp4"></video>`;
+    }
     
-    if (url.endsWith('.mp4')) return `<video class="js-player" controls crossorigin playsinline><source src="${url}" type="video/mp4"></video>`;
-    
-    return `<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%;">
-        <iframe src="${url}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen></iframe>
-    </div>`;
+    // Iframe Fallback
+    return `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;"><iframe src="${url}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen></iframe></div>`;
 }
 
 function generateVideoHtmlTemplate(title, category, embedHtml) {
@@ -206,239 +171,71 @@ function generateVideoHtmlTemplate(title, category, embedHtml) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${title} - STREAM 18</title>
-    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
-    <header id="mainHeader">
-        <a href="../../index.html" class="logo">STREAM 18</a>
-        <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" placeholder="Cari di beranda..." onclick="window.location.href='../../index.html'">
-        </div>
-        <div class="nav-actions">
-            <div class="hamburger" id="menuToggle">
-                <span></span><span></span><span></span>
-            </div>
-        </div>
+<body style="background:#000; color:#fff;">
+    <header id="mainHeader" style="background:#141414; padding:20px; display:flex; justify-content:space-between; align-items:center;">
+        <a href="/" style="color:#007bff; text-decoration:none; font-weight:bold; font-size:1.5rem;">STREAM 18</a>
+        <a href="/" style="color:#fff; text-decoration:none;"><i class="fas fa-arrow-left"></i> Kembali</a>
     </header>
-
-    <nav class="menu-overlay" id="menuOverlay">
-        <div class="close-menu" id="closeMenuBtn">&times;</div>
-        <ul>
-            <li><a href="../../index.html"><i class="fas fa-home"></i> Beranda</a></li>
-            <li>
-                <a href="../../index.html#categoryFilter"><i class="fas fa-list"></i> List Category</a>
-                <ul id="mobileCategoryList" style="margin-left: 30px; margin-top: 15px; list-style: none;"></ul>
-            </li>
-            <li><a href="../../about.html"><i class="fas fa-info-circle"></i> About</a></li>
-            <li><a href="../../privacy.html"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
-            <li><a href="../../admin.html"><i class="fas fa-user-shield"></i> Admin Panel</a></li>
-        </ul>
-    </nav>
-
-    <main>
-        <div class="video-player-wrapper" style="border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            ${embedHtml}
-        </div>
-        <div style="margin-top: 25px; padding: 20px; background: var(--surface-color); border-radius: 8px; margin-bottom: 50px;">
-            <h1 style="font-size: 1.8rem; margin-bottom: 10px;">${title}</h1>
-            <div style="color: var(--accent-color); font-weight: bold;">
-                <i class="fas fa-folder"></i> Kategori: ${category}
-            </div>
-        </div>
-        <div class="section-title"><h2>Rekomendasi Video Lainnya</h2></div>
-        <div class="video-grid" id="recommendedGrid" data-current-title="${title}"></div>
+    <main style="max-width:1000px; margin:20px auto; padding:0 20px;">
+        ${embedHtml}
+        <h1 style="margin-top:20px;">${title}</h1>
+        <p style="color:#007bff;">Kategori: ${category}</p>
+        <div style="margin-top:50px;"><h3>Rekomendasi</h3><div id="recommendedGrid" data-current-title="${title}" class="video-grid"></div></div>
     </main>
-
-    <footer>
-        <div class="footer-links">
-            <a href="../../index.html">Home</a>
-            <a href="../../about.html">About</a>
-            <a href="../../privacy.html">Privacy Policy</a>
-            <a href="../../admin.html">Admin</a>
-        </div>
-        <p class="copyright">&copy; 2026 STREAM 18. All Rights Reserved.</p>
-    </footer>
-
-    <script src="../../database.js"></script>
-    <script src="../../player.js"></script>
-    <script>
-        const menuToggle = document.getElementById('menuToggle');
-        const menuOverlay = document.getElementById('menuOverlay');
-        const closeMenuBtn = document.getElementById('closeMenuBtn');
-        
-        menuToggle.addEventListener('click', () => menuOverlay.classList.add('active'));
-        closeMenuBtn.addEventListener('click', () => menuOverlay.classList.remove('active'));
-
-        document.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', (e) => {
-                const href = link.getAttribute('href');
-                if (href && href.endsWith('.html')) {
-                    e.preventDefault();
-                    window.location.href = href.replace('.html', '');
-                }
-            });
-        });
-    </script>
+    <script src="/database.js"></script>
+    <script src="/player.js"></script>
 </body>
 </html>`;
 }
 
+// ==========================================
+// GITHUB API INTERFACE
+// ==========================================
 async function githubRequest(path, method = 'GET', body = null) {
     const token = localStorage.getItem('gh_token');
-    if (!token) throw new Error("Akses ditolak. Token GitHub tidak ditemukan.");
+    if (!token) throw new Error("Login Token GitHub Hilang!");
     const options = {
         method,
-        headers: {
-            'Authorization': `token ${token}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
-        }
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }
     };
     if (body) options.body = JSON.stringify(body);
     const res = await fetch(`https://api.github.com/repos/${CONFIG.repoOwner}/${CONFIG.repoName}/contents/${path}`, options);
-    if (!res.ok && res.status !== 404) throw new Error(`GitHub API Error: ${res.status}`);
+    if (!res.ok && res.status !== 404) throw new Error("API Error: " + res.status);
     return res.ok ? await res.json() : null;
 }
 
-window.publishToGitHub = async function() {
-    const title = document.getElementById('videoTitle').value.trim();
-    const categoryInput = document.getElementById('videoCategory').value.trim();
-    const embedUrl = document.getElementById('videoEmbed').value.trim();
-    const thumbUrl = document.getElementById('videoThumb').value.trim();
+// ==========================================
+// AUTO-ROUTER (FIXED)
+// ==========================================
+document.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (!link) return;
+    let href = link.getAttribute('href');
+    if (!href || href.startsWith('http') || href.startsWith('#')) return;
+    
+    e.preventDefault();
+    const isGitHub = window.location.hostname.includes('github.io');
+    const repoPath = '/stream-18';
 
-    if (!title || !categoryInput || !embedUrl) {
-        alert("Judul, Kategori, dan Embed URL wajib diisi!");
-        return;
-    }
-
-    const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-    const category = categoryInput.charAt(0).toUpperCase() + categoryInput.slice(1);
-    const filePath = `content_video/${category}/${slug}.html`;
-    const embedHtml = generateEmbedHtml(embedUrl);
-    const htmlContent = generateVideoHtmlTemplate(title, category, embedHtml);
-
-    try {
-        const btn = document.getElementById('publishBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-        btn.disabled = true;
-
-        const existingFile = await githubRequest(filePath);
-        await githubRequest(filePath, 'PUT', {
-            message: `Publish video: ${title}`,
-            content: btoa(unescape(encodeURIComponent(htmlContent))),
-            sha: existingFile ? existingFile.sha : undefined,
-            branch: CONFIG.branch
-        });
-
-        const dbFile = await githubRequest('database.js');
-        if (dbFile) {
-            let dbContent = decodeURIComponent(escape(atob(dbFile.content)));
-            const newVideo = {
-                id: slug + '-' + Date.now(),
-                title: title,
-                slug: slug,
-                category: category,
-                thumbnail: thumbUrl || 'https://via.placeholder.com/800x450/141414/007bff?text=No+Thumbnail',
-                url: `content_video/${category}/${slug}`, 
-                timestamp: Date.now()
-            };
-
-            if (!window.STREAM_DB.categories.includes(category)) {
-                window.STREAM_DB.categories.push(category);
-                const catStr = JSON.stringify(window.STREAM_DB.categories);
-                dbContent = dbContent.replace(/categories:\s*\[.*?\]/, `categories: ${catStr}`);
-            }
-
-            window.STREAM_DB.videos.push(newVideo);
-            const videoStr = JSON.stringify(window.STREAM_DB.videos, null, 8);
-            dbContent = dbContent.replace(/videos:\s*\[[\s\S]*?\]/, `videos: ${videoStr}`);
-
-            await githubRequest('database.js', 'PUT', {
-                message: `Update database with: ${title}`,
-                content: btoa(unescape(encodeURIComponent(dbContent))),
-                sha: dbFile.sha,
-                branch: CONFIG.branch
-            });
+    if (href.startsWith('/')) {
+        if (isGitHub && !href.startsWith(repoPath)) {
+            href = repoPath + (href === '/' ? '' : href);
         }
-
-        alert("SUKSES! Video berhasil dipublish ke website.");
-        document.getElementById('videoTitle').value = '';
-        document.getElementById('videoCategory').value = '';
-        document.getElementById('videoEmbed').value = '';
-        document.getElementById('videoThumb').value = '';
-
-    } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan: " + err.message);
-    } finally {
-        const btn = document.getElementById('publishBtn');
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i> PUBLISH KE GITHUB';
-        btn.disabled = false;
     }
-}
+    window.location.href = href.replace('.html', '') || '/';
+});
 
 // ==========================================
 // INITIALIZATION
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    renderGlobalHamburger(); // Jalankan hamburger di semua file
-
-    if (document.getElementById('videoGrid') && !document.getElementById('recommendedGrid')) {
-        initIndex(); 
-        
-        // Pengecekan jika pindah dari halaman lain lewat menu kategori
-        const urlParams = new URLSearchParams(window.location.search);
-        const catParam = urlParams.get('cat');
-        if (catParam) {
-            setTimeout(() => {
-                const tag = document.querySelector(`[data-category='${catParam}']`);
-                if (tag) tag.click();
-            }, 300);
-        }
-    }
-    
+    if (document.getElementById('videoGrid')) initIndex();
     if (document.getElementById('recommendedGrid')) initVideoPage();
-    
-    const publishBtn = document.getElementById('publishBtn');
-    if (publishBtn) {
-        publishBtn.replaceWith(publishBtn.cloneNode(true));
-        document.getElementById('publishBtn').addEventListener('click', window.publishToGitHub);
-    }
-});
-// ==========================================
-// AUTO-ROUTER: Mengatasi Garis Miring (/) di GitHub Pages & Custom Domain
-// ==========================================
-document.addEventListener('click', (e) => {
-    // Cari elemen <a> yang di-klik
-    const link = e.target.closest('a');
-    if (!link) return;
+    if (document.getElementById('adminVideoList')) renderAdminVideoList();
 
-    let href = link.getAttribute('href');
-    
-    // Jangan proses link eksternal atau link anchor (#)
-    if (!href || href.startsWith('http') || href.startsWith('#')) return;
-
-    e.preventDefault();
-
-    // Deteksi apakah sedang numpang di GitHub Pages atau sudah Custom Domain
-    const isGitHub = window.location.hostname.includes('github.io');
-    const repoName = '/stream-18'; 
-
-    // Jika lu nulis link pakai garis miring (contoh: /about atau /)
-    if (href.startsWith('/')) {
-        // Kalau masih numpang di GitHub, otomatis selipin nama repo-nya
-        if (isGitHub && !href.startsWith(repoName)) {
-            href = repoName + (href === '/' ? '' : href);
-        }
-    }
-
-    // Fitur Clean URL (Otomatis hapus tulisan .html kalau ada yang nulis manual)
-    if (href.endsWith('.html')) {
-        href = href.replace('.html', '');
-    }
-
-    // Eksekusi perpindahan halaman
-    window.location.href = href || '/';
+    const pubBtn = document.getElementById('publishBtn');
+    if (pubBtn) pubBtn.addEventListener('click', window.publishToGitHub);
 });
