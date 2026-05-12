@@ -102,10 +102,20 @@ function renderVideos() {
     }
 
     grid.innerHTML = paginatedItems.map(video => `
-        <a href="${video.url}" class="video-card">
-            <div class="thumbnail-container">
-                <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
+    <a href="/${video.url}" class="video-card">
+        <div class="thumbnail-container">
+            <!-- FIX: Support .webp & Error Handling jika link mati -->
+            <img src="${video.thumbnail}" alt="${video.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x170?text=Image+Error'">
+        </div>
+        <div class="video-info">
+            <div class="video-title">${video.title}</div>
+            <div class="video-meta">
+                <span><i class="fas fa-folder"></i> ${video.category}</span>
             </div>
+        </div>
+    </a>
+`).join('');[span_0](start_span)[span_0](end_span)
+
             <div class="video-info">
                 <div class="video-title">${video.title}</div>
                 <div class="video-meta">
@@ -383,27 +393,35 @@ window.publishToGitHub = async function() {
 // INITIALIZATION
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    renderGlobalHamburger(); // Jalankan hamburger di semua file
+    renderGlobalHamburger(); 
 
-    if (document.getElementById('videoGrid') && !document.getElementById('recommendedGrid')) {
-        initIndex(); 
-        
-        // Pengecekan jika pindah dari halaman lain lewat menu kategori
-        const urlParams = new URLSearchParams(window.location.search);
-        const catParam = urlParams.get('cat');
-        if (catParam) {
-            setTimeout(() => {
-                const tag = document.querySelector(`[data-category='${catParam}']`);
-                if (tag) tag.click();
-            }, 300);
-        }
-    }
+    // Munculkan Grid Video di Beranda
+    if (document.getElementById('videoGrid')) initIndex();
     
+    // Munculkan Rekomendasi di Halaman Video
     if (document.getElementById('recommendedGrid')) initVideoPage();
     
-    const publishBtn = document.getElementById('publishBtn');
-    if (publishBtn) {
-        publishBtn.replaceWith(publishBtn.cloneNode(true));
+    // MUNCIULKAN DAFTAR VIDEO DI HALAMAN ADMIN (Kelola Konten)
+    if (document.getElementById('adminVideoList')) renderAdminVideoList();[span_5](start_span)[span_5](end_span)
+
+    // Handle Link Garis Miring (Auto-Router)
+    document.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (!a) return;
+        const href = a.getAttribute('href');
+        if (!href || href.startsWith('http') || href.startsWith('#')) return;
+        
+        e.preventDefault();
+        const isGitHub = window.location.hostname.includes('github.io');
+        const repo = '/stream-18';
+        let clean = href.startsWith('/') ? (isGitHub ? repo + (href === '/' ? '' : href) : href) : href;
+        window.location.href = clean.replace('.html', '');
+    });[span_6](start_span)[span_6](end_span)
+
+    const pubBtn = document.getElementById('publishBtn');
+    if (pubBtn) {
+        pubBtn.replaceWith(pubBtn.cloneNode(true));
         document.getElementById('publishBtn').addEventListener('click', window.publishToGitHub);
     }
 });
+
