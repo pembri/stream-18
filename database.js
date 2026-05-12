@@ -3,18 +3,27 @@
  */
 
 window.STREAM_DB = {
-    categories: ["Film", "Anime", "Series"],
+    categories: ["Film","Anime","Series","Indonesia"],
     videos: [
         {
-            id: "contoh-video-1",
-            title: "Contoh Video Trailer",
-            slug: "contoh-video-trailer",
-            category: "Film",
-            thumbnail: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80",
-            url: "content_video/Film/contoh-video-trailer",
-            timestamp: 1715500000000
+                "id": "contoh-video-1",
+                "title": "Contoh Video Trailer",
+                "slug": "contoh-video-trailer",
+                "category": "Film",
+                "thumbnail": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80",
+                "url": "content_video/Film/contoh-video-trailer",
+                "timestamp": 1715500000000
+        },
+        {
+                "id": "bokep-live-silla-priscila-spek-lc-memandu-cinta-1778600466575",
+                "title": "Bokep Live Silla Priscila Spek Lc Memandu Cinta",
+                "slug": "bokep-live-silla-priscila-spek-lc-memandu-cinta",
+                "category": "Indonesia",
+                "thumbnail": "https://www.pasrahh.com/528c6d75-964c-41b6-82a1-071f2b26fc35-528c6d75/index.m3u8",
+                "url": "content_video/Indonesia/bokep-live-silla-priscila-spek-lc-memandu-cinta",
+                "timestamp": 1778600466575
         }
-    ]
+]
 };
 
 const CONFIG = {
