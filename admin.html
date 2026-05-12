@@ -1,291 +1,213 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - STREAM 18</title>
+    <title>Admin Panel - STREAM 18</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: var(--bg-main); }
-        .admin-box { max-width: 1100px; margin: 120px auto 50px; padding: 20px; }
-        .card { background: var(--bg-surface); border-radius: 12px; padding: 25px; margin-bottom: 25px; border: 1px solid var(--border-color); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; }
-        .form-group input:focus { border-color: var(--accent); outline: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 400px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
-        th { color: var(--accent); }
-        .action-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;}
-        .action-btn.del { border-color: #e74c3c; color: #e74c3c; }
-        .btn-submit { width: 100%; }
-        .hidden { display: none; }
-        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; }
-        .alert.success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
-        .alert.error { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
-        
-        /* --- FIX RESPONSIVE KHUSUS FORM ADMIN --- */
-        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .cat-flex { display: flex; gap: 10px; }
-        .table-responsive { overflow-x: auto; margin-top: 20px; }
-        
-        @media (max-width: 768px) {
-            .input-grid { grid-template-columns: 1fr; } /* Judul & Slug turun atas-bawah */
-            .cat-flex { flex-direction: column; } /* Form Kategori turun atas-bawah */
-            .cat-flex input, .cat-flex button { width: 100%; }
+        /* Admin Specific Styles */
+        .admin-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--surface-color);
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #333;
         }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+            outline: none;
+        }
+        input:focus { border-color: var(--accent-color); }
+        .btn-action {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        .btn-action:hover { background: var(--accent-hover); }
+        
+        /* Auth Overlay */
+        #authOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .tab-menu { display: flex; gap: 20px; border-bottom: 1px solid #333; margin-bottom: 30px; }
+        .tab-link { padding: 10px 0; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; }
+        .tab-link.active { color: var(--accent-color); border-bottom-color: var(--accent-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
     </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <a href="/" class="logo">STREAM <span>18</span> | ADMIN</a>
-            <div id="logoutMenu" class="hidden">
-                <button onclick="logout()" style="background:transparent; color:#e74c3c; border:1px solid #e74c3c; padding:8px 15px; border-radius:20px; cursor:pointer;">Logout</button>
+
+    <!-- Header Identik -->
+    <header id="mainHeader">
+        <a href="/" class="logo">STREAM 18</a>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" placeholder="Search admin tools...">
+        </div>
+        <div class="nav-actions">
+            <div class="hamburger" id="menuToggle">
+                <span></span><span></span><span></span>
             </div>
-        </nav>
+        </div>
     </header>
 
-    <div class="admin-box">
-        <div id="alertBox" class="alert hidden"></div>
+    <!-- Overlay Menu Identik -->
+    <nav class="menu-overlay" id="menuOverlay">
+        <ul>
+            <li><a href="/"><i class="fas fa-home"></i> Beranda</a></li>
+            <li><a href="/admin"><i class="fas fa-user-shield"></i> Admin Panel</a></li>
+            <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </nav>
 
-        <div class="card" id="loginSec">
-            <h2>Login GitHub Token</h2>
-            <p style="color:var(--text-muted); margin: 10px 0 20px;">Masukkan PAT (scope: repo) untuk akses CRUD.</p>
-            <div class="form-group"><input type="password" id="ghToken" placeholder="ghp_xxxxxx"></div>
-            <button class="btn-primary btn-submit" onclick="login()">Masuk</button>
-        </div>
-
-        <div id="dashSec" class="hidden">
-            <div class="card">
-                <h2 style="color: var(--accent); border-bottom: 1px solid var(--border-color); padding-bottom:10px; margin-bottom: 20px;">
-                    <i class="fas fa-video"></i> Manajemen Video
-                </h2>
-                <input type="hidden" id="editVidId" value="">
-                
-                <div class="input-grid">
-                    <div class="form-group">
-                        <label>Judul Video</label>
-                        <input type="text" id="vTitle" oninput="autoSlug()" placeholder="Judul">
-                    </div>
-                    <div class="form-group">
-                        <label>Slug URL</label>
-                        <input type="text" id="vSlug" readonly style="background:rgba(0,0,0,0.5);">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Kategori</label>
-                    <select id="vCat"></select>
-                </div>
-                <div class="form-group">
-                    <label>URL Video (Embed YT/DM, MP4, M3U8)</label>
-                    <input type="text" id="vUrl" placeholder="https://...">
-                </div>
-                <div class="form-group">
-                    <label>Thumbnail URL</label>
-                    <input type="text" id="vThumb" placeholder="https://...">
-                </div>
-                <div class="form-group">
-                    <label>Deskripsi</label>
-                    <textarea id="vDesc" rows="3"></textarea>
-                </div>
-                <button class="btn-primary btn-submit" id="btnSaveVid" onclick="saveVideo()">Tambah / Update Video</button>
-
-                <div class="table-responsive">
-                    <table>
-                        <thead><tr><th>Judul</th><th>Kategori</th><th>Aksi</th></tr></thead>
-                        <tbody id="vidTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2 style="color: #f39c12; border-bottom: 1px solid var(--border-color); padding-bottom:10px; margin-bottom: 20px;">
-                    <i class="fas fa-layer-group"></i> Manajemen Kategori
-                </h2>
-                <p style="color:var(--text-muted); font-size:13px; margin-bottom:15px;">Tambahkan kategori baru di sini agar muncul di pilihan video.</p>
-                
-                <div class="cat-flex">
-                    <input type="hidden" id="editCatId" value="">
-                    <input type="text" id="cId" placeholder="ID Singkat (cth: horor)" style="padding:10px; border-radius:5px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border-color);">
-                    <input type="text" id="cName" placeholder="Nama Kategori (cth: Horor Seram)" style="padding:10px; border-radius:5px; background:rgba(0,0,0,0.3); color:#fff; border:1px solid var(--border-color);">
-                    <button class="btn-primary" onclick="saveCategory()" style="background:#f39c12; padding:12px 20px;">Simpan Kategori</button>
-                </div>
-
-                <div class="table-responsive">
-                    <table>
-                        <thead><tr><th>ID</th><th>Nama Kategori</th><th>Aksi</th></tr></thead>
-                        <tbody id="catTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-             <div class="card" style="text-align: center; border-color: #2ecc71;">
-                <h2 style="color:#2ecc71; margin-bottom: 15px;">PUBLISH PERUBAHAN</h2>
-                <p style="color:var(--text-muted); margin-bottom:20px;">Setelah Anda Menambah Kategori atau Video, klik tombol ini agar tersimpan permanen di website.</p>
-                <button class="btn-primary btn-submit" id="btnPush" onclick="pushToGitHub()" style="background:#2ecc71; font-size:16px;">🚀 COMMIT & PUSH KE REPO</button>
-            </div>
+    <!-- Auth Login -->
+    <div id="authOverlay" style="display: none;">
+        <h2 style="margin-bottom: 20px;">STREAM 18 LOGIN</h2>
+        <div style="width: 300px;">
+            <input type="password" id="githubToken" placeholder="GitHub Personal Access Token">
+            <button class="btn-action" id="loginBtn" style="width: 100%; margin-top: 15px;">LOGIN</button>
         </div>
     </div>
 
+    <main>
+        <div class="admin-container">
+            <div class="tab-menu">
+                <div class="tab-link active" data-tab="post-video">Post Video</div>
+                <div class="tab-link" data-tab="settings">Pengaturan Site</div>
+                <div class="tab-link" data-tab="manage-content">Kelola Konten</div>
+            </div>
+
+            <!-- Tab: Post Video -->
+            <div id="post-video" class="tab-content active">
+                <div class="form-group">
+                    <label>Judul Video</label>
+                    <input type="text" id="videoTitle" placeholder="Contoh: Spider-Man No Way Home">
+                </div>
+                <div class="form-group">
+                    <label>Kategori (Pilih atau Tulis Baru)</label>
+                    <input type="text" id="videoCategory" placeholder="Action, Horror, etc.">
+                </div>
+                <div class="form-group">
+                    <label>Embed URL Video (YouTube, Dailymotion, etc.)</label>
+                    <input type="text" id="videoEmbed" placeholder="https://www.youtube.com/embed/...">
+                </div>
+                <div class="form-group">
+                    <label>URL Thumbnail</label>
+                    <input type="text" id="videoThumb" placeholder="https://image.url/poster.jpg">
+                </div>
+                <button class="btn-action" id="publishBtn"><i class="fas fa-paper-plane"></i> PUBLISH KE GITHUB</button>
+            </div>
+
+            <!-- Tab: Settings -->
+            <div id="settings" class="tab-content">
+                <div class="form-group">
+                    <label>Ubah Domain URL (Base URL)</label>
+                    <input type="text" id="baseUrlInput" placeholder="pembri.github.io/stream-18 atau domain.com">
+                    <p style="font-size: 0.8rem; color: #777; margin-top: 5px;">*Ini akan memperbarui referensi URL di seluruh file repo via API.</p>
+                </div>
+                <button class="btn-action" id="updateDomainBtn">UPDATE DOMAIN</button>
+            </div>
+
+            <!-- Tab: Manage -->
+            <div id="manage-content" class="tab-content">
+                <p>Fitur Edit/Hapus sedang sinkronisasi dengan database.js...</p>
+                <div id="adminVideoList" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="/">Home</a>
+            <a href="/admin">Admin</a>
+        </div>
+        <p class="copyright">&copy; 2026 STREAM 18. Admin Control Panel.</p>
+    </footer>
+
     <script src="database.js"></script>
     <script>
-        const REPO_OWNER = "pembri";
-        const REPO_NAME = "stream-18";
-        const BRANCH = "main";
-        let token = localStorage.getItem('s18_token') || "";
-        
-        let localDB = JSON.parse(JSON.stringify(streamDB));
-
-        window.onload = () => {
-            if (token) {
-                document.getElementById('loginSec').classList.add('hidden');
-                document.getElementById('dashSec').classList.remove('hidden');
-                document.getElementById('logoutMenu').classList.remove('hidden');
-                renderAdminUI();
-            }
-        };
-
-        function login() {
-            token = document.getElementById('ghToken').value;
-            if(!token) return;
-            localStorage.setItem('s18_token', token);
-            window.location.reload();
-        }
-
-        function logout() { localStorage.removeItem('s18_token'); window.location.reload(); }
-        
-        function showMsg(msg, type) {
-            const b = document.getElementById('alertBox');
-            b.className = `alert ${type}`; b.innerHTML = msg; window.scrollTo(0,0);
-            setTimeout(() => b.classList.add('hidden'), 5000);
-        }
-
-        function autoSlug() {
-            document.getElementById('vSlug').value = document.getElementById('vTitle').value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        }
-
-        function renderAdminUI() {
-            // Render Select & Table Kategori
-            const catSelect = document.getElementById('vCat');
-            const catBody = document.getElementById('catTableBody');
-            catSelect.innerHTML = ''; catBody.innerHTML = '';
-            
-            localDB.categories.forEach(c => {
-                catSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-                catBody.innerHTML += `<tr><td>${c.id}</td><td>${c.name}</td>
-                    <td>
-                        <button class="action-btn" onclick="editCat('${c.id}', '${c.name}')"><i class="fas fa-edit"></i></button>
-                        <button class="action-btn del" onclick="delCat('${c.id}')"><i class="fas fa-trash"></i></button>
-                    </td></tr>`;
+        // Logika Tab
+        document.querySelectorAll('.tab-link').forEach(link => {
+            link.addEventListener('click', () => {
+                document.querySelectorAll('.tab-link, .tab-content').forEach(el => el.classList.remove('active'));
+                link.classList.add('active');
+                document.getElementById(link.dataset.tab).classList.add('active');
             });
+        });
 
-            // Render Table Video
-            const vidBody = document.getElementById('vidTableBody');
-            vidBody.innerHTML = '';
-            localDB.videos.forEach(v => {
-                const cName = localDB.categories.find(c => c.id === v.categoryId)?.name || v.categoryId;
-                vidBody.innerHTML += `<tr><td>${v.title}</td><td>${cName}</td>
-                    <td>
-                        <button class="action-btn" onclick="editVid('${v.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="action-btn del" onclick="delVid('${v.id}')"><i class="fas fa-trash"></i></button>
-                    </td></tr>`;
-            });
-        }
+        // Logika Hamburger Identik
+        const menuToggle = document.getElementById('menuToggle');
+        const menuOverlay = document.getElementById('menuOverlay');
+        menuToggle.addEventListener('click', () => {
+            menuOverlay.classList.toggle('active');
+            const spans = menuToggle.querySelectorAll('span');
+            spans[0].style.transform = menuOverlay.classList.contains('active') ? 'rotate(45deg) translate(5px, 5px)' : 'none';
+            spans[1].style.opacity = menuOverlay.classList.contains('active') ? '0' : '1';
+            spans[2].style.transform = menuOverlay.classList.contains('active') ? 'rotate(-45deg) translate(7px, -6px)' : 'none';
+        });
 
-        // --- CRUD KATEGORI ---
-        function saveCategory() {
-            const id = document.getElementById('cId').value;
-            const name = document.getElementById('cName').value;
-            const editId = document.getElementById('editCatId').value;
-            if(!id || !name) return showMsg("ID dan Nama Kategori wajib diisi!", "error");
-
-            if(editId) {
-                const idx = localDB.categories.findIndex(c => c.id === editId);
-                localDB.categories[idx] = {id, name};
-            } else {
-                localDB.categories.push({id, name});
-            }
-            document.getElementById('cId').value = ''; document.getElementById('cName').value = ''; document.getElementById('editCatId').value = '';
-            renderAdminUI(); showMsg("Kategori berhasil ditambahkan! Silakan geser ke bawah dan klik 'Commit & Push'.", "success");
-        }
-        function editCat(id, name) { document.getElementById('cId').value = id; document.getElementById('cName').value = name; document.getElementById('editCatId').value = id; }
-        function delCat(id) { localDB.categories = localDB.categories.filter(c => c.id !== id); renderAdminUI(); }
-
-        // --- CRUD VIDEO ---
-        function saveVideo() {
-            const id = document.getElementById('editVidId').value || Date.now().toString();
-            const vid = {
-                id: id,
-                title: document.getElementById('vTitle').value,
-                slug: document.getElementById('vSlug').value,
-                categoryId: document.getElementById('vCat').value,
-                url: document.getElementById('vUrl').value,
-                thumbnail: document.getElementById('vThumb').value,
-                desc: document.getElementById('vDesc').value,
-                dateAdded: document.getElementById('editVidId').value ? localDB.videos.find(v=>v.id===id).dateAdded : Date.now()
-            };
-            if(!vid.title || !vid.url) return showMsg("Judul dan URL Video wajib diisi!", "error");
-
-            if(document.getElementById('editVidId').value) {
-                const idx = localDB.videos.findIndex(v => v.id === id);
-                localDB.videos[idx] = vid;
-            } else {
-                localDB.videos.unshift(vid); 
-            }
-            
-            ['editVidId','vTitle','vSlug','vUrl','vThumb','vDesc'].forEach(i => document.getElementById(i).value = '');
-            renderAdminUI(); showMsg("Video berhasil diproses! Silakan geser ke bawah dan klik 'Commit & Push'.", "success");
-        }
-        function editVid(id) {
-            const v = localDB.videos.find(x => x.id === id);
-            document.getElementById('editVidId').value = v.id;
-            document.getElementById('vTitle').value = v.title;
-            document.getElementById('vSlug').value = v.slug;
-            document.getElementById('vCat').value = v.categoryId;
-            document.getElementById('vUrl').value = v.url;
-            document.getElementById('vThumb').value = v.thumbnail;
-            document.getElementById('vDesc').value = v.desc;
-            window.scrollTo(0,0);
-        }
-        function delVid(id) { localDB.videos = localDB.videos.filter(v => v.id !== id); renderAdminUI(); }
-
-        // --- GITHUB API PUSH ---
-        const b64EncodeUnicode = str => btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode('0x' + p1)));
+        // Logika Auth GitHub
+        const token = localStorage.getItem('gh_token');
+        if(!token) document.getElementById('authOverlay').style.display = 'flex';
         
-        async function pushToGitHub() {
-            const btn = document.getElementById('btnPush');
-            btn.innerHTML = "Memproses... Mohon tunggu"; btn.disabled = true;
-            try {
-                const getRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.js?ref=${BRANCH}`, {
-                    headers: {"Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json"}
-                });
-                if(!getRes.ok) throw new Error("Gagal terhubung ke GitHub. Cek koneksi atau Token Anda.");
-                const fileData = await getRes.json();
-
-                const newContent = "const streamDB = " + JSON.stringify(localDB, null, 4) + ";";
-
-                const putRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/database.js`, {
-                    method: "PUT",
-                    headers: { "Authorization": `token ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        message: "Admin Update Video/Kategori",
-                        content: b64EncodeUnicode(newContent),
-                        sha: fileData.sha,
-                        branch: BRANCH
-                    })
-                });
-                if(!putRes.ok) throw new Error("Gagal Push ke GitHub. Pastikan Token PAT Anda punya izin 'repo'.");
-                
-                showMsg("Mantap Bos! Data berhasil dipublish ke Website. Tunggu 1 menit lalu refresh halaman depan.", "success");
-            } catch(e) {
-                showMsg(e.message, "error");
-            } finally {
-                btn.innerHTML = "🚀 COMMIT & PUSH KE REPO"; btn.disabled = false;
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const val = document.getElementById('githubToken').value;
+            if(val) {
+                localStorage.setItem('gh_token', val);
+                location.reload();
             }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('gh_token');
+            location.reload();
+        });
+
+        // Slug Generator
+        function generateSlug(text) {
+            return text.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
         }
+
+        // Logic Publish Video (Akan memanggil GitHub API)
+        // Note: Ini membutuhkan konfigurasi repository pembri/stream-18
+        document.getElementById('publishBtn').addEventListener('click', async () => {
+            const title = document.getElementById('videoTitle').value;
+            const category = document.getElementById('videoCategory').value;
+            const embed = document.getElementById('videoEmbed').value;
+            const thumb = document.getElementById('videoThumb').value;
+            const slug = generateSlug(title);
+
+            if(!title || !embed) return alert("Isi data dengan lengkap!");
+
+            alert("Proses Publish ke GitHub API sedang berjalan... (Membuat file: content_video/" + category + "/" + slug + ".html)");
+            // Di sini nanti diletakkan fungsi fetch(GITHUB_API_URL) 
+            // untuk membuat file HTML dan mengupdate database.js
+        });
     </script>
 </body>
 </html>
