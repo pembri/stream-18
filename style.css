@@ -302,3 +302,40 @@ footer {
         font-size: 1.4rem;
     }
 }
+/* ==== FIX MOBILE & HAMBURGER MENU ==== */
+.close-menu {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 3rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: none;
+    z-index: 2000;
+}
+.menu-overlay.active .close-menu {
+    display: block;
+}
+.close-menu:hover {
+    color: var(--accent-color);
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 15px 4%;
+    }
+    .search-container {
+        display: block !important; /* Paksa muncul di HP */
+        flex: 1 1 100%;
+        order: 3;
+        margin: 15px 0 5px 0;
+    }
+    main {
+        margin-top: 140px; /* Dorong video ke bawah biar gak ketutup header */
+    }
+    .logo {
+        font-size: 1.4rem;
+    }
+}
