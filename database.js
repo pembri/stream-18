@@ -3,18 +3,27 @@
  */
 
 window.STREAM_DB = {
-    categories: ["Film", "Anime", "Series"],
+    categories: ["Film","Anime","Series","Bokep Indonesia"],
     videos: [
         {
-            id: "contoh-video-1",
-            title: "Contoh Video Trailer",
-            slug: "contoh-video-trailer",
-            category: "Film",
-            thumbnail: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80",
-            url: "content_video/Film/contoh-video-trailer",
-            timestamp: 1715500000000
+                "id": "contoh-video-1",
+                "title": "Contoh Video Trailer",
+                "slug": "contoh-video-trailer",
+                "category": "Film",
+                "thumbnail": "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80",
+                "url": "content_video/Film/contoh-video-trailer",
+                "timestamp": 1715500000000
+        },
+        {
+                "id": "bokep-live-silla-priscila-spek-lc-memandu-cinta-1778602223491",
+                "title": "Bokep Live Silla Priscila Spek Lc Memandu Cinta",
+                "slug": "bokep-live-silla-priscila-spek-lc-memandu-cinta",
+                "category": "Bokep Indonesia",
+                "thumbnail": "https://a.embedan.com/image/members/eEVwdnJDcU1kQUJXcnhUTFpNQzFGUmZrUk1TVW40M2NXVGtVbmV6MUxOeXpkNzJHUUZMNjBDUEdNTjU5WVF0aHRzY3dOMktCTVVmS0hlQjdxbzJNcmc9PTo6Ex3m4zpaPp0zxyeZab3X+Q==.webp",
+                "url": "content_video/Bokep Indonesia/bokep-live-silla-priscila-spek-lc-memandu-cinta",
+                "timestamp": 1778602223491
         }
-    ]
+]
 };
 
 const CONFIG = {
