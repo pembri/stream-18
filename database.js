@@ -1,11 +1,7 @@
 /**
  * STREAM 18 - DATABASE & CORE LOGIC
- * Mengatur data video, tampilan beranda, halaman video, dan integrasi GitHub API.
  */
 
-// ==========================================
-// 1. DATABASE STATE
-// ==========================================
 window.STREAM_DB = {
     categories: ["Film", "Anime", "Series"],
     videos: [
@@ -21,9 +17,6 @@ window.STREAM_DB = {
     ]
 };
 
-// ==========================================
-// 2. CONFIGURATION
-// ==========================================
 const CONFIG = {
     repoOwner: "pembri",
     repoName: "stream-18",
@@ -32,7 +25,7 @@ const CONFIG = {
 };
 
 // ==========================================
-// 3. FRONTEND LOGIC (Beranda & Index)
+// FRONTEND LOGIC
 // ==========================================
 let currentPage = 1;
 let currentCategory = 'all';
@@ -69,13 +62,13 @@ function initIndex() {
 
 function renderCategories() {
     const filterContainer = document.getElementById('categoryFilter');
-    if (!filterContainer) return;
-    
-    let html = '<div class="tag active" data-category="all">Semua</div>';
-    window.STREAM_DB.categories.forEach(cat => {
-        html += `<div class="tag" data-category="${cat}">${cat}</div>`;
-    });
-    filterContainer.innerHTML = html;
+    if (filterContainer) {
+        let html = '<div class="tag active" data-category="all">Semua</div>';
+        window.STREAM_DB.categories.forEach(cat => {
+            html += `<div class="tag" data-category="${cat}">${cat}</div>`;
+        });
+        filterContainer.innerHTML = html;
+    }
 }
 
 function renderVideos() {
@@ -89,7 +82,6 @@ function renderVideos() {
     });
 
     filtered.sort((a, b) => b.timestamp - a.timestamp);
-
     const totalPages = Math.ceil(filtered.length / CONFIG.itemsPerPage);
     const startIdx = (currentPage - 1) * CONFIG.itemsPerPage;
     const paginatedItems = filtered.slice(startIdx, startIdx + CONFIG.itemsPerPage);
@@ -100,7 +92,6 @@ function renderVideos() {
         return;
     }
 
-    // Perhatikan href="${video.url}" (relatif dari root)
     grid.innerHTML = paginatedItems.map(video => `
         <a href="${video.url}" class="video-card">
             <div class="thumbnail-container">
@@ -139,22 +130,13 @@ window.goToPage = function(page) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ==========================================
-// 4. FRONTEND LOGIC (Halaman Video)
-// ==========================================
 function initVideoPage() {
     const grid = document.getElementById('recommendedGrid');
     if (!grid) return;
 
     const currentTitle = grid.dataset.currentTitle;
-    
-    // Ambil video selain yang sedang diputar
     let others = window.STREAM_DB.videos.filter(v => v.title !== currentTitle);
-    
-    // Acak urutan array
     others.sort(() => 0.5 - Math.random());
-    
-    // Ambil maksimal 8 rekomendasi
     let recommended = others.slice(0, 8);
 
     if (recommended.length === 0) {
@@ -162,7 +144,6 @@ function initVideoPage() {
         return;
     }
 
-    // Perhatikan href="../../${video.url}" karena posisi file ini ada di dalam 2 folder (content_video/Kategori/)
     grid.innerHTML = recommended.map(video => `
         <a href="../../${video.url}" class="video-card">
             <div class="thumbnail-container">
@@ -178,11 +159,23 @@ function initVideoPage() {
     `).join('');
 }
 
+// INJECT KATEGORI KE HAMBURGER (Berlaku Global)
+function renderGlobalHamburger() {
+    const mobileCatList = document.getElementById('mobileCategoryList');
+    if (!mobileCatList) return;
+    
+    let mobHtml = '';
+    window.STREAM_DB.categories.forEach(cat => {
+        // Ambil path root otomatis (agar bekerja di halaman admin/about/dll)
+        const homeLink = document.querySelector('#menuOverlay ul li a').getAttribute('href'); 
+        mobHtml += `<li style="margin-bottom: 15px;"><a href="${homeLink}?cat=${cat}" style="font-size: 1rem; color: #b3b3b3;"><i class="fas fa-angle-right"></i> ${cat}</a></li>`;
+    });
+    mobileCatList.innerHTML = mobHtml;
+}
 
 // ==========================================
-// 5. ADMIN LOGIC & GITHUB API
+// ADMIN LOGIC & GITHUB API
 // ==========================================
-
 function generateEmbedHtml(url) {
     const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
     if (ytMatch) return `<div class="js-player" data-plyr-provider="youtube" data-plyr-embed-id="${ytMatch[1]}"></div>`;
@@ -197,7 +190,6 @@ function generateEmbedHtml(url) {
     </div>`;
 }
 
-// TEMPLATE HTML IDENTIK UNTUK VIDEO BARU
 function generateVideoHtmlTemplate(title, category, embedHtml) {
     return `<!DOCTYPE html>
 <html lang="id">
@@ -209,12 +201,11 @@ function generateVideoHtmlTemplate(title, category, embedHtml) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- HEADER IDENTIK -->
     <header id="mainHeader">
-        <a href="../../" class="logo">STREAM 18</a>
+        <a href="../../index.html" class="logo">STREAM 18</a>
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" placeholder="Cari di beranda..." onclick="window.location.href='../../'">
+            <input type="text" placeholder="Cari di beranda..." onclick="window.location.href='../../index.html'">
         </div>
         <div class="nav-actions">
             <div class="hamburger" id="menuToggle">
@@ -223,72 +214,54 @@ function generateVideoHtmlTemplate(title, category, embedHtml) {
         </div>
     </header>
 
-    <!-- MENU IDENTIK -->
     <nav class="menu-overlay" id="menuOverlay">
+        <div class="close-menu" id="closeMenuBtn">&times;</div>
         <ul>
-            <li><a href="../../"><i class="fas fa-home"></i> Beranda</a></li>
-            <li><a href="../../#categoryFilter"><i class="fas fa-list"></i> List Category</a></li>
-            <li><a href="../../about"><i class="fas fa-info-circle"></i> About</a></li>
-            <li><a href="../../privacy-policy"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
-            <li><a href="../../admin"><i class="fas fa-user-shield"></i> Admin Panel</a></li>
+            <li><a href="../../index.html"><i class="fas fa-home"></i> Beranda</a></li>
+            <li>
+                <a href="../../index.html#categoryFilter"><i class="fas fa-list"></i> List Category</a>
+                <ul id="mobileCategoryList" style="margin-left: 30px; margin-top: 15px; list-style: none;"></ul>
+            </li>
+            <li><a href="../../about.html"><i class="fas fa-info-circle"></i> About</a></li>
+            <li><a href="../../privacy.html"><i class="fas fa-shield-alt"></i> Privacy Policy</a></li>
+            <li><a href="../../admin.html"><i class="fas fa-user-shield"></i> Admin Panel</a></li>
         </ul>
     </nav>
 
-    <!-- KONTEN UTAMA VIDEO -->
     <main>
         <div class="video-player-wrapper" style="border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             ${embedHtml}
         </div>
-        
         <div style="margin-top: 25px; padding: 20px; background: var(--surface-color); border-radius: 8px; margin-bottom: 50px;">
             <h1 style="font-size: 1.8rem; margin-bottom: 10px;">${title}</h1>
             <div style="color: var(--accent-color); font-weight: bold;">
                 <i class="fas fa-folder"></i> Kategori: ${category}
             </div>
         </div>
-
-        <!-- REKOMENDASI VIDEO -->
-        <div class="section-title">
-            <h2>Rekomendasi Video Lainnya</h2>
-        </div>
-        <div class="video-grid" id="recommendedGrid" data-current-title="${title}">
-            <!-- Akan diisi otomatis oleh database.js -->
-        </div>
+        <div class="section-title"><h2>Rekomendasi Video Lainnya</h2></div>
+        <div class="video-grid" id="recommendedGrid" data-current-title="${title}"></div>
     </main>
 
-    <!-- FOOTER IDENTIK -->
     <footer>
         <div class="footer-links">
-            <a href="../../">Home</a>
-            <a href="../../about">About</a>
-            <a href="../../privacy-policy">Privacy Policy</a>
-            <a href="../../admin">Admin</a>
+            <a href="../../index.html">Home</a>
+            <a href="../../about.html">About</a>
+            <a href="../../privacy.html">Privacy Policy</a>
+            <a href="../../admin.html">Admin</a>
         </div>
         <p class="copyright">&copy; 2026 STREAM 18. All Rights Reserved.</p>
     </footer>
 
-    <!-- SCRIPTS -->
     <script src="../../database.js"></script>
     <script src="../../player.js"></script>
     <script>
         const menuToggle = document.getElementById('menuToggle');
         const menuOverlay = document.getElementById('menuOverlay');
-        const header = document.getElementById('mainHeader');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        
+        menuToggle.addEventListener('click', () => menuOverlay.classList.add('active'));
+        closeMenuBtn.addEventListener('click', () => menuOverlay.classList.remove('active'));
 
-        menuToggle.addEventListener('click', () => {
-            menuOverlay.classList.toggle('active');
-            const spans = menuToggle.querySelectorAll('span');
-            spans[0].style.transform = menuOverlay.classList.contains('active') ? 'rotate(45deg) translate(5px, 5px)' : 'none';
-            spans[1].style.opacity = menuOverlay.classList.contains('active') ? '0' : '1';
-            spans[2].style.transform = menuOverlay.classList.contains('active') ? 'rotate(-45deg) translate(7px, -6px)' : 'none';
-        });
-
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) header.classList.add('scrolled');
-            else header.classList.remove('scrolled');
-        });
-
-        // Clean URL handler
         document.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', (e) => {
                 const href = link.getAttribute('href');
@@ -303,11 +276,9 @@ function generateVideoHtmlTemplate(title, category, embedHtml) {
 </html>`;
 }
 
-// GitHub API Logic
 async function githubRequest(path, method = 'GET', body = null) {
     const token = localStorage.getItem('gh_token');
     if (!token) throw new Error("Akses ditolak. Token GitHub tidak ditemukan.");
-
     const options = {
         method,
         headers: {
@@ -317,7 +288,6 @@ async function githubRequest(path, method = 'GET', body = null) {
         }
     };
     if (body) options.body = JSON.stringify(body);
-
     const res = await fetch(`https://api.github.com/repos/${CONFIG.repoOwner}/${CONFIG.repoName}/contents/${path}`, options);
     if (!res.ok && res.status !== 404) throw new Error(`GitHub API Error: ${res.status}`);
     return res.ok ? await res.json() : null;
@@ -336,7 +306,6 @@ window.publishToGitHub = async function() {
 
     const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
     const category = categoryInput.charAt(0).toUpperCase() + categoryInput.slice(1);
-    
     const filePath = `content_video/${category}/${slug}.html`;
     const embedHtml = generateEmbedHtml(embedUrl);
     const htmlContent = generateVideoHtmlTemplate(title, category, embedHtml);
@@ -347,7 +316,6 @@ window.publishToGitHub = async function() {
         btn.disabled = true;
 
         const existingFile = await githubRequest(filePath);
-        
         await githubRequest(filePath, 'PUT', {
             message: `Publish video: ${title}`,
             content: btoa(unescape(encodeURIComponent(htmlContent))),
@@ -358,7 +326,6 @@ window.publishToGitHub = async function() {
         const dbFile = await githubRequest('database.js');
         if (dbFile) {
             let dbContent = decodeURIComponent(escape(atob(dbFile.content)));
-            
             const newVideo = {
                 id: slug + '-' + Date.now(),
                 title: title,
@@ -377,7 +344,6 @@ window.publishToGitHub = async function() {
 
             window.STREAM_DB.videos.push(newVideo);
             const videoStr = JSON.stringify(window.STREAM_DB.videos, null, 8);
-            
             dbContent = dbContent.replace(/videos:\s*\[[\s\S]*?\]/, `videos: ${videoStr}`);
 
             await githubRequest('database.js', 'PUT', {
@@ -405,16 +371,26 @@ window.publishToGitHub = async function() {
 }
 
 // ==========================================
-// 6. INITIALIZATION
+// INITIALIZATION
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+    renderGlobalHamburger(); // Jalankan hamburger di semua file
+
     if (document.getElementById('videoGrid') && !document.getElementById('recommendedGrid')) {
-        initIndex(); // Berada di index.html
+        initIndex(); 
+        
+        // Pengecekan jika pindah dari halaman lain lewat menu kategori
+        const urlParams = new URLSearchParams(window.location.search);
+        const catParam = urlParams.get('cat');
+        if (catParam) {
+            setTimeout(() => {
+                const tag = document.querySelector(`[data-category='${catParam}']`);
+                if (tag) tag.click();
+            }, 300);
+        }
     }
     
-    if (document.getElementById('recommendedGrid')) {
-        initVideoPage(); // Berada di isi_konten.html
-    }
+    if (document.getElementById('recommendedGrid')) initVideoPage();
     
     const publishBtn = document.getElementById('publishBtn');
     if (publishBtn) {
