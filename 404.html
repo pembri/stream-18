@@ -1,56 +1,59 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halaman Tidak Ditemukan - STREAM 18</title>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>404 Page Not Found - STREAM 18</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .error-container {
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+        .error-code {
+            font-size: 10rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            line-height: 1;
+            text-shadow: 0 0 30px rgba(0, 123, 255, 0.3);
+        }
+        .error-msg {
+            font-size: 1.5rem;
+            margin: 20px 0 40px;
+            color: var(--text-muted);
+        }
+        .back-home {
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        .back-home:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <a href="/" class="logo">STREAM <span>18</span></a>
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Cari film, series, anime..." onkeypress="if(event.key === 'Enter') window.location.href='/?search=' + encodeURIComponent(this.value);">
-            </div>
-            <div class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
-        </nav>
-    </header>
 
-    <div class="nav-links" id="navLinks">
-        <div style="text-align: right; padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <i class="fas fa-times" onclick="toggleMenu()" style="cursor: pointer; font-size: 24px;"></i>
-        </div>
-        <a href="/"><i class="fas fa-home"></i> Home</a>
-        <div class="cat-header">PAGES</div>
-        <a href="/about"><i class="fas fa-info-circle"></i> About</a>
-        <a href="/privacy"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
-    </div>
-
-    <main style="display: flex; align-items: center; justify-content: center; min-height: 60vh;">
-        <div style="text-align: center;">
-            <h1 style="font-size: 80px; color: var(--accent); margin-bottom: 10px;">404</h1>
-            <h2 style="margin-bottom: 20px;">Halaman Tidak Ditemukan</h2>
-            <p style="color: var(--text-muted); margin-bottom: 30px;">Sepertinya Anda tersesat. Halaman yang Anda cari tidak ada atau sudah dihapus.</p>
-            <a href="/" class="btn-primary" style="text-decoration: none;"><i class="fas fa-home"></i> Kembali ke Beranda</a>
-        </div>
+    <main class="error-container">
+        <div class="error-code">404</div>
+        <div class="error-msg">Oops! The page you're looking for disappeared into the void.</div>
+        <a href="/" class="back-home">Back to Homepage</a>
     </main>
 
-    <footer>
-        <p>&copy; 2026 STREAM 18. All Rights Reserved.</p>
+    <footer style="border-top: none;">
+        <p class="copyright">&copy; 2026 STREAM 18. All Rights Reserved.</p>
     </footer>
 
-    <script>
-        function toggleMenu() { document.getElementById('navLinks').classList.toggle('active'); }
-        
-        // Smart Redirect (Jika user ketik link video format lama, diarahin ke format baru /?v=slug)
-        let path = window.location.pathname;
-        if (path.includes('/content_video/')) {
-            let slug = path.split('/').pop().replace('.html', '');
-            window.location.replace('/?v=' + slug);
-        }
-    </script>
 </body>
 </html>
