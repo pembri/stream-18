@@ -478,3 +478,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ==========================================
+// AUTO-ROUTER: Mengatasi Garis Miring (/) di GitHub Pages & Custom Domain
+// ==========================================
+document.addEventListener('click', (e) => {
+    // Cari elemen <a> yang di-klik
+    const link = e.target.closest('a');
+    if (!link) return;
+
+    let href = link.getAttribute('href');
+    
+    // Jangan proses link eksternal atau link anchor (#)
+    if (!href || href.startsWith('http') || href.startsWith('#')) return;
+
+    e.preventDefault();
+
+    // Deteksi apakah sedang numpang di GitHub Pages atau sudah Custom Domain
+    const isGitHub = window.location.hostname.includes('github.io');
+    const repoName = '/stream-18'; 
+
+    // Jika lu nulis link pakai garis miring (contoh: /about atau /)
+    if (href.startsWith('/')) {
+        // Kalau masih numpang di GitHub, otomatis selipin nama repo-nya
+        if (isGitHub && !href.startsWith(repoName)) {
+            href = repoName + (href === '/' ? '' : href);
+        }
+    }
+
+    // Fitur Clean URL (Otomatis hapus tulisan .html kalau ada yang nulis manual)
+    if (href.endsWith('.html')) {
+        href = href.replace('.html', '');
+    }
+
+    // Eksekusi perpindahan halaman
+    window.location.href = href || '/';
+});
