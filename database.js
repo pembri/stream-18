@@ -4,17 +4,7 @@
 
 window.STREAM_DB = {
     categories: ["Film", "Anime", "Series"],
-    videos: [
-        {
-            id: "contoh-1",
-            title: "Contoh Video Trailer",
-            slug: "contoh-video-trailer",
-            category: "Film",
-            thumbnail: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80",
-            url: "content_video/Film/contoh-video-trailer",
-            timestamp: 1715500000000
-        }
-    ]
+    videos: []
 };
 
 const CONFIG = {
