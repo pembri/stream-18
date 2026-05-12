@@ -311,6 +311,59 @@ async function githubRequest(path, method = 'GET', body = null) {
     if (!res.ok && res.status !== 404) throw new Error(`GitHub API Error: ${res.status}`);
     return res.ok ? await res.json() : null;
 }
+// FUNGSI UNTUK MEMUNCULKAN DAFTAR VIDEO DI TAB KELOLA KONTEN
+function renderAdminVideoList() {
+    const list = document.getElementById('adminVideoList');
+    if (!list) return;
+
+    if (window.STREAM_DB.videos.length === 0) {
+        list.innerHTML = '<p style="color:#777; padding:20px;">Belum ada video.</p>';
+        return;
+    }
+
+    list.innerHTML = `
+        <table style="width:100%; border-collapse:collapse; color:white; margin-top:20px;">
+            <thead style="border-bottom:2px solid #333; text-align:left;">
+                <tr><th style="padding:10px;">Judul</th><th style="padding:10px;">Aksi</th></tr>
+            </thead>
+            <tbody>
+                ${window.STREAM_DB.videos.map(v => `
+                    <tr style="border-bottom:1px solid #222;">
+                        <td style="padding:10px;">${v.title}</td>
+                        <td style="padding:10px;">
+                            <button onclick="deleteVideo('${v.id}', '${v.category}', '${v.slug}')" style="background:#ff4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Hapus</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;[span_2](start_span)[span_2](end_span)[span_3](start_span)[span_3](end_span)
+}
+
+// FUNGSI UNTUK MENGHAPUS VIDEO DARI GITHUB DAN DATABASE
+window.deleteVideo = async function(id, category, slug) {
+    if (!confirm("Yakin ingin menghapus video ini?")) return;
+    try {
+        const path = `content_video/${category}/${slug}.html`;
+        const file = await githubRequest(path);
+        
+        // 1. Hapus file HTML fisik di GitHub
+        if (file) await githubRequest(path, 'DELETE', { message: `Hapus ${slug}`, sha: file.sha, branch: CONFIG.branch });
+
+        // 2. Hapus data di database.js
+        const dbFile = await githubRequest('database.js');
+        let dbContent = decodeURIComponent(escape(atob(dbFile.content)));
+        window.STREAM_DB.videos = window.STREAM_DB.videos.filter(v => v.id !== id);
+        
+        dbContent = dbContent.replace(/videos:\s*\[[\s\S]*?\]/, `videos: ${JSON.stringify(window.STREAM_DB.videos, null, 8)}`);
+
+        await githubRequest('database.js', 'PUT', { message: `Update DB: Hapus ${slug}`, content: btoa(unescape(encodeURIComponent(dbContent))), sha: dbFile.sha, branch: CONFIG.branch });
+        
+        alert("Video Berhasil Dihapus!");
+        location.reload();
+    } catch (e) { alert("Gagal: " + e.message); }
+};[span_4](start_span)[span_4](end_span)
+
 
 window.publishToGitHub = async function() {
     const title = document.getElementById('videoTitle').value.trim();
